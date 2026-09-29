@@ -1,4 +1,4 @@
-﻿import {
+import {
   AfterViewInit,
   Component,
   OnInit,
@@ -43,6 +43,13 @@ interface InstagramItem {
     CommonModule
   ],
 
+  /*
+   * The existing app.component.html contains the
+   * complete The Crunchy Heart homepage.
+   *
+   * We intentionally reuse it here so the existing
+   * homepage design and functionality remain unchanged.
+   */
   templateUrl: './app.component.html'
 })
 export class HomeComponent
@@ -78,11 +85,10 @@ export class HomeComponent
 
   /*
    * IMPORTANT:
-   * The HTML uses flavourProducts,
+   * The homepage HTML uses flavourProducts,
    * so keep this exact property name.
    */
   flavourProducts: Product[] = [];
-
 
   loading = true;
 
@@ -165,8 +171,10 @@ export class HomeComponent
     {
       image:
         'assets/social-weekend-morning.png',
+
       alt:
         'The Crunchy Heart weekend morning',
+
       title:
         'Weekend crunch'
     },
@@ -174,8 +182,10 @@ export class HomeComponent
     {
       image:
         'assets/social-evening-chai.png',
+
       alt:
         'The Crunchy Heart evening chai',
+
       title:
         'That perfect crunch'
     },
@@ -183,8 +193,10 @@ export class HomeComponent
     {
       image:
         'assets/social-reading.png',
+
       alt:
         'The Crunchy Heart reading snack',
+
       title:
         'Snack smarter'
     },
@@ -192,8 +204,10 @@ export class HomeComponent
     {
       image:
         'assets/social-movie-night.png',
+
       alt:
         'The Crunchy Heart movie night',
+
       title:
         'Movie night crunch'
     },
@@ -201,8 +215,10 @@ export class HomeComponent
     {
       image:
         'assets/social-friends-sharing.png',
+
       alt:
         'Friends sharing The Crunchy Heart makhana',
+
       title:
         'Better together'
     },
@@ -210,8 +226,10 @@ export class HomeComponent
     {
       image:
         'assets/social-work-break.png',
+
       alt:
         'The Crunchy Heart work break',
+
       title:
         'Crunch on the go'
     }
@@ -229,6 +247,7 @@ export class HomeComponent
       {
         image:
           'assets/instagram-product.png',
+
         alt:
           'The Crunchy Heart product'
       },
@@ -236,6 +255,7 @@ export class HomeComponent
       {
         image:
           'assets/instagram-macro.png',
+
         alt:
           'The Crunchy Heart makhana close-up'
       },
@@ -243,6 +263,7 @@ export class HomeComponent
       {
         image:
           'assets/instagram-ingredient.png',
+
         alt:
           'The Crunchy Heart ingredients'
       },
@@ -250,6 +271,7 @@ export class HomeComponent
       {
         image:
           'assets/instagram-flavours.png',
+
         alt:
           'The Crunchy Heart flavours'
       },
@@ -257,6 +279,7 @@ export class HomeComponent
       {
         image:
           'assets/instagram-packaging.png',
+
         alt:
           'The Crunchy Heart packaging'
       },
@@ -264,6 +287,7 @@ export class HomeComponent
       {
         image:
           'assets/instagram-brand-mood.png',
+
         alt:
           'The Crunchy Heart brand mood'
       }
