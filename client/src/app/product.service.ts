@@ -44,7 +44,7 @@ export class ProductService {
 
 
   private readonly api =
-    'http://localhost:5000/api';
+    '/api';
 
 
   /* =======================================================
