@@ -1,0 +1,1213 @@
+<!-- =========================================================
+     THE CRUNCHY HEART
+     PREMIUM MAKHANA STOREFRONT
+     ========================================================= -->
+
+
+<!-- =========================================================
+     ANNOUNCEMENT BAR
+     ========================================================= -->
+
+<div class="announcement-bar">
+
+  <span>Free shipping on orders above ₹499</span>
+
+  <span class="announcement-separator">•</span>
+
+  <span>Premium Makhana</span>
+
+  <span class="announcement-separator">•</span>
+
+  <span>Heartfully crunched</span>
+
+</div>
+
+
+<!-- =========================================================
+     HEADER
+     ========================================================= -->
+
+<header class="site-header">
+
+  <div class="nav-shell">
+
+    <button
+      class="brand"
+      type="button"
+      aria-label="The Crunchy Heart home"
+      (click)="scrollTo('home')">
+
+      <span class="brand-heart">♡</span>
+
+      <span class="brand-copy">
+
+        <strong>The Crunchy Heart</strong>
+
+        <small>PREMIUM MAKHANA</small>
+
+      </span>
+
+    </button>
+
+
+    <nav class="main-nav">
+
+      <button type="button" (click)="scrollTo('home')">
+        Home
+      </button>
+
+      <button type="button" (click)="scrollTo('raw-makhana')">
+        Raw Makhana
+      </button>
+
+      <button type="button" (click)="scrollTo('flavoured-makhana')">
+        Flavours
+      </button>
+
+      <button type="button" (click)="scrollTo('our-story')">
+        Our Story
+      </button>
+
+      <button type="button" (click)="scrollTo('why-us')">
+        Why Us
+      </button>
+
+      <button type="button" (click)="scrollTo('socials')">
+        Socials
+      </button>
+
+    </nav>
+
+
+    <div class="nav-actions">
+
+      <button
+        class="nav-icon"
+        type="button"
+        aria-label="Search">
+        ⌕
+      </button>
+
+      <button
+        class="nav-cart"
+        type="button"
+        aria-label="Shopping cart"
+        (click)="scrollTo('cart')">
+
+        ♡
+
+        <span
+          class="cart-count"
+          *ngIf="cartCount > 0">
+          {{ cartCount }}
+        </span>
+
+      </button>
+
+    </div>
+
+  </div>
+
+</header>
+
+
+<!-- =========================================================
+     MAIN
+     ========================================================= -->
+
+<main>
+
+
+  <!-- =======================================================
+       HERO
+       ======================================================= -->
+
+  <section
+    id="home"
+    class="hero-section reveal-section">
+
+    <div class="hero-copy">
+
+      <span class="eyebrow">
+        A little crunch. A lot of heart.
+      </span>
+
+      <h1>
+        Crunch
+        <br>
+        <em>Happy.</em>
+      </h1>
+
+      <p class="hero-description">
+
+        Premium fox nuts, thoughtfully packed for
+        everyday cravings, mindful snacking and
+        everything in between.
+
+      </p>
+
+
+      <div class="hero-actions">
+
+        <button
+          class="primary-button"
+          type="button"
+          (click)="scrollTo('raw-makhana')">
+          Shop Raw Makhana
+        </button>
+
+        <button
+          class="secondary-button"
+          type="button"
+          (click)="scrollTo('flavoured-makhana')">
+          Explore Flavours
+        </button>
+
+      </div>
+
+
+      <div class="hero-trust">
+
+        <span>♡ Premium Quality</span>
+
+        <span>✦ Freshly Packed</span>
+
+        <span>♡ Made With Care</span>
+
+      </div>
+
+    </div>
+
+
+    <div class="hero-visual">
+
+      <div class="hero-orbit orbit-one"></div>
+
+      <div class="hero-orbit orbit-two"></div>
+
+      <img
+        class="hero-image"
+        [src]="heroImage"
+        alt="The Crunchy Heart premium makhana"
+        (error)="handleImageError($event)" />
+
+
+      <div class="hero-floating-card">
+
+        <small>
+          THE EVERYDAY CRUNCH
+        </small>
+
+        <strong>
+          Pure. Light.
+          <br>
+          Delicious.
+        </strong>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       LOADING
+       ======================================================= -->
+
+  <section
+    class="catalog-state reveal-section"
+    *ngIf="loading">
+
+    <div class="loading-spinner"></div>
+
+    <p>
+      Getting your crunch ready...
+    </p>
+
+  </section>
+
+
+  <!-- =======================================================
+       ERROR
+       ======================================================= -->
+
+  <section
+    class="catalog-state error-state reveal-section"
+    *ngIf="!loading && error">
+
+    <div class="state-icon">
+      ♡
+    </div>
+
+    <h3>
+      Something went wrong
+    </h3>
+
+    <p>
+      {{ error }}
+    </p>
+
+  </section>
+
+
+  <!-- =======================================================
+       RAW MAKHANA
+       ======================================================= -->
+
+  <section
+    id="raw-makhana"
+    class="products-section raw-section reveal-section"
+    *ngIf="!loading && !error">
+
+    <div class="section-heading">
+
+      <div>
+
+        <span class="eyebrow">
+          Simple. Pure. Premium.
+        </span>
+
+        <h2>
+          Raw Makhana
+        </h2>
+
+      </div>
+
+      <p>
+        Nothing complicated. Just premium makhana,
+        carefully selected and packed for your
+        everyday snacking moments.
+      </p>
+
+    </div>
+
+
+    <div
+      class="product-grid"
+      *ngIf="rawProducts.length">
+
+      <article
+        class="product-card"
+        *ngFor="
+          let product of rawProducts;
+          trackBy: trackByProduct
+        ">
+
+        <div class="product-image-wrap raw-product-image">
+
+          <img
+            [src]="rawProductImage(product)"
+            [alt]="
+              'The Crunchy Heart Raw Makhana ' +
+              formatWeight(product)
+            "
+            loading="lazy"
+            (error)="handleImageError($event)" />
+
+          <span
+            class="product-badge"
+            *ngIf="product.variant.badge">
+            {{ product.variant.badge }}
+          </span>
+
+        </div>
+
+
+        <div class="product-info">
+
+          <div class="product-topline">
+
+            <span class="product-name">
+              Raw Makhana
+            </span>
+
+          </div>
+
+
+          <span class="product-weight">
+            {{ formatWeight(product) }}
+          </span>
+
+
+          <div class="product-price-row">
+
+            <strong *ngIf="getPrice(product) !== null">
+              ₹{{ getPrice(product) }}
+            </strong>
+
+            <strong
+              class="price-coming-soon"
+              *ngIf="getPrice(product) === null">
+              Price coming soon
+            </strong>
+
+          </div>
+
+
+          <button
+            class="add"
+            type="button"
+            [disabled]="!isAvailable(product)"
+            (click)="addToCart(product)">
+
+            {{
+              isAvailable(product)
+                ? 'Add to Cart'
+                : 'Coming Soon'
+            }}
+
+          </button>
+
+        </div>
+
+      </article>
+
+    </div>
+
+
+    <div
+      class="empty-products"
+      *ngIf="!rawProducts.length">
+
+      <span>♡</span>
+
+      <p>
+        Raw Makhana products will appear here shortly.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       FLAVOURED MAKHANA
+       ======================================================= -->
+
+  <section
+    id="flavoured-makhana"
+    class="products-section flavour-section reveal-section"
+    *ngIf="!loading && !error">
+
+    <div class="section-heading">
+
+      <div>
+
+        <span class="eyebrow">
+          Flavour your crunch
+        </span>
+
+        <h2>
+          Flavoured Makhana
+        </h2>
+
+      </div>
+
+      <p>
+        Four delicious ways to make your everyday
+        crunch a little more exciting.
+      </p>
+
+    </div>
+
+
+    <div
+      class="product-grid"
+      *ngIf="flavourProducts.length">
+
+      <article
+        class="product-card flavour-card"
+        *ngFor="
+          let product of flavourProducts;
+          trackBy: trackByProduct
+        ">
+
+        <div
+          class="product-image-wrap flavour-product-image"
+          [class]="product.variant.tone || ''">
+
+          <img
+            [src]="productImage(product)"
+            [alt]="getFlavorName(product) + ' Makhana'"
+            loading="lazy"
+            (error)="handleImageError($event)" />
+
+          <span
+            class="product-badge"
+            *ngIf="product.variant.badge">
+            {{ product.variant.badge }}
+          </span>
+
+        </div>
+
+
+        <div class="product-info">
+
+          <span class="product-name">
+
+            {{ getFlavorName(product) }}
+            Makhana
+
+          </span>
+
+
+          <span class="product-weight">
+            {{ formatWeight(product) }}
+          </span>
+
+
+          <div class="product-price-row">
+
+            <strong *ngIf="getPrice(product) !== null">
+              ₹{{ getPrice(product) }}
+            </strong>
+
+            <strong
+              class="price-coming-soon"
+              *ngIf="getPrice(product) === null">
+              Price coming soon
+            </strong>
+
+          </div>
+
+
+          <button
+            class="add"
+            type="button"
+            [disabled]="!isAvailable(product)"
+            (click)="addToCart(product)">
+
+            {{
+              isAvailable(product)
+                ? 'Add to Cart'
+                : 'Coming Soon'
+            }}
+
+          </button>
+
+        </div>
+
+      </article>
+
+    </div>
+
+
+    <div
+      class="empty-products"
+      *ngIf="!flavourProducts.length">
+
+      <span>♡</span>
+
+      <p>
+        Our flavour collection is being prepared.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       WHY CHOOSE US
+       ======================================================= -->
+
+  <section
+    id="why-us"
+    class="benefits-section reveal-section">
+
+    <div class="section-heading centered">
+
+      <span class="eyebrow">
+        Why The Crunchy Heart?
+      </span>
+
+      <h2>
+        Made for your
+        <em>everyday moments.</em>
+      </h2>
+
+      <p>
+        From your morning coffee to late-night cravings,
+        we've got the crunch covered.
+      </p>
+
+    </div>
+
+
+    <div class="benefits-grid">
+
+      <article class="benefit-card">
+
+        <span class="benefit-icon">
+          ♡
+        </span>
+
+        <h3>
+          Premium Quality
+        </h3>
+
+        <p>
+          Carefully selected makhana packed with
+          attention to quality and consistency.
+        </p>
+
+      </article>
+
+
+      <article class="benefit-card">
+
+        <span class="benefit-icon">
+          ✦
+        </span>
+
+        <h3>
+          Light & Crunchy
+        </h3>
+
+        <p>
+          A naturally light snack made for little
+          cravings throughout the day.
+        </p>
+
+      </article>
+
+
+      <article class="benefit-card">
+
+        <span class="benefit-icon">
+          ♢
+        </span>
+
+        <h3>
+          Thoughtfully Packed
+        </h3>
+
+        <p>
+          Every pack is prepared with care so your
+          makhana reaches you fresh and delicious.
+        </p>
+
+      </article>
+
+
+      <article class="benefit-card">
+
+        <span class="benefit-icon">
+          ✿
+        </span>
+
+        <h3>
+          Made With Heart
+        </h3>
+
+        <p>
+          A small brand with a big love for better
+          everyday snacking.
+        </p>
+
+      </article>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       EVERYDAY CRUNCH
+       ======================================================= -->
+
+  <section class="everyday-section reveal-section">
+
+    <div class="everyday-visual">
+
+      <img
+        [src]="everydayImage"
+        alt="The Crunchy Heart everyday crunch"
+        loading="lazy"
+        (error)="handleImageError($event)" />
+
+      <span class="floating-makhana one">♡</span>
+
+      <span class="floating-makhana two">✦</span>
+
+      <span class="floating-makhana three">♡</span>
+
+    </div>
+
+
+    <div class="everyday-copy">
+
+      <span class="eyebrow">
+        The everyday crunch
+      </span>
+
+      <h2>
+        Crunch through
+        <em>every moment.</em>
+      </h2>
+
+      <p>
+        Work break. Movie night. Road trip.
+        Midnight craving. Or simply because
+        you feel like it.
+      </p>
+
+      <button
+        class="primary-button"
+        type="button"
+        (click)="scrollTo('raw-makhana')">
+        Find Your Crunch
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       OUR STORY
+       ======================================================= -->
+
+  <section
+    id="our-story"
+    class="story-section reveal-section">
+
+    <div class="story-copy">
+
+      <span class="eyebrow">
+        Our Story
+      </span>
+
+      <h2>
+        A snack with
+        <em>a little more heart.</em>
+      </h2>
+
+      <p>
+        The Crunchy Heart was created around one
+        simple idea: everyday snacking should feel good.
+      </p>
+
+      <p>
+        We believe good snacks don't need to be
+        complicated. They need to be thoughtfully sourced,
+        carefully packed and genuinely enjoyable.
+      </p>
+
+      <p>
+        That's why we're building a makhana brand that
+        keeps things simple, honest and delicious.
+      </p>
+
+      <div class="story-signature">
+
+        <span>♡</span>
+
+        <span>
+          Made with
+          <strong>♥</strong>
+          by The Crunchy Heart
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="story-visual">
+
+      <img
+        [src]="storyImage"
+        alt="The Crunchy Heart brand story"
+        loading="lazy"
+        (error)="handleImageError($event)" />
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       SOCIALS
+       ======================================================= -->
+
+  <section
+    id="socials"
+    class="social-section reveal-section">
+
+    <div class="section-heading centered">
+
+      <span class="eyebrow">
+        @thecrunchyheart
+      </span>
+
+      <h2>
+        Scroll the
+        <em>Socials.</em>
+      </h2>
+
+      <p>
+        Little moments. Lots of crunch.
+      </p>
+
+    </div>
+
+
+    <div class="carousel-wrapper">
+
+      <button
+        class="carousel-arrow carousel-arrow-left"
+        type="button"
+        aria-label="Previous social images"
+        (click)="scrollCarousel('social-carousel', 'left')">
+        ←
+      </button>
+
+
+      <div
+        id="social-carousel"
+        class="social-carousel">
+
+        <article
+          class="social-card"
+          *ngFor="
+            let social of socialImages;
+            trackBy: trackBySocial
+          ">
+
+          <div class="social-image">
+
+            <img
+              [src]="social.image"
+              [alt]="social.alt"
+              loading="lazy"
+              (error)="handleImageError($event)" />
+
+            <div class="social-image-overlay">
+
+              <span>♡</span>
+
+            </div>
+
+          </div>
+
+
+          <div class="social-card-caption">
+
+            <span>
+              {{ social.title }}
+            </span>
+
+            <small>
+              @thecrunchyheart
+            </small>
+
+          </div>
+
+        </article>
+
+      </div>
+
+
+      <button
+        class="carousel-arrow carousel-arrow-right"
+        type="button"
+        aria-label="Next social images"
+        (click)="scrollCarousel('social-carousel', 'right')">
+        →
+      </button>
+
+    </div>
+
+
+    <div class="carousel-hint">
+      Swipe or use the arrows
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       INSTAGRAM FEED
+       ======================================================= -->
+
+  <section
+    class="instagram-section reveal-section">
+
+    <div class="section-heading">
+
+      <div>
+
+        <span class="eyebrow">
+          Follow the crunch
+        </span>
+
+        <h2>
+          Instagram
+          <em>Feed.</em>
+        </h2>
+
+      </div>
+
+      <a
+        href="#"
+        aria-label="Follow The Crunchy Heart on Instagram"
+        class="section-link">
+        Follow us →
+      </a>
+
+    </div>
+
+
+    <div class="carousel-wrapper instagram-carousel-wrapper">
+
+      <button
+        class="carousel-arrow carousel-arrow-left"
+        type="button"
+        aria-label="Previous Instagram images"
+        (click)="scrollCarousel('instagram-carousel', 'left')">
+        ←
+      </button>
+
+
+      <div
+        id="instagram-carousel"
+        class="instagram-carousel">
+
+        <article
+          class="instagram-tile"
+          *ngFor="
+            let item of instagramImages;
+            trackBy: trackByInstagram
+          ">
+
+          <img
+            [src]="item.image"
+            [alt]="item.alt"
+            loading="lazy"
+            (error)="handleImageError($event)" />
+
+
+          <div class="instagram-overlay">
+
+            <span>♡</span>
+
+            <small>
+              @thecrunchyheart
+            </small>
+
+          </div>
+
+        </article>
+
+      </div>
+
+
+      <button
+        class="carousel-arrow carousel-arrow-right"
+        type="button"
+        aria-label="Next Instagram images"
+        (click)="scrollCarousel('instagram-carousel', 'right')">
+        →
+      </button>
+
+    </div>
+
+
+    <div class="carousel-hint">
+      Swipe or use the arrows
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       HAPPY SHOUTOUTS
+       ======================================================= -->
+
+  <section
+    class="testimonials-section reveal-section">
+
+    <div class="section-heading centered">
+
+      <span class="eyebrow">
+        The happy shoutouts
+      </span>
+
+      <h2>
+        Good crunch deserves
+        <em>good company.</em>
+      </h2>
+
+      <p>
+        Customer reviews will appear here once
+        verified reviews are collected.
+      </p>
+
+    </div>
+
+
+    <div class="testimonial-placeholder">
+
+      <span>♡</span>
+
+      <strong>
+        Your happy shoutouts could be here.
+      </strong>
+
+      <p>
+        We're keeping this section ready for real
+        customer experiences — no made-up reviews.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       CRUNCH CLUB
+       ======================================================= -->
+
+  <section
+    class="club-section reveal-section">
+
+    <div class="club-card">
+
+      <div class="club-copy">
+
+        <span class="eyebrow">
+          Join The Crunch Club
+        </span>
+
+        <h2>
+          A little love.
+          <em>A lot of crunch.</em>
+        </h2>
+
+        <p>
+          Get new flavour launches, special offers
+          and crunchy little updates straight to
+          your inbox.
+        </p>
+
+
+        <form
+          class="newsletter-form"
+          (submit)="$event.preventDefault()">
+
+          <input
+            type="email"
+            placeholder="Your email address"
+            aria-label="Email address" />
+
+          <button type="submit">
+            Join Us
+          </button>
+
+        </form>
+
+      </div>
+
+
+      <div class="club-heart">
+        ♡
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       CART
+       ======================================================= -->
+
+  <section
+    id="cart"
+    class="cart-preview-section reveal-section">
+
+    <div
+      class="cart-preview"
+      [class.cart-empty]="cartCount === 0">
+
+      <div class="cart-preview-icon">
+        ♡
+      </div>
+
+      <div>
+
+        <strong>
+          {{
+            cartCount > 0
+              ? cartCount +
+                (cartCount === 1 ? ' item' : ' items') +
+                ' in your cart'
+              : 'Your cart is ready for some crunch'
+          }}
+        </strong>
+
+        <p>
+          {{
+            cartCount > 0
+              ? 'Your crunch is waiting.'
+              : 'Add your favourite makhana and it will appear here.'
+          }}
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+</main>
+
+
+<!-- =========================================================
+     FOOTER
+     ========================================================= -->
+
+<footer class="site-footer">
+
+  <div class="footer-main">
+
+
+    <div class="footer-brand">
+
+      <div class="footer-logo">
+
+        <span>♡</span>
+
+        <strong>
+          The Crunchy Heart
+        </strong>
+
+      </div>
+
+      <p>
+        Premium makhana for everyday moments.
+        Thoughtfully packed with care.
+      </p>
+
+
+      <div class="footer-socials">
+
+        <a href="#">
+          Instagram
+        </a>
+
+        <a href="#">
+          Threads
+        </a>
+
+        <a href="#">
+          Facebook
+        </a>
+
+        <a href="#">
+          X
+        </a>
+
+      </div>
+
+    </div>
+
+
+    <div class="footer-column">
+
+      <h4>
+        Shop
+      </h4>
+
+      <button
+        type="button"
+        (click)="scrollTo('raw-makhana')">
+        Raw Makhana
+      </button>
+
+      <button
+        type="button"
+        (click)="scrollTo('flavoured-makhana')">
+        Flavoured Makhana
+      </button>
+
+      <button
+        type="button"
+        (click)="scrollTo('cart')">
+        Cart
+      </button>
+
+    </div>
+
+
+    <div class="footer-column">
+
+      <h4>
+        Explore
+      </h4>
+
+      <button
+        type="button"
+        (click)="scrollTo('our-story')">
+        Our Story
+      </button>
+
+      <button
+        type="button"
+        (click)="scrollTo('why-us')">
+        Why Us
+      </button>
+
+      <button
+        type="button"
+        (click)="scrollTo('socials')">
+        Socials
+      </button>
+
+    </div>
+
+
+    <div class="footer-column">
+
+      <h4>
+        Help
+      </h4>
+
+      <a href="#">
+        Contact Us
+      </a>
+
+      <a href="#">
+        Shipping
+      </a>
+
+      <a href="#">
+        Returns
+      </a>
+
+      <a href="#">
+        Privacy Policy
+      </a>
+
+    </div>
+
+  </div>
+
+
+  <div class="footer-bottom">
+
+    <span>
+      © {{ currentYear }} The Crunchy Heart.
+      All rights reserved.
+    </span>
+
+    <span>
+      Made with ♡ for better snacking.
+    </span>
+
+  </div>
+
+</footer>

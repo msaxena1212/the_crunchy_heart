@@ -1,0 +1,665 @@
+import {
+  AfterViewInit,
+  Component,
+  OnInit,
+  inject
+} from '@angular/core';
+
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+
+import {
+  CartItem,
+  CartService
+} from './cart.service';
+
+import {
+  Product,
+  ProductVariant
+} from './product.model';
+
+import {
+  ProductService
+} from './product.service';
+
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+
+  imports: [
+    CommonModule,
+    RouterModule
+  ],
+
+  templateUrl: './app.component.html'
+})
+export class AppComponent implements OnInit, AfterViewInit {
+
+  /* =========================================================
+     SERVICES
+     ========================================================= */
+
+  private readonly productService = inject(ProductService);
+  private readonly cartService = inject(CartService);
+
+
+  /* =========================================================
+     BRAND / PAGE DATA
+     ========================================================= */
+
+  currentYear = new Date().getFullYear();
+
+  readonly heroImage = 'assets/hero-image.png';
+
+  readonly everydayCrunchImage = 'assets/everyday-crunch.png';
+
+  readonly storyImage = 'assets/our-story.png';
+
+
+  /* =========================================================
+     SOCIAL MEDIA IMAGES
+     ========================================================= */
+
+  readonly socialImages = [
+    'assets/social-weekend-morning.png',
+    'assets/social-evening-chai.png',
+    'assets/social-reading.png',
+    'assets/social-movie-night.png',
+    'assets/social-friends-sharing.png',
+    'assets/social-work-break.png'
+  ];
+
+
+  /* =========================================================
+     INSTAGRAM IMAGES
+     ========================================================= */
+
+  readonly instagramImages = [
+    'assets/instagram-product.png',
+    'assets/instagram-macro.png',
+    'assets/instagram-ingredient.png',
+    'assets/instagram-flavours.png',
+    'assets/instagram-packaging.png',
+    'assets/instagram-brand-mood.png'
+  ];
+
+
+  /* =========================================================
+     PRODUCT DATA
+     ========================================================= */
+
+  products: Product[] = [];
+
+  rawProducts: Product[] = [];
+
+  flavouredProducts: Product[] = [];
+
+  loadingProducts = true;
+
+  productError = '';
+
+
+  /* =========================================================
+     CART
+     ========================================================= */
+
+  cartItems: CartItem[] = [];
+
+  cartCount = 0;
+
+  cartOpen = false;
+
+
+  /* =========================================================
+     CAROUSEL
+     ========================================================= */
+
+  private readonly carouselScrollAmount = 320;
+
+
+  /* =========================================================
+     PRODUCT IMAGE MAPPING
+     ========================================================= */
+
+  readonly productImages: Record<string, string> = {
+
+    /* Raw Makhana */
+
+    'TCH-RAW-100':
+      'assets/raw-makhana-100g.png',
+
+    'TCH-RAW-200':
+      'assets/raw-makhana-200g.png',
+
+    'TCH-RAW-500':
+      'assets/raw-makhana-500g.png',
+
+    'TCH-RAW-1KG':
+      'assets/raw-makhana-1kg.png',
+
+
+    /* Flavoured Makhana */
+
+    'TCH-FLV-HIMALAYAN':
+      'assets/himalayan-salt.png',
+
+    'TCH-FLV-PERI':
+      'assets/peri-peri.png',
+
+    'TCH-FLV-ONION':
+      'assets/cream-onion.png',
+
+    'TCH-FLV-TOMATO':
+      'assets/tomato-tangy.png',
+
+    'TCH-FLV-CHILLI':
+      'assets/chilli-garlic.png',
+
+    'TCH-FLV-PUDINA':
+      'assets/pudina.png',
+
+    'TCH-FLV-BIHARI':
+      'assets/bihari-chat.png'
+  };
+
+
+  /* =========================================================
+     CONSTRUCTOR
+     ========================================================= */
+
+  constructor() {
+
+    this.cartService.cart$.subscribe(
+      (items: CartItem[]) => {
+
+        this.cartItems = items;
+
+        this.cartCount = items.reduce(
+          (total, item) => total + item.quantity,
+          0
+        );
+
+      }
+    );
+  }
+
+
+  /* =========================================================
+     INITIALIZATION
+     ========================================================= */
+
+  ngOnInit(): void {
+
+    this.loadProducts();
+
+  }
+
+
+  /* =========================================================
+     LOAD PRODUCTS FROM EXPRESS + NEON
+     ========================================================= */
+
+  private loadProducts(): void {
+
+    this.loadingProducts = true;
+
+    this.productError = '';
+
+    this.productService
+      .getProducts()
+      .subscribe({
+
+        next: (products: Product[]) => {
+
+          this.products = products;
+
+          this.rawProducts = products.filter(
+            product =>
+              product.category?.slug === 'raw-makhana'
+          );
+
+          this.flavouredProducts = products.filter(
+            product =>
+              product.category?.slug === 'flavoured-makhana'
+          );
+
+          this.loadingProducts = false;
+
+        },
+
+        error: (error) => {
+
+          console.error(
+            'Failed to load products:',
+            error
+          );
+
+          this.productError =
+            'We could not load our products right now. Please try again.';
+
+          this.loadingProducts = false;
+
+        }
+
+      });
+
+  }
+
+
+  /* =========================================================
+     PRODUCT HELPERS
+     ========================================================= */
+
+  getProductImage(
+    product: Product
+  ): string {
+
+    return (
+      this.productImages[
+        product.variant?.sku
+      ] ||
+      'assets/hero-image.png'
+    );
+
+  }
+
+
+  getVariantImage(
+    variant: ProductVariant
+  ): string {
+
+    return (
+      this.productImages[
+        variant.sku
+      ] ||
+      'assets/hero-image.png'
+    );
+
+  }
+
+
+  getProductPrice(
+    product: Product
+  ): number {
+
+    return Number(
+      product.variant?.sellingPrice || 0
+    );
+
+  }
+
+
+  isProductAvailable(
+    product: Product
+  ): boolean {
+
+    return (
+      Number(
+        product.variant?.inventory?.availableQuantity || 0
+      ) > 0
+    );
+
+  }
+
+
+  getAvailableQuantity(
+    product: Product
+  ): number {
+
+    return Number(
+      product.variant?.inventory?.availableQuantity || 0
+    );
+
+  }
+
+
+  /* =========================================================
+     PRODUCT IMAGE ERROR HANDLING
+     ========================================================= */
+
+  handleImageError(
+    event: Event
+  ): void {
+
+    const image =
+      event.target as HTMLImageElement;
+
+    if (
+      image &&
+      !image.dataset['fallbackApplied']
+    ) {
+
+      image.dataset['fallbackApplied'] = 'true';
+
+      image.src = 'assets/hero-image.png';
+
+    }
+
+  }
+
+
+  /* =========================================================
+     CART ACTIONS
+     ========================================================= */
+
+  addToCart(
+    product: Product
+  ): void {
+
+    if (!product?.variant) {
+      return;
+    }
+
+    if (!this.isProductAvailable(product)) {
+      return;
+    }
+
+    this.cartService.addToCart({
+      id: product.variant.id,
+      sku: product.variant.sku,
+      name: product.name,
+      variantName: product.variant.name,
+      price: Number(
+        product.variant.sellingPrice
+      ),
+      quantity: 1,
+      image: this.getProductImage(product)
+    });
+
+  }
+
+
+  increaseQuantity(
+    item: CartItem
+  ): void {
+
+    this.cartService.increaseQuantity(
+      item.sku
+    );
+
+  }
+
+
+  decreaseQuantity(
+    item: CartItem
+  ): void {
+
+    this.cartService.decreaseQuantity(
+      item.sku
+    );
+
+  }
+
+
+  removeFromCart(
+    item: CartItem
+  ): void {
+
+    this.cartService.removeFromCart(
+      item.sku
+    );
+
+  }
+
+
+  clearCart(): void {
+
+    this.cartService.clearCart();
+
+  }
+
+
+  toggleCart(): void {
+
+    this.cartOpen = !this.cartOpen;
+
+  }
+
+
+  closeCart(): void {
+
+    this.cartOpen = false;
+
+  }
+
+
+  getCartSubtotal(): number {
+
+    return this.cartItems.reduce(
+      (total, item) =>
+        total +
+        Number(item.price) *
+        Number(item.quantity),
+      0
+    );
+
+  }
+
+
+  /* =========================================================
+     CAROUSEL HELPERS
+     ========================================================= */
+
+  scrollCarousel(
+    element: HTMLElement,
+    direction: 'left' | 'right'
+  ): void {
+
+    const amount =
+      direction === 'left'
+        ? -this.carouselScrollAmount
+        : this.carouselScrollAmount;
+
+    element.scrollBy({
+      left: amount,
+      behavior: 'smooth'
+    });
+
+  }
+
+
+  scrollSocials(
+    direction: 'left' | 'right'
+  ): void {
+
+    const element =
+      document.querySelector<HTMLElement>(
+        '.social-carousel'
+      );
+
+    if (!element) {
+      return;
+    }
+
+    this.scrollCarousel(
+      element,
+      direction
+    );
+
+  }
+
+
+  scrollInstagram(
+    direction: 'left' | 'right'
+  ): void {
+
+    const element =
+      document.querySelector<HTMLElement>(
+        '.instagram-carousel'
+      );
+
+    if (!element) {
+      return;
+    }
+
+    this.scrollCarousel(
+      element,
+      direction
+    );
+
+  }
+
+
+  /* =========================================================
+     TRACK BY
+     ========================================================= */
+
+  trackByProductVariant(
+    index: number,
+    product: Product
+  ): string {
+
+    return (
+      product.variant?.sku ||
+      product.id ||
+      String(index)
+    );
+
+  }
+
+
+  trackByCartItem(
+    index: number,
+    item: CartItem
+  ): string {
+
+    return (
+      item.sku ||
+      item.id ||
+      String(index)
+    );
+
+  }
+
+
+  /* =========================================================
+     SCROLL / SECTION ANIMATIONS
+     ========================================================= */
+
+  ngAfterViewInit(): void {
+
+    const sections =
+      Array.from(
+        document.querySelectorAll<HTMLElement>(
+          'main > section'
+        )
+      );
+
+
+    /* -------------------------------------------------------
+       Add reveal classes to every major section
+       ------------------------------------------------------- */
+
+    sections.forEach(
+      (section, index) => {
+
+        section.classList.add(
+          'reveal-section'
+        );
+
+        section.style.setProperty(
+          '--reveal-delay',
+          `${Math.min(
+            index * 35,
+            180
+          )}ms`
+        );
+
+      }
+    );
+
+
+    /* -------------------------------------------------------
+       Respect accessibility settings
+       ------------------------------------------------------- */
+
+    if (
+      window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches
+    ) {
+
+      sections.forEach(
+        section =>
+          section.classList.add(
+            'is-visible'
+          )
+      );
+
+      return;
+
+    }
+
+
+    /* -------------------------------------------------------
+       Intersection Observer
+       ------------------------------------------------------- */
+
+    const observer =
+      new IntersectionObserver(
+        entries => {
+
+          entries.forEach(
+            entry => {
+
+              if (
+                entry.isIntersecting
+              ) {
+
+                entry.target.classList.add(
+                  'is-visible'
+                );
+
+                observer.unobserve(
+                  entry.target
+                );
+
+              }
+
+            }
+          );
+
+        },
+        {
+          threshold: 0.12,
+
+          rootMargin:
+            '0px 0px -60px 0px'
+        }
+      );
+
+
+    sections.forEach(
+      section =>
+        observer.observe(section)
+    );
+
+  }
+
+
+  /* =========================================================
+     SMOOTH SCROLL
+     ========================================================= */
+
+  scrollToSection(
+    sectionId: string
+  ): void {
+
+    const element =
+      document.getElementById(
+        sectionId
+      );
+
+    if (!element) {
+      return;
+    }
+
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
+  }
+
+}

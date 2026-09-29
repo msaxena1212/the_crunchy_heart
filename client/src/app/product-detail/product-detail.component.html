@@ -1,0 +1,166 @@
+<section class="product-detail-page">
+
+    <div class="product-detail-shell">
+
+        <a routerLink="/" class="back-link">
+            ← Back to The Crunchy Heart
+        </a>
+
+        <div *ngIf="loading" class="state-card">
+            <div class="loader"></div>
+            <p>Preparing your crunch...</p>
+        </div>
+
+        <div *ngIf="!loading && error" class="state-card error">
+            <h2>Something went wrong</h2>
+            <p>{{ error }}</p>
+            <a routerLink="/" class="primary-button">Back to Shop</a>
+        </div>
+
+        <div *ngIf="!loading && !error && product" class="product-layout">
+
+            <div class="product-gallery">
+
+                <div class="product-image-card">
+
+                    <span *ngIf="selectedVariant?.badge" class="product-badge">
+                        {{ selectedVariant?.badge }}
+                    </span>
+
+                    <img [src]="selectedImage" [alt]="product.name">
+
+                </div>
+
+            </div>
+
+            <div class="product-information">
+
+                <p class="eyebrow">
+                    {{ product.category.name }}
+                </p>
+
+                <h1>
+                    {{ product.name }}
+                </h1>
+
+                <p *ngIf="product.shortDescription" class="short-description">
+                    {{ product.shortDescription }}
+                </p>
+
+                <div class="price-row">
+                    <span class="price">
+                        ₹{{ selectedPrice | number:'1.0-0' }}
+                    </span>
+
+                    <span *ngIf="selectedVariant?.mrp && selectedVariant!.mrp > selectedPrice" class="mrp">
+                        ₹{{ selectedVariant?.mrp | number:'1.0-0' }}
+                    </span>
+                </div>
+
+                <div *ngIf="product.variants?.length" class="variant-section">
+
+                    <div class="variant-heading">
+                        <span>
+                            {{ product.category.slug === 'raw' ? 'Choose Pack Size' : 'Choose Flavour' }}
+                        </span>
+
+                        <strong>
+                            {{ variantLabel }}
+                        </strong>
+                    </div>
+
+                    <div class="variant-grid">
+
+                        <button *ngFor="let variant of product.variants" type="button" class="variant-button"
+                            [class.selected]="selectedVariant?.id === variant.id" (click)="selectVariant(variant)">
+
+                            <span>
+                                {{ variant.name }}
+                            </span>
+
+                            <small>
+                                ₹{{ variant.sellingPrice | number:'1.0-0' }}
+                            </small>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="availability">
+
+                    <span class="availability-dot" [class.available]="isAvailable"></span>
+
+                    <span *ngIf="isAvailable">
+                        In stock
+                    </span>
+
+                    <span *ngIf="!isAvailable">
+                        Currently unavailable
+                    </span>
+
+                </div>
+
+                <div class="purchase-row">
+
+                    <div class="quantity-control">
+
+                        <button type="button" aria-label="Decrease quantity" (click)="decreaseQuantity()"
+                            [disabled]="quantity <= 1">
+                            −
+                        </button>
+
+                        <span>
+                            {{ quantity }}
+                        </span>
+
+                        <button type="button" aria-label="Increase quantity" (click)="increaseQuantity()"
+                            [disabled]="quantity >= availableQuantity">
+                            +
+                        </button>
+
+                    </div>
+
+                    <button type="button" class="primary-button add-button" [disabled]="!isAvailable"
+                        (click)="addToCart()">
+                        {{ addedToCart ? 'Added to Cart ✓' : 'Add to Cart' }}
+                    </button>
+
+                </div>
+
+                <button type="button" class="secondary-button buy-button" [disabled]="!isAvailable" (click)="buyNow()">
+                    Buy Now
+                </button>
+
+                <div class="product-highlights">
+
+                    <div>
+                        <strong>Premium Quality</strong>
+                        <span>Carefully selected makhana.</span>
+                    </div>
+
+                    <div>
+                        <strong>Light & Crunchy</strong>
+                        <span>A naturally light everyday snack.</span>
+                    </div>
+
+                    <div>
+                        <strong>Thoughtfully Packed</strong>
+                        <span>Packed with care and consistency.</span>
+                    </div>
+
+                    <div>
+                        <strong>Made with Heart</strong>
+                        <span>Created for better everyday snacking.</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
