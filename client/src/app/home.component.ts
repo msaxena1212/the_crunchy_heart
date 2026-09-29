@@ -6,6 +6,8 @@
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import {
   CartItem,
@@ -19,6 +21,11 @@ import {
 import {
   ProductService
 } from './product.service';
+
+import {
+  OrderService,
+  PlacedOrder
+} from './order.service';
 
 
 interface SocialItem {
@@ -40,7 +47,8 @@ interface InstagramItem {
   standalone: true,
 
   imports: [
-    CommonModule
+    CommonModule,
+    FormsModule
   ],
 
   templateUrl: './app.component.html'
@@ -58,6 +66,10 @@ export class HomeComponent
 
   private readonly cartService =
     inject(CartService);
+
+
+  private readonly orderService =
+    inject(OrderService);
 
 
   /* =========================================================
@@ -98,6 +110,32 @@ export class HomeComponent
   cartCount = 0;
 
   cartOpen = false;
+
+
+  /* =========================================================
+     CHECKOUT
+     ========================================================= */
+
+  checkout = {
+    customerName: '',
+    phone: '',
+    email: '',
+    line1: '',
+    line2: '',
+    landmark: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    notes: ''
+  };
+
+  checkoutOpen = false;
+
+  placingOrder = false;
+
+  orderError = '';
+
+  placedOrder: PlacedOrder | null = null;
 
 
   /* =========================================================
@@ -667,6 +705,104 @@ export class HomeComponent
         ),
       0
     );
+
+  }
+
+
+  /* =========================================================
+     CHECKOUT
+     ========================================================= */
+
+  openCheckout(): void {
+
+    this.placedOrder = null;
+    this.orderError = '';
+    this.checkoutOpen = true;
+
+  }
+
+
+  cancelCheckout(): void {
+
+    this.checkoutOpen = false;
+    this.orderError = '';
+
+  }
+
+
+  placeOrder(): void {
+
+    if (
+      this.placingOrder ||
+      this.cartItems.length === 0
+    ) {
+      return;
+    }
+
+    const form = this.checkout;
+
+    if (
+      !form.customerName.trim() ||
+      !/^[+]?[0-9\s-]{10,15}$/.test(form.phone.trim()) ||
+      !form.line1.trim() ||
+      !form.city.trim() ||
+      !form.state.trim() ||
+      !/^[0-9]{6}$/.test(form.postalCode.trim())
+    ) {
+
+      this.orderError =
+        'Please fill in your name, a valid phone number, address, city, state and 6-digit PIN code.';
+
+      return;
+
+    }
+
+    this.placingOrder = true;
+    this.orderError = '';
+
+    this.orderService
+      .createOrder({
+        customerName: form.customerName,
+        phone: form.phone,
+        email: form.email,
+        notes: form.notes,
+        shippingAddress: {
+          line1: form.line1,
+          line2: form.line2,
+          landmark: form.landmark,
+          city: form.city,
+          state: form.state,
+          postalCode: form.postalCode,
+          country: 'India'
+        },
+        items: this.cartItems.map(item => ({
+          variantId: item.variantId,
+          quantity: item.quantity
+        }))
+      })
+      .subscribe({
+
+        next: order => {
+
+          this.placingOrder = false;
+          this.placedOrder = order;
+          this.checkoutOpen = false;
+          this.cartService.clearCart();
+          this.loadProducts();
+
+        },
+
+        error: (error: HttpErrorResponse) => {
+
+          this.placingOrder = false;
+
+          this.orderError =
+            error.error?.message ||
+            'We could not place your order right now. Please try again.';
+
+        }
+
+      });
 
   }
 

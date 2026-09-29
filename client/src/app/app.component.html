@@ -1028,9 +1028,38 @@
     id="cart"
     class="cart-preview-section reveal-section">
 
+    <!-- ORDER CONFIRMATION -->
+
     <div
-      class="cart-preview"
-      [class.cart-empty]="cartCount === 0">
+      class="cart-preview order-confirmation"
+      *ngIf="placedOrder">
+
+      <div class="cart-preview-icon">
+        ✓
+      </div>
+
+      <div>
+
+        <strong>
+          Thank you! Your order is placed.
+        </strong>
+
+        <p>
+          Order number <b>{{ placedOrder.orderNumber }}</b>
+          · Total ₹{{ placedOrder.totalAmount | number:'1.0-2' }}.
+          We will contact you on your phone number to confirm delivery and payment.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- EMPTY CART -->
+
+    <div
+      class="cart-preview cart-empty"
+      *ngIf="cartCount === 0 && !placedOrder">
 
       <div class="cart-preview-icon">
         ♡
@@ -1039,24 +1068,259 @@
       <div>
 
         <strong>
-          {{
-            cartCount > 0
-              ? cartCount +
-                (cartCount === 1 ? ' item' : ' items') +
-                ' in your cart'
-              : 'Your cart is ready for some crunch'
-          }}
+          Your cart is ready for some crunch
         </strong>
 
         <p>
-          {{
-            cartCount > 0
-              ? 'Your crunch is waiting.'
-              : 'Add your favourite makhana and it will appear here.'
-          }}
+          Add your favourite makhana and it will appear here.
         </p>
 
       </div>
+
+    </div>
+
+
+    <!-- CART + CHECKOUT -->
+
+    <div
+      class="cart-panel"
+      *ngIf="cartCount > 0">
+
+      <div class="cart-panel-header">
+
+        <div>
+
+          <strong>
+            {{ cartCount }}
+            {{ cartCount === 1 ? 'item' : 'items' }}
+            in your cart
+          </strong>
+
+          <p>
+            Your crunch is waiting.
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          class="cart-clear"
+          (click)="clearCart()">
+          Clear cart
+        </button>
+
+      </div>
+
+
+      <ul class="cart-lines">
+
+        <li
+          class="cart-line"
+          *ngFor="let item of cartItems; trackBy: trackByCartItem">
+
+          <div class="cart-line-info">
+
+            <span class="cart-line-name">
+              {{ item.productName }}
+            </span>
+
+            <span class="cart-line-variant">
+              {{ item.variantName }}
+              · ₹{{ item.unitPrice | number:'1.0-2' }}
+            </span>
+
+          </div>
+
+          <div class="cart-line-qty">
+
+            <button
+              type="button"
+              aria-label="Decrease quantity"
+              (click)="decreaseQuantity(item)">
+              −
+            </button>
+
+            <span>
+              {{ item.quantity }}
+            </span>
+
+            <button
+              type="button"
+              aria-label="Increase quantity"
+              (click)="increaseQuantity(item)">
+              +
+            </button>
+
+          </div>
+
+          <span class="cart-line-total">
+            ₹{{ item.unitPrice * item.quantity | number:'1.0-2' }}
+          </span>
+
+          <button
+            type="button"
+            class="cart-line-remove"
+            aria-label="Remove item"
+            (click)="removeFromCart(item)">
+            ×
+          </button>
+
+        </li>
+
+      </ul>
+
+
+      <div class="cart-summary">
+
+        <span>
+          Subtotal
+        </span>
+
+        <strong>
+          ₹{{ getCartSubtotal() | number:'1.0-2' }}
+        </strong>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="primary-button cart-checkout-button"
+        *ngIf="!checkoutOpen"
+        (click)="openCheckout()">
+        Proceed to Checkout
+      </button>
+
+
+      <form
+        class="checkout-form"
+        *ngIf="checkoutOpen"
+        (ngSubmit)="placeOrder()">
+
+        <h3>
+          Delivery details
+        </h3>
+
+        <div class="checkout-grid">
+
+          <label>
+            Full name *
+            <input
+              name="customerName"
+              autocomplete="name"
+              required
+              [(ngModel)]="checkout.customerName">
+          </label>
+
+          <label>
+            Phone *
+            <input
+              name="phone"
+              type="tel"
+              autocomplete="tel"
+              required
+              [(ngModel)]="checkout.phone">
+          </label>
+
+          <label class="checkout-wide">
+            Email
+            <input
+              name="email"
+              type="email"
+              autocomplete="email"
+              [(ngModel)]="checkout.email">
+          </label>
+
+          <label class="checkout-wide">
+            Address line 1 *
+            <input
+              name="line1"
+              autocomplete="address-line1"
+              required
+              [(ngModel)]="checkout.line1">
+          </label>
+
+          <label class="checkout-wide">
+            Address line 2
+            <input
+              name="line2"
+              autocomplete="address-line2"
+              [(ngModel)]="checkout.line2">
+          </label>
+
+          <label>
+            Landmark
+            <input
+              name="landmark"
+              [(ngModel)]="checkout.landmark">
+          </label>
+
+          <label>
+            City *
+            <input
+              name="city"
+              autocomplete="address-level2"
+              required
+              [(ngModel)]="checkout.city">
+          </label>
+
+          <label>
+            State *
+            <input
+              name="state"
+              autocomplete="address-level1"
+              required
+              [(ngModel)]="checkout.state">
+          </label>
+
+          <label>
+            PIN code *
+            <input
+              name="postalCode"
+              inputmode="numeric"
+              autocomplete="postal-code"
+              maxlength="6"
+              required
+              [(ngModel)]="checkout.postalCode">
+          </label>
+
+          <label class="checkout-wide">
+            Order notes
+            <textarea
+              name="notes"
+              rows="2"
+              [(ngModel)]="checkout.notes"></textarea>
+          </label>
+
+        </div>
+
+        <p
+          class="checkout-error"
+          *ngIf="orderError"
+          role="alert">
+          {{ orderError }}
+        </p>
+
+        <div class="checkout-actions">
+
+          <button
+            type="button"
+            class="secondary-button"
+            [disabled]="placingOrder"
+            (click)="cancelCheckout()">
+            Back
+          </button>
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="placingOrder">
+            {{ placingOrder ? 'Placing order…' : 'Place Order · ₹' + (getCartSubtotal() | number:'1.0-2') }}
+          </button>
+
+        </div>
+
+      </form>
 
     </div>
 
