@@ -1,9 +1,9 @@
-﻿[build]
-  base = "client"
-  command = "npm run build"
-  publish = "dist/the-crunchy-heart/browser"
+[build]
+base = "client"
+command = "npm run build"
+publish = "dist/the-crunchy-heart/browser"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+from = "/*"
+to = "/index.html"
+status = 200
