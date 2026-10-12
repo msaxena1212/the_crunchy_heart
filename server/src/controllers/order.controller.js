@@ -206,7 +206,8 @@ export async function createCheckoutOrder(
 
                     cfOrderId:
                         result.payment
-                            .provider_order_id,
+                            .raw_response
+                            ?.cf_order_id || null,
 
                     paymentSessionId,
                 },
