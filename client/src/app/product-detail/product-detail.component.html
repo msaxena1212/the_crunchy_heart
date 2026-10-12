@@ -1,86 +1,177 @@
-<section class="product-detail-page">
+<div class="product-detail-page">
 
-    <div class="product-detail-shell">
-
-        <a routerLink="/" class="back-link">
-            ← Back to The Crunchy Heart
-        </a>
-
-        <div *ngIf="loading" class="state-card">
-            <div class="loader"></div>
-            <p>Preparing your crunch...</p>
+    <!-- Loading -->
+    <section class="product-state" *ngIf="loading">
+        <div class="state-card">
+            <span class="state-spinner"></span>
+            <h2>Loading product...</h2>
+            <p>Please wait while we prepare the details for you.</p>
         </div>
+    </section>
 
-        <div *ngIf="!loading && error" class="state-card error">
+    <!-- Error -->
+    <section class="product-state" *ngIf="!loading && error">
+        <div class="state-card error-card">
+            <span class="state-icon">!</span>
             <h2>Something went wrong</h2>
             <p>{{ error }}</p>
-            <a routerLink="/" class="primary-button">Back to Shop</a>
+
+            <a routerLink="/" class="state-button">
+                Back to Home
+            </a>
         </div>
+    </section>
 
-        <div *ngIf="!loading && !error && product" class="product-layout">
+    <!-- Product -->
+    <main class="product-detail-container" *ngIf="!loading && !error && product && selectedVariant">
 
-            <div class="product-gallery">
+        <!-- Breadcrumb -->
+        <nav class="product-breadcrumb" aria-label="Breadcrumb">
+            <a routerLink="/">Home</a>
+            <span>/</span>
+
+            <span>
+                {{ product.category.name }}
+            </span>
+
+            <span>/</span>
+
+            <span class="current">
+                {{ product.name }}
+            </span>
+        </nav>
+
+        <!-- Product Layout -->
+        <section class="product-layout">
+
+            <!-- Product Image -->
+            <div class="product-visual">
 
                 <div class="product-image-card">
 
-                    <span *ngIf="selectedVariant?.badge" class="product-badge">
-                        {{ selectedVariant?.badge }}
-                    </span>
+                    <div class="product-badge" *ngIf="selectedVariant.badge">
+                        {{ selectedVariant.badge }}
+                    </div>
 
-                    <img [src]="selectedImage" [alt]="product.name">
+                    <img [src]="selectedImage" [alt]="product.name + ' - ' + variantLabel" class="product-main-image" />
+
+                </div>
+
+                <!-- Product trust points -->
+                <div class="product-trust">
+
+                    <div class="trust-item">
+                        <span class="trust-icon">✓</span>
+
+                        <div>
+                            <strong>Premium Quality</strong>
+                            <span>Carefully selected makhana</span>
+                        </div>
+                    </div>
+
+                    <div class="trust-item">
+                        <span class="trust-icon">✓</span>
+
+                        <div>
+                            <strong>Freshly Packed</strong>
+                            <span>Packed with care</span>
+                        </div>
+                    </div>
+
+                    <div class="trust-item">
+                        <span class="trust-icon">✓</span>
+
+                        <div>
+                            <strong>Secure Packaging</strong>
+                            <span>Designed to preserve freshness</span>
+                        </div>
+                    </div>
 
                 </div>
 
             </div>
 
+            <!-- Product Information -->
             <div class="product-information">
 
-                <p class="eyebrow">
+                <!-- Category -->
+                <div class="product-category">
                     {{ product.category.name }}
-                </p>
+                </div>
 
+                <!-- Title -->
                 <h1>
                     {{ product.name }}
                 </h1>
 
-                <p *ngIf="product.shortDescription" class="short-description">
+                <!-- Short Description -->
+                <p class="product-short-description" *ngIf="product.shortDescription">
                     {{ product.shortDescription }}
                 </p>
 
-                <div class="price-row">
-                    <span class="price">
+                <!-- Price -->
+                <div class="product-price-section">
+
+                    <span class="product-price">
                         ₹{{ selectedPrice | number:'1.0-0' }}
                     </span>
 
-                    <span *ngIf="selectedVariant?.mrp && selectedVariant!.mrp > selectedPrice" class="mrp">
-                        ₹{{ selectedVariant?.mrp | number:'1.0-0' }}
+                    <span class="product-mrp" *ngIf="
+                            selectedVariant.mrp &&
+                            selectedVariant.mrp > selectedVariant.sellingPrice
+                        ">
+                        ₹{{ selectedVariant.mrp | number:'1.0-0' }}
                     </span>
+
                 </div>
 
-                <div *ngIf="product.variants?.length" class="variant-section">
+                <!-- Variant Selection -->
+                <div class="variant-section">
 
                     <div class="variant-heading">
-                        <span>
-                            {{ product.category.slug === 'raw' ? 'Choose Pack Size' : 'Choose Flavour' }}
+
+                        <span class="variant-title">
+                            {{
+                            product.category.slug === 'raw-makhana'
+                            ? 'Choose Pack Size'
+                            : 'Choose Flavour'
+                            }}
                         </span>
 
-                        <strong>
+                        <span class="selected-variant" *ngIf="selectedVariant">
                             {{ variantLabel }}
-                        </strong>
+                        </span>
+
                     </div>
 
                     <div class="variant-grid">
 
-                        <button *ngFor="let variant of product.variants" type="button" class="variant-button"
-                            [class.selected]="selectedVariant?.id === variant.id" (click)="selectVariant(variant)">
+                        <button type="button" class="variant-button" *ngFor="let variant of product.variants"
+                            [class.selected]="
+                                selectedVariant.id === variant.id
+                            " [class.unavailable]="
+                                !variant.inventory.availableQuantity
+                            " [disabled]="
+                                !variant.inventory.availableQuantity
+                            " (click)="selectVariant(variant)">
 
-                            <span>
-                                {{ variant.name }}
+                            <span class="variant-name">
+                                {{
+                                variant.weightGrams
+                                ? (variant.weightGrams + 'g')
+                                : variant.flavor
+                                }}
                             </span>
 
-                            <small>
+                            <span class="variant-price">
                                 ₹{{ variant.sellingPrice | number:'1.0-0' }}
-                            </small>
+                            </span>
+
+                            <span class="variant-unavailable" *ngIf="
+                                    !variant.inventory.availableQuantity
+                                ">
+                                Out of Stock
+                            </span>
 
                         </button>
 
@@ -88,9 +179,10 @@
 
                 </div>
 
-                <div class="availability">
+                <!-- Availability -->
+                <div class="availability" [class.out-of-stock]="!isAvailable">
 
-                    <span class="availability-dot" [class.available]="isAvailable"></span>
+                    <span class="availability-dot"></span>
 
                     <span *ngIf="isAvailable">
                         In stock
@@ -102,7 +194,8 @@
 
                 </div>
 
-                <div class="purchase-row">
+                <!-- Quantity -->
+                <div class="purchase-section" *ngIf="isAvailable">
 
                     <div class="quantity-control">
 
@@ -122,45 +215,148 @@
 
                     </div>
 
-                    <button type="button" class="primary-button add-button" [disabled]="!isAvailable"
-                        (click)="addToCart()">
-                        {{ addedToCart ? 'Added to Cart ✓' : 'Add to Cart' }}
-                    </button>
+                    <div class="purchase-actions">
+
+                        <button type="button" class="add-to-cart-button" (click)="addToCart()">
+                            <span *ngIf="!addedToCart">
+                                Add to Cart
+                            </span>
+
+                            <span *ngIf="addedToCart">
+                                ✓ Added to Cart
+                            </span>
+                        </button>
+
+                        <button type="button" class="buy-now-button" (click)="buyNow()">
+                            Buy It Now
+                        </button>
+
+                    </div>
 
                 </div>
 
-                <button type="button" class="secondary-button buy-button" [disabled]="!isAvailable" (click)="buyNow()">
-                    Buy Now
-                </button>
+                <!-- Out of Stock CTA -->
+                <div class="out-of-stock-section" *ngIf="!isAvailable">
+                    <button type="button" class="out-of-stock-button" disabled>
+                        Currently Out of Stock
+                    </button>
+                </div>
 
+                <!-- Description -->
+                <div class="product-description" *ngIf="product.description">
+
+                    <h2>
+                        About {{ product.name }}
+                    </h2>
+
+                    <p>
+                        {{ product.description }}
+                    </p>
+
+                </div>
+
+                <!-- Product Highlights -->
                 <div class="product-highlights">
 
-                    <div>
-                        <strong>Premium Quality</strong>
-                        <span>Carefully selected makhana.</span>
+                    <h2>
+                        Why You'll Love It
+                    </h2>
+
+                    <div class="highlight-grid">
+
+                        <div class="highlight-item">
+
+                            <span class="highlight-icon">
+                                ◉
+                            </span>
+
+                            <div>
+                                <strong>Premium Makhana</strong>
+                                <span>
+                                    Carefully selected for quality and taste.
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <div class="highlight-item">
+
+                            <span class="highlight-icon">
+                                ✦
+                            </span>
+
+                            <div>
+                                <strong>Light & Crunchy</strong>
+                                <span>
+                                    A deliciously crisp snacking experience.
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <div class="highlight-item">
+
+                            <span class="highlight-icon">
+                                ♡
+                            </span>
+
+                            <div>
+                                <strong>Everyday Snacking</strong>
+                                <span>
+                                    Perfect for your everyday cravings.
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <div class="highlight-item">
+
+                            <span class="highlight-icon">
+                                ✓
+                            </span>
+
+                            <div>
+                                <strong>Made With Care</strong>
+                                <span>
+                                    Packed carefully to maintain freshness.
+                                </span>
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <div>
-                        <strong>Light & Crunchy</strong>
-                        <span>A naturally light everyday snack.</span>
+                </div>
+
+                <!-- Product Information -->
+                <div class="product-meta">
+
+                    <div class="meta-row">
+                        <span>Product</span>
+                        <strong>{{ product.name }}</strong>
                     </div>
 
-                    <div>
-                        <strong>Thoughtfully Packed</strong>
-                        <span>Packed with care and consistency.</span>
+                    <div class="meta-row">
+                        <span>Variant</span>
+                        <strong>{{ variantLabel }}</strong>
                     </div>
 
-                    <div>
-                        <strong>Made with Heart</strong>
-                        <span>Created for better everyday snacking.</span>
+                    <div class="meta-row">
+                        <span>SKU</span>
+                        <strong>{{ selectedVariant.sku }}</strong>
+                    </div>
+
+                    <div class="meta-row">
+                        <span>Brand</span>
+                        <strong>{{ product.brand }}</strong>
                     </div>
 
                 </div>
 
             </div>
 
-        </div>
+        </section>
 
-    </div>
+    </main>
 
-</section>
+</div>

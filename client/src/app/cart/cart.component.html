@@ -1,0 +1,285 @@
+<section class="cart-page">
+
+    <div class="cart-shell">
+
+        <!-- HEADER -->
+        <div class="cart-header">
+
+            <div>
+                <a routerLink="/" class="back-link">
+                    ← Continue Shopping
+                </a>
+
+                <p class="eyebrow">
+                    Your Selection
+                </p>
+
+                <h1>
+                    Your Cart
+                </h1>
+
+                <p class="cart-subtitle" *ngIf="itemCount > 0">
+                    {{ itemCount }}
+                    {{ itemCount === 1 ? 'item' : 'items' }}
+                    selected for your next crunch.
+                </p>
+
+            </div>
+
+            <button *ngIf="items.length > 0" type="button" class="clear-button" (click)="clearCart()">
+
+                Clear Cart
+
+            </button>
+
+        </div>
+
+
+        <!-- EMPTY CART -->
+        <div *ngIf="items.length === 0" class="empty-cart">
+
+            <div class="empty-icon">
+                ♡
+            </div>
+
+            <p class="eyebrow">
+                Nothing here yet
+            </p>
+
+            <h2>
+                Your cart is waiting
+            </h2>
+
+            <p>
+                Explore our premium makhana and find something
+                delicious for your next snack break.
+            </p>
+
+            <a routerLink="/" class="primary-button">
+
+                Explore Makhana
+
+            </a>
+
+        </div>
+
+
+        <!-- CART -->
+        <div *ngIf="items.length > 0" class="cart-layout">
+
+
+            <!-- ITEMS -->
+            <div class="cart-items">
+
+                <article *ngFor="let item of items" class="cart-item">
+
+
+                    <!-- IMAGE -->
+                    <div class="cart-item-image">
+
+                        <img *ngIf="item.image" [src]="item.image" [alt]="item.productName">
+
+                        <div *ngIf="!item.image" class="image-placeholder">
+
+                            The Crunchy Heart
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- INFORMATION -->
+                    <div class="cart-item-information">
+
+                        <p class="item-category">
+                            The Crunchy Heart
+                        </p>
+
+                        <h2>
+                            {{ item.productName }}
+                        </h2>
+
+                        <p class="item-variant">
+                            {{ item.variantName }}
+
+                            <span *ngIf="item.weightGrams">
+                                · {{ item.weightGrams }}g
+                            </span>
+
+                            <span *ngIf="item.flavor && !item.weightGrams">
+                                · {{ item.flavor }}
+                            </span>
+                        </p>
+
+                        <p class="item-sku">
+                            SKU: {{ item.sku }}
+                        </p>
+
+
+                        <!-- PRICE -->
+                        <div class="item-price">
+
+                            ₹{{ item.unitPrice | number:'1.0-0' }}
+
+                            <span>
+                                each
+                            </span>
+
+                        </div>
+
+
+                        <!-- ACTIONS -->
+                        <div class="item-actions">
+
+                            <div class="quantity-control">
+
+                                <button type="button" aria-label="Decrease quantity" (click)="decrease(item)"
+                                    [disabled]="item.quantity <= 1">
+
+                                    −
+
+                                </button>
+
+                                <span>
+                                    {{ item.quantity }}
+                                </span>
+
+                                <button type="button" aria-label="Increase quantity" (click)="increase(item)">
+
+                                    +
+
+                                </button>
+
+                            </div>
+
+
+                            <button type="button" class="remove-button" (click)="remove(item)">
+
+                                Remove
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- TOTAL -->
+                    <div class="item-total">
+
+                        ₹{{
+                        item.unitPrice * item.quantity
+                        | number:'1.0-0'
+                        }}
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+            <!-- SUMMARY -->
+            <aside class="cart-summary">
+
+                <div class="summary-card">
+
+                    <p class="eyebrow">
+                        Order Summary
+                    </p>
+
+                    <h2>
+                        Almost there.
+                    </h2>
+
+
+                    <div class="summary-row">
+
+                        <span>
+                            Items
+                        </span>
+
+                        <span>
+                            {{ itemCount }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="summary-row">
+
+                        <span>
+                            Subtotal
+                        </span>
+
+                        <strong>
+                            ₹{{ subtotal | number:'1.0-0' }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-row muted">
+
+                        <span>
+                            Shipping
+                        </span>
+
+                        <span>
+                            Calculated at checkout
+                        </span>
+
+                    </div>
+
+
+                    <div class="summary-divider"></div>
+
+
+                    <div class="summary-total">
+
+                        <span>
+                            Total
+                        </span>
+
+                        <strong>
+                            ₹{{ subtotal | number:'1.0-0' }}
+                        </strong>
+
+                    </div>
+
+
+                    <a routerLink="/checkout" class="checkout-button">
+
+                        Proceed to Checkout
+                        <span>→</span>
+
+                    </a>
+
+
+                    <p class="secure-note">
+                        Secure checkout · Multiple payment options
+                    </p>
+
+                </div>
+
+
+                <div class="cart-note">
+
+                    <strong>
+                        Made with care.
+                    </strong>
+
+                    <span>
+                        Every pack is prepared with the same
+                        attention we give to every crunch.
+                    </span>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</section>

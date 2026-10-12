@@ -1,6 +1,8 @@
-﻿.neon
+.neon
 .env.local
 .env
 node_modules/
 dist/
 .angular/
+*.zip
+*.backup*
