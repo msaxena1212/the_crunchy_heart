@@ -554,6 +554,13 @@ export async function createOrder({
             if (
                 normalizedIdempotencyKey
             ) {
+                // Serialize requests sharing an idempotency key. SELECT FOR
+                // UPDATE cannot lock a row that does not exist yet.
+                await client.query(
+                    `SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`,
+                    [normalizedIdempotencyKey]
+                );
+
                 const duplicateResult =
                     await client.query(
                         `
