@@ -394,6 +394,29 @@ export async function createOrder({
                 existingResult.rows[0];
 
 
+            const existingItemsResult =
+                await query(
+                    `
+                    SELECT
+                        variant_id,
+                        product_name,
+                        variant_name,
+                        sku,
+                        quantity,
+                        unit_price,
+                        total_price,
+                        taxable_value,
+                        tax_rate,
+                        tax_amount,
+                        unit_price_includes_tax
+                    FROM order_items
+                    WHERE order_id = $1
+                    ORDER BY created_at ASC
+                    `,
+                    [row.id]
+                );
+
+
             return {
                 existing: true,
 
@@ -502,7 +525,9 @@ export async function createOrder({
                         }
                         : null,
 
-                items: [],
+                items: existingItemsResult.rows.map(
+                    mapOrderItemRow
+                ),
             };
         }
     }
@@ -529,6 +554,13 @@ export async function createOrder({
             if (
                 normalizedIdempotencyKey
             ) {
+                // Serialize requests sharing an idempotency key. SELECT FOR
+                // UPDATE cannot lock a row that does not exist yet.
+                await client.query(
+                    `SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`,
+                    [normalizedIdempotencyKey]
+                );
+
                 const duplicateResult =
                     await client.query(
                         `
