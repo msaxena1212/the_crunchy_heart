@@ -1,4 +1,4 @@
-﻿
+
 
 /* =========================================================
    THE CRUNCHY HEART
@@ -3665,5 +3665,1447 @@ h4 {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+
+
+/* =========================================================
+   THE CRUNCHY HEART — RESPONSIVE VISUAL POLISH
+   Additive overrides; existing component logic is unchanged.
+   ========================================================= */
+
+:root {
+  --container: 1280px;
+  --shadow-sm: 0 5px 20px rgba(48, 34, 20, 0.055);
+  --shadow-md: 0 16px 36px rgba(48, 34, 20, 0.11);
+  --radius-md: 20px;
+  --radius-lg: 28px;
+}
+
+html {
+  scroll-padding-top: 92px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: clip;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--brown-light);
+  outline-offset: 3px;
+}
+
+/* Header */
+
+.site-header {
+  background: rgba(251, 247, 239, 0.96);
+  box-shadow: 0 4px 20px rgba(48, 34, 20, 0.025);
+}
+
+.nav-shell {
+  gap: clamp(16px, 2vw, 30px);
+}
+
+.main-nav {
+  gap: clamp(12px, 1.65vw, 24px);
+}
+
+.main-nav button {
+  white-space: nowrap;
+  font-size: 12px;
+  letter-spacing: 0.005em;
+}
+
+.nav-icon,
+.nav-cart {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+}
+
+/* Hero */
+
+.hero-section {
+  gap: clamp(32px, 5vw, 68px);
+}
+
+.hero-copy h1 {
+  font-size: clamp(68px, 7.1vw, 108px);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+}
+
+.hero-description {
+  max-width: 510px;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.hero-image {
+  filter: drop-shadow(0 24px 28px rgba(50, 35, 20, 0.14));
+}
+
+/* Product sections */
+
+.products-section {
+  scroll-margin-top: 84px;
+}
+
+.section-heading {
+  gap: 32px;
+  margin-bottom: 38px;
+}
+
+.section-heading p {
+  line-height: 1.8;
+}
+
+.product-grid {
+  gap: 22px;
+}
+
+.product-card {
+  border-color: rgba(70, 55, 38, 0.09);
+  box-shadow: 0 5px 20px rgba(48, 34, 20, 0.045);
+  transition:
+    transform 240ms ease,
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+}
+
+.product-card:hover {
+  border-color: rgba(20, 86, 60, 0.18);
+  box-shadow: 0 16px 36px rgba(48, 34, 20, 0.1);
+}
+
+.product-image-wrap {
+  background: linear-gradient(145deg, #f7eddd, #edddc3);
+}
+
+.raw-product-image,
+.flavour-product-image {
+  height: clamp(230px, 25vw, 315px);
+}
+
+.product-info {
+  padding: 12px 17px 18px;
+}
+
+/* Tablet and smaller desktop */
+
+@media (min-width: 781px) and (max-width: 1100px) {
+  .nav-shell {
+    width: calc(100% - 36px);
+    gap: 14px;
+  }
+
+  .brand-copy strong {
+    font-size: 16px;
+  }
+
+  .brand-copy small {
+    font-size: 8px;
+  }
+
+  .main-nav {
+    gap: 12px;
+  }
+
+  .main-nav button {
+    font-size: 11px;
+  }
+
+  .hero-section {
+    width: calc(100% - 48px);
+    min-height: 540px;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(66px, 8vw, 88px);
+  }
+
+  .hero-visual {
+    min-height: 400px;
+  }
+
+  .orbit-two {
+    width: 390px;
+    height: 390px;
+  }
+
+  .orbit-one {
+    width: 320px;
+    height: 320px;
+  }
+
+  .raw-product-image,
+  .flavour-product-image {
+    height: 260px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 780px) {
+  .announcement-bar {
+    min-height: 32px;
+    padding: 7px 12px;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    gap: 6px;
+  }
+
+  .nav-shell {
+    width: calc(100% - 28px);
+    min-height: 66px;
+    gap: 10px;
+  }
+
+  .brand {
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .brand-heart {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    font-size: 18px;
+  }
+
+  .brand-copy strong {
+    font-size: clamp(14px, 4vw, 16px);
+    white-space: nowrap;
+  }
+
+  .brand-copy small {
+    font-size: 8px;
+    letter-spacing: 0.12em;
+  }
+
+  .nav-actions {
+    flex: 0 0 auto;
+    gap: 7px;
+  }
+
+  .nav-icon,
+  .nav-cart {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .hero-section {
+    width: calc(100% - 36px);
+    padding: 44px 0 46px;
+    gap: 20px;
+  }
+
+  .hero-copy h1 {
+    margin-bottom: 20px;
+    font-size: clamp(60px, 16vw, 84px);
+    line-height: 0.9;
+  }
+
+  .hero-description {
+    max-width: 440px;
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  .hero-actions {
+    gap: 10px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    min-height: 46px;
+    padding: 0 17px;
+    font-size: 12px;
+  }
+
+  .hero-trust {
+    gap: 8px 12px;
+    font-size: 10px;
+  }
+
+  .hero-visual {
+    min-height: clamp(270px, 76vw, 350px);
+  }
+
+  .hero-image {
+    max-height: clamp(260px, 72vw, 340px);
+  }
+
+  .orbit-one {
+    width: min(76vw, 300px);
+    height: min(76vw, 300px);
+  }
+
+  .orbit-two {
+    width: min(92vw, 360px);
+    height: min(92vw, 360px);
+  }
+
+  .hero-floating-card {
+    right: 0;
+    bottom: 0;
+    width: 150px;
+    padding: 11px 12px;
+  }
+
+  .products-section {
+    padding: 48px 0 54px;
+  }
+
+  .section-heading {
+    margin-bottom: 24px;
+  }
+
+  .section-heading h2 {
+    font-size: clamp(37px, 10vw, 46px);
+    line-height: 1;
+  }
+
+  .section-heading p {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .product-grid {
+    gap: 12px;
+  }
+
+  .raw-product-image,
+  .flavour-product-image {
+    height: clamp(145px, 39vw, 235px);
+  }
+
+  .product-image-wrap {
+    margin: 6px;
+    border-radius: 13px;
+  }
+
+  .product-info {
+    padding: 8px 10px 13px;
+  }
+
+  .product-name {
+    font-size: clamp(14px, 3.8vw, 17px);
+    line-height: 1.35;
+  }
+
+  .product-badge {
+    top: 8px;
+    left: 8px;
+    padding: 5px 8px;
+    font-size: 9px;
+  }
+}
+
+/* Extra-small phones */
+
+@media (max-width: 380px) {
+  .announcement-bar {
+    font-size: 8px;
+    gap: 5px;
+  }
+
+  .nav-shell {
+    width: calc(100% - 22px);
+  }
+
+  .brand-copy strong {
+    font-size: 13px;
+  }
+
+  .brand-copy small {
+    font-size: 7px;
+  }
+
+  .nav-icon,
+  .nav-cart {
+    width: 35px;
+    height: 35px;
+    flex-basis: 35px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions button {
+    width: 100%;
+  }
+
+  .product-grid {
+    gap: 9px;
+  }
+
+  .product-info {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+}
+
+/* Respect accessibility preferences */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* =========================================================
+   THE CRUNCHY HEART — MOBILE NAVIGATION
+   ========================================================= */
+
+.mobile-menu-toggle,
+.mobile-navigation {
+  display: none;
+}
+
+@media (max-width: 780px) {
+  .nav-shell {
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .mobile-menu-toggle {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--green);
+
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-menu-toggle span {
+    display: block;
+    width: 17px;
+    height: 2px;
+    flex: 0 0 2px;
+
+    border-radius: 2px;
+    background: currentColor;
+
+    transition:
+      transform 180ms ease,
+      opacity 180ms ease;
+  }
+
+  .mobile-menu-toggle[aria-expanded="true"] span:first-child {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .mobile-menu-toggle[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-menu-toggle[aria-expanded="true"] span:last-child {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .mobile-navigation {
+    width: 100%;
+    flex: 0 0 100%;
+    padding: 8px 0 16px;
+
+    flex-direction: column;
+    gap: 3px;
+
+    border-top: 1px solid var(--border);
+  }
+
+  .mobile-navigation.is-open {
+    display: flex;
+  }
+
+  .mobile-navigation button {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+
+    color: var(--green-dark);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+
+    cursor: pointer;
+  }
+
+  .mobile-navigation button:active {
+    background: var(--green-soft);
+  }
+
+  .mobile-navigation button:focus-visible,
+  .mobile-menu-toggle:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 3px;
+  }
+}
+
+@media (min-width: 781px) {
+  .mobile-menu-toggle,
+  .mobile-navigation {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu-toggle span {
+    transition: none;
+  }
+}
+
+
+/* =========================================================
+   THE CRUNCHY HEART — RESPONSIVE PRODUCT GRID
+   ========================================================= */
+
+/* Desktop */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  width: 100%;
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 521px) and (max-width: 900px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+}
+
+/* Mobile: 2 x 2 product layout */
+@media (max-width: 520px) {
+  .products-section {
+    width: 100%;
+    min-width: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+    box-sizing: border-box;
+  }
+
+  .product-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .product-card {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .product-image-wrap {
+    width: 100%;
+    min-width: 0;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+  }
+
+  .product-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .product-info {
+    min-width: 0;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  .product-name {
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .product-weight {
+    font-size: 12px;
+  }
+
+  .product-price-row strong {
+    font-size: 15px;
+  }
+
+  .product-card .add {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 5px;
+    font-size: 12px;
+    white-space: normal;
+  }
+
+  .product-badge {
+    max-width: calc(100% - 12px);
+    overflow-wrap: anywhere;
+  }
+}
+
+
+/* =========================================================
+   THE CRUNCHY HEART — FLAVOUR CARD ALIGNMENT FIX
+   ========================================================= */
+
+.flavour-section .product-grid {
+  align-items: stretch;
+}
+
+.flavour-section .flavour-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.flavour-section .flavour-card .product-image-wrap {
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.flavour-section .flavour-card .product-image-wrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.flavour-section .flavour-card .product-info {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.flavour-section .flavour-card .product-name {
+  display: -webkit-box;
+  min-height: 2.7em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
+.flavour-section .flavour-card .product-weight {
+  display: block;
+  min-height: 1.5em;
+}
+
+.flavour-section .flavour-card .product-price-row {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  margin-top: 4px;
+}
+
+.flavour-section .flavour-card .add {
+  width: 100%;
+  min-height: 40px;
+  margin-top: auto;
+  box-sizing: border-box;
+}
+
+/* Mobile: preserve two equal columns */
+@media (max-width: 520px) {
+  .flavour-section .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .flavour-section .flavour-card {
+    min-width: 0;
+  }
+
+  .flavour-section .flavour-card .product-info {
+    padding: 10px;
+    gap: 4px;
+  }
+
+  .flavour-section .flavour-card .product-name {
+    font-size: 13px;
+    min-height: 2.7em;
+  }
+
+  .flavour-section .flavour-card .product-weight {
+    font-size: 12px;
+  }
+
+  .flavour-section .flavour-card .product-price-row strong {
+    font-size: 15px;
+  }
+}
+
+
+/* Product grids: consistent cards and predictable last row */
+.raw-section .product-grid,
+.flavour-section .product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+}
+
+.raw-section .product-card,
+.flavour-section .product-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.raw-section .product-card .product-info,
+.flavour-section .product-card .product-info {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.raw-section .product-card .product-name,
+.flavour-section .product-card .product-name {
+  min-height: 2.7em;
+  line-height: 1.35;
+}
+
+.raw-section .product-card .add,
+.flavour-section .product-card .add {
+  width: 100%;
+  margin-top: auto;
+}
+
+@media (min-width: 521px) and (max-width: 900px) {
+  .raw-section .product-grid,
+  .flavour-section .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  .raw-section .product-grid,
+  .flavour-section .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+
+/* Final mobile flavour-grid alignment */
+@media (max-width: 520px) {
+  .flavour-section .product-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .flavour-section .flavour-card {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .flavour-section .flavour-card .product-info {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .flavour-section .flavour-card .add {
+    width: 100%;
+    margin-top: auto;
+  }
+}
+
+
+/* =========================================================
+   THE CRUNCHY HEART — STOREFRONT POLISH
+   Spacing, responsive product grids, motion and interactions
+   ========================================================= */
+
+:root {
+  --tch-green: #0e5942;
+  --tch-deep-green: #073c2d;
+  --tch-ivory: #fffaf2;
+  --tch-cream: #f4e5cd;
+  --tch-border: #e8d9c3;
+  --tch-text: #24352d;
+  --tch-content-width: 1440px;
+  --tch-page-gutter: clamp(20px, 5vw, 76px);
+}
+
+/* Prevent horizontal overflow */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 110px;
+}
+
+body {
+  overflow-x: clip;
+  background: var(--tch-ivory);
+  color: var(--tch-text);
+}
+
+img {
+  max-width: 100%;
+}
+
+/* Consistent section spacing */
+main > section {
+  box-sizing: border-box;
+  width: 100%;
+  padding-left: var(--tch-page-gutter);
+  padding-right: var(--tch-page-gutter);
+}
+
+.products-section,
+.benefits-section,
+.social-section,
+.instagram-section,
+.testimonials-section,
+.story-section,
+.everyday-section,
+.club-section {
+  padding-top: clamp(44px, 6vw, 84px);
+  padding-bottom: clamp(44px, 6vw, 84px);
+}
+
+/* Center content and stop it becoming excessively wide */
+.products-section > *,
+.benefits-section > *,
+.social-section > *,
+.instagram-section > *,
+.testimonials-section > * {
+  width: 100%;
+  max-width: var(--tch-content-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Hero layout */
+.hero-section {
+  max-width: 1600px;
+  margin: 0 auto;
+  min-height: 490px;
+  padding-top: clamp(44px, 6vw, 90px);
+  padding-bottom: clamp(44px, 6vw, 90px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(32px, 6vw, 90px);
+}
+
+.hero-copy,
+.hero-visual {
+  min-width: 0;
+}
+
+.hero-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 18px;
+}
+
+/* Product section headings */
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 32px;
+  margin-bottom: 30px;
+}
+
+.section-heading > div,
+.section-heading > p {
+  min-width: 0;
+}
+
+.section-heading > p {
+  max-width: 430px;
+  line-height: 1.8;
+}
+
+.section-heading h2 {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* Product grids: consistent gaps and side padding */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(14px, 2vw, 26px);
+  width: 100%;
+}
+
+.product-card {
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(105, 81, 47, 0.12);
+  border-radius: 16px;
+  background: #fffdf8;
+  box-shadow: 0 5px 20px rgba(53, 44, 29, 0.045);
+  transition:
+    transform 260ms ease,
+    box-shadow 260ms ease,
+    border-color 260ms ease;
+}
+
+.product-image-wrap {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 1 / 0.9;
+  background: #f0e1c8;
+}
+
+.product-image-wrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 450ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.product-info {
+  padding: clamp(12px, 1.5vw, 20px);
+}
+
+.product-name {
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.product-weight {
+  display: block;
+  margin-top: 7px;
+  color: #817668;
+  font-size: 0.86rem;
+}
+
+.product-price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.product-card .add {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 8px;
+  transition: background 200ms ease, transform 200ms ease;
+}
+
+.product-card .add:not(:disabled) {
+  background: var(--tch-green);
+  color: #fffaf2;
+  border: 1px solid var(--tch-green);
+}
+
+.product-card .add:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+/* Benefits and social tiles */
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.benefit-card {
+  border: 1px solid rgba(105, 81, 47, 0.12);
+  border-radius: 16px;
+  padding: clamp(20px, 2.5vw, 32px);
+  background: rgba(255, 253, 248, 0.82);
+  transition: transform 250ms ease, box-shadow 250ms ease;
+}
+
+.social-card,
+.instagram-tile {
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fffdf8;
+  box-shadow: 0 5px 20px rgba(53, 44, 29, 0.07);
+}
+
+.social-image img,
+.instagram-tile > img {
+  transition: transform 400ms ease;
+}
+
+/* Story and everyday sections */
+.story-section,
+.everyday-section {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: clamp(32px, 7vw, 100px);
+}
+
+.story-visual img,
+.everyday-visual img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+/* Newsletter panel */
+.club-card {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+/* Footer spacing */
+.site-footer {
+  padding: 48px var(--tch-page-gutter) 20px;
+}
+
+.footer-main {
+  width: 100%;
+  max-width: var(--tch-content-width);
+  margin: 0 auto;
+  gap: clamp(24px, 4vw, 64px);
+}
+
+.footer-bottom {
+  width: 100%;
+  max-width: var(--tch-content-width);
+  margin: 34px auto 0;
+}
+
+/* Subtle motion */
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(14, 89, 66, 0.3);
+    box-shadow: 0 16px 36px rgba(53, 44, 29, 0.12);
+  }
+
+  .product-card:hover .product-image-wrap img,
+  .social-card:hover .social-image img,
+  .instagram-tile:hover > img {
+    transform: scale(1.045);
+  }
+
+  .benefit-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(53, 44, 29, 0.09);
+  }
+
+  .product-card .add:not(:disabled):hover {
+    background: var(--tch-deep-green);
+    transform: translateY(-1px);
+  }
+}
+
+/* Keyboard accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #c49b55;
+  outline-offset: 4px;
+}
+
+/* Reduced-motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  :root {
+    --tch-page-gutter: 28px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .benefits-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-section {
+    gap: 30px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  :root {
+    --tch-page-gutter: 18px;
+  }
+
+  .hero-section {
+    min-height: auto;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding-top: 38px;
+    padding-bottom: 44px;
+  }
+
+  .hero-visual {
+    width: 100%;
+  }
+
+  .section-heading {
+    display: block;
+    margin-bottom: 22px;
+  }
+
+  .section-heading > p {
+    margin-top: 12px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .product-card {
+    border-radius: 12px;
+  }
+
+  .product-info {
+    padding: 11px;
+  }
+
+  .product-name {
+    font-size: 0.9rem;
+  }
+
+  .product-price-row {
+    margin: 10px 0;
+  }
+
+  .product-card .add {
+    min-height: 38px;
+    font-size: 0.82rem;
+  }
+
+  .benefits-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .story-section,
+  .everyday-section {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+
+  .everyday-visual {
+    order: 0;
+  }
+
+  .everyday-copy {
+    order: 1;
+  }
+
+  .site-footer {
+    padding-top: 36px;
+  }
+
+  .footer-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   THE CRUNCHY HEART — WHITESPACE CORRECTION
+   Add at the very bottom of src/styles.css
+   ========================================================= */
+
+:root {
+  --tch-page-gutter: clamp(18px, 4.5vw, 64px);
+}
+
+/* Remove accidental gaps between consecutive homepage sections */
+main {
+  margin: 0;
+  padding: 0;
+}
+
+main > section {
+  margin-top: 0;
+  margin-bottom: 0;
+  min-height: 0;
+}
+
+/* Tighten vertical rhythm across the storefront */
+.products-section,
+.benefits-section,
+.social-section,
+.instagram-section,
+.testimonials-section,
+.story-section,
+.everyday-section,
+.club-section {
+  padding-top: clamp(36px, 4vw, 58px);
+  padding-bottom: clamp(36px, 4vw, 58px);
+}
+
+/* Avoid forcing unnecessary height in the hero */
+.hero-section {
+  min-height: unset;
+  padding-top: clamp(36px, 4.5vw, 64px);
+  padding-bottom: clamp(36px, 4.5vw, 64px);
+}
+
+/* Keep product grids compact and aligned */
+.products-section .section-heading {
+  margin-bottom: 24px;
+}
+
+.product-grid {
+  align-items: stretch;
+  align-content: start;
+  gap: clamp(12px, 1.6vw, 22px);
+}
+
+.product-card {
+  height: auto;
+  align-self: start;
+}
+
+/* Remove unintended spacing around image and content blocks */
+.story-section,
+.everyday-section {
+  align-items: center;
+  row-gap: 28px;
+}
+
+.story-copy > *:first-child,
+.everyday-copy > *:first-child {
+  margin-top: 0;
+}
+
+.story-copy > *:last-child,
+.everyday-copy > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Keep carousel content close to its heading */
+.social-section .carousel-wrapper,
+.instagram-section .carousel-wrapper {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.social-section .carousel-hint,
+.instagram-section .carousel-hint {
+  margin-top: 12px;
+}
+
+/* Prevent excessive space around the newsletter */
+.club-section {
+  padding-top: clamp(32px, 4vw, 52px);
+  padding-bottom: clamp(32px, 4vw, 52px);
+}
+
+.club-card {
+  min-height: 0;
+}
+
+/* Footer should follow the final section naturally */
+.site-footer {
+  margin-top: 0;
+  padding-top: 36px;
+  padding-bottom: 18px;
+}
+
+/* Mobile spacing */
+@media (max-width: 640px) {
+  :root {
+    --tch-page-gutter: 16px;
+  }
+
+  .products-section,
+  .benefits-section,
+  .social-section,
+  .instagram-section,
+  .testimonials-section,
+  .story-section,
+  .everyday-section,
+  .club-section {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+
+  .hero-section {
+    padding-top: 28px;
+    padding-bottom: 32px;
+  }
+
+  .products-section .section-heading {
+    margin-bottom: 18px;
+  }
+
+  .product-grid {
+    gap: 12px;
+  }
+
+  .story-section,
+  .everyday-section {
+    row-gap: 22px;
+  }
+
+  .site-footer {
+    padding-top: 30px;
+    padding-bottom: 16px;
+  }
+}
+
+
+/* Shared storefront shell spacing */
+html {
+  scroll-padding-top: 120px;
+}
+
+body {
+  margin: 0;
+}
+
+/* Prevent content from being hidden behind the fixed desktop footer. */
+@media (min-width: 769px) {
+  main {
+    padding-bottom: 72px;
+  }
+
+  .site-footer {
+    display: none !important;
+  }
+}
+
+/* On responsive layouts, only the header remains sticky. */
+@media (max-width: 768px) {
+  main {
+    padding-bottom: 0;
+  }
+
+  .site-footer {
+    display: block;
+  }
+}
+
+
+/* Shared storefront shell spacing */
+html {
+  scroll-padding-top: 120px;
+}
+
+body {
+  margin: 0;
+}
+
+/* Prevent content from being hidden behind the fixed desktop footer. */
+@media (min-width: 769px) {
+  main {
+    padding-bottom: 72px;
+  }
+
+  .site-footer {
+    display: none !important;
+  }
+}
+
+/* On responsive layouts, only the header remains sticky. */
+@media (max-width: 768px) {
+  main {
+    padding-bottom: 0;
+  }
+
+  .site-footer {
+    display: block;
   }
 }

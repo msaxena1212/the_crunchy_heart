@@ -1,46 +1,27 @@
-﻿
+
 import express from 'express';
 import cors from 'cors';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import dotenv from 'dotenv';
-import { neon } from '@neondatabase/serverless';
-
 import checkoutRoutes from './routes/checkout.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 import { cashfreeWebhook } from './controllers/payment.controller.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-/*
-|--------------------------------------------------------------------------
-| Environment
-|--------------------------------------------------------------------------
-*/
-
-const envPath = path.resolve(__dirname, '../../.env.local');
-
-dotenv.config({ path: envPath });
-
-const DATABASE_URL = process.env.DATABASE_URL;
-const PORT = Number(process.env.PORT || 5000);
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:4200';
-
-if (!DATABASE_URL) {
-  throw new Error(
-    `DATABASE_URL is missing. Expected environment file at: ${envPath}`
-  );
-}
+import { query } from './db/pool.js';
+import { env } from './config/env.js';
+import { startConfiguredWorkers, stopAllWorkers } from './services/worker-bootstrap.js';
+import { createGracefulShutdown, parseDrainTimeoutMs } from './services/graceful-shutdown.js';
+import { pool } from './db/pool.js';
 
 /*
 |--------------------------------------------------------------------------
-| Database
+| Environment Configuration
 |--------------------------------------------------------------------------
+| Centralized configuration and validation defined in config/env.js
 */
 
-const sql = neon(DATABASE_URL);
+const PORT = env.port;
+const HOST = env.host;
+const CLIENT_URL = env.clientUrl;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,13 +31,32 @@ const sql = neon(DATABASE_URL);
 
 const app = express();
 
+/*
+|--------------------------------------------------------------------------
+| Reverse Proxy Trust Configuration (OPS-01)
+|--------------------------------------------------------------------------
+| Safe environment-driven proxy trust. Defaults to false (direct access,
+| ignores X-Forwarded-For). Strictly rejects blind true.
+*/
+app.set('trust proxy', env.trustProxy);
+
+const allowedOrigins = Array.from(new Set([
+  CLIENT_URL,
+  'https://thecrunchyheart.com',
+  'https://www.thecrunchyheart.com',
+  'http://localhost:4200',
+  'http://127.0.0.1:4200',
+].filter(Boolean)));
+
 app.use(
   cors({
-    origin: [
-      CLIENT_URL,
-      'http://localhost:4200',
-      'http://127.0.0.1:4200',
-    ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     credentials: true,
   })
 );
@@ -129,12 +129,12 @@ app.use((req, res, next) => {
 
 app.get('/api/health', async (req, res) => {
   try {
-    await sql`SELECT 1`;
+    await query('SELECT 1');
 
     return res.json({
       ok: true,
       service: 'the-crunchy-heart-api',
-      database: 'neon_connected',
+      database: 'connected',
       environment: process.env.NODE_ENV || 'development',
     });
   } catch (error) {
@@ -143,7 +143,7 @@ app.get('/api/health', async (req, res) => {
     return res.status(500).json({
       ok: false,
       service: 'the-crunchy-heart-api',
-      database: 'neon_error',
+      database: 'error',
       environment: process.env.NODE_ENV || 'development',
     });
   }
@@ -158,6 +158,7 @@ app.get('/api/health', async (req, res) => {
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/admin', adminRoutes);
 
 /*
 |--------------------------------------------------------------------------
@@ -167,18 +168,18 @@ app.use('/api/payments', paymentRoutes);
 
 app.get('/api/categories', async (req, res, next) => {
   try {
-    const rows = await sql`
-            SELECT
-                id,
-                name,
-                slug,
-                description,
-                is_active,
-                sort_order
-            FROM categories
-            WHERE is_active = true
-            ORDER BY sort_order ASC, name ASC
-        `;
+    const { rows } = await query(`
+      SELECT
+          id,
+          name,
+          slug,
+          description,
+          is_active,
+          sort_order
+      FROM categories
+      WHERE is_active = true
+      ORDER BY sort_order ASC, name ASC
+    `);
 
     return res.json(rows);
   } catch (error) {
@@ -223,73 +224,76 @@ app.get('/api/products', async (req, res, next) => {
       featuredFilter = req.query.featured === 'true';
     }
 
-    const rows = await sql`
-            SELECT
-                p.id,
-                p.name,
-                p.slug,
-                p.description,
-                p.short_description,
-                p.brand,
-                p.is_featured,
-                p.sort_order,
+    const { rows } = await query(
+      `
+      SELECT
+          p.id,
+          p.name,
+          p.slug,
+          p.description,
+          p.short_description,
+          p.brand,
+          p.is_featured,
+          p.sort_order,
 
-                c.id AS category_id,
-                c.name AS category_name,
-                c.slug AS category_slug,
+          c.id AS category_id,
+          c.name AS category_name,
+          c.slug AS category_slug,
 
-                v.id AS variant_id,
-                v.sku,
-                v.variant_name,
-                v.weight_grams,
-                v.flavor,
-                v.mrp,
-                v.selling_price,
-                v.tax_rate,
-                v.badge,
-                v.tone,
+          v.id AS variant_id,
+          v.sku,
+          v.variant_name,
+          v.weight_grams,
+          v.flavor,
+          v.mrp,
+          v.selling_price,
+          v.tax_rate,
+          v.badge,
+          v.tone,
 
-                COALESCE(i.quantity_on_hand, 0) AS quantity_on_hand,
-                COALESCE(i.quantity_reserved, 0) AS quantity_reserved,
+          COALESCE(i.quantity_on_hand, 0) AS quantity_on_hand,
+          COALESCE(i.quantity_reserved, 0) AS quantity_reserved,
 
-                GREATEST(
-                    COALESCE(i.quantity_on_hand, 0)
-                    - COALESCE(i.quantity_reserved, 0),
-                    0
-                ) AS available_quantity
+          GREATEST(
+              COALESCE(i.quantity_on_hand, 0)
+              - COALESCE(i.quantity_reserved, 0),
+              0
+          ) AS available_quantity
 
-            FROM products p
+      FROM products p
 
-            INNER JOIN categories c
-                ON c.id = p.category_id
+      INNER JOIN categories c
+          ON c.id = p.category_id
 
-            INNER JOIN product_variants v
-                ON v.product_id = p.id
+      INNER JOIN product_variants v
+          ON v.product_id = p.id
 
-            LEFT JOIN inventory i
-                ON i.variant_id = v.id
+      LEFT JOIN inventory i
+          ON i.variant_id = v.id
 
-            WHERE
-                p.is_active = true
-                AND c.is_active = true
-                AND v.is_active = true
+      WHERE
+          p.is_active = true
+          AND c.is_active = true
+          AND v.is_active = true
 
-                AND (
-                    ${categoryFilter}::text IS NULL
-                    OR c.slug = ${categoryFilter}::text
-                )
+          AND (
+              $1::text IS NULL
+              OR c.slug = $1::text
+          )
 
-                AND (
-                    ${featuredFilter}::boolean IS NULL
-                    OR p.is_featured = ${featuredFilter}::boolean
-                )
+          AND (
+              $2::boolean IS NULL
+              OR p.is_featured = $2::boolean
+          )
 
-            ORDER BY
-                p.sort_order ASC,
-                v.sort_order ASC,
-                p.name ASC,
-                v.weight_grams ASC
-        `;
+      ORDER BY
+          p.sort_order ASC,
+          v.sort_order ASC,
+          p.name ASC,
+          v.weight_grams ASC
+      `,
+      [categoryFilter, featuredFilter]
+    );
 
     const response = rows.map((row) => ({
       id: row.id,
@@ -346,62 +350,65 @@ app.get('/api/products/:slug', async (req, res, next) => {
   try {
     const { slug } = req.params;
 
-    const rows = await sql`
-            SELECT
-                p.id,
-                p.name,
-                p.slug,
-                p.description,
-                p.short_description,
-                p.brand,
-                p.is_featured,
-                p.sort_order,
+    const { rows } = await query(
+      `
+      SELECT
+          p.id,
+          p.name,
+          p.slug,
+          p.description,
+          p.short_description,
+          p.brand,
+          p.is_featured,
+          p.sort_order,
 
-                c.id AS category_id,
-                c.name AS category_name,
-                c.slug AS category_slug,
+          c.id AS category_id,
+          c.name AS category_name,
+          c.slug AS category_slug,
 
-                v.id AS variant_id,
-                v.sku,
-                v.variant_name,
-                v.weight_grams,
-                v.flavor,
-                v.mrp,
-                v.selling_price,
-                v.tax_rate,
-                v.badge,
-                v.tone,
+          v.id AS variant_id,
+          v.sku,
+          v.variant_name,
+          v.weight_grams,
+          v.flavor,
+          v.mrp,
+          v.selling_price,
+          v.tax_rate,
+          v.badge,
+          v.tone,
 
-                COALESCE(i.quantity_on_hand, 0) AS quantity_on_hand,
-                COALESCE(i.quantity_reserved, 0) AS quantity_reserved,
+          COALESCE(i.quantity_on_hand, 0) AS quantity_on_hand,
+          COALESCE(i.quantity_reserved, 0) AS quantity_reserved,
 
-                GREATEST(
-                    COALESCE(i.quantity_on_hand, 0)
-                    - COALESCE(i.quantity_reserved, 0),
-                    0
-                ) AS available_quantity
+          GREATEST(
+              COALESCE(i.quantity_on_hand, 0)
+              - COALESCE(i.quantity_reserved, 0),
+              0
+          ) AS available_quantity
 
-            FROM products p
+      FROM products p
 
-            INNER JOIN categories c
-                ON c.id = p.category_id
+      INNER JOIN categories c
+          ON c.id = p.category_id
 
-            INNER JOIN product_variants v
-                ON v.product_id = p.id
+      INNER JOIN product_variants v
+          ON v.product_id = p.id
 
-            LEFT JOIN inventory i
-                ON i.variant_id = v.id
+      LEFT JOIN inventory i
+          ON i.variant_id = v.id
 
-            WHERE
-                p.slug = ${slug}
-                AND p.is_active = true
-                AND c.is_active = true
-                AND v.is_active = true
+      WHERE
+          p.slug = $1
+          AND p.is_active = true
+          AND c.is_active = true
+          AND v.is_active = true
 
-            ORDER BY
-                v.sort_order ASC,
-                v.weight_grams ASC
-        `;
+      ORDER BY
+          v.sort_order ASC,
+          v.weight_grams ASC
+      `,
+      [slug]
+    );
 
     if (!rows.length) {
       return res.status(404).json({
@@ -491,9 +498,25 @@ app.use((error, req, res, next) => {
 |--------------------------------------------------------------------------
 */
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+const httpServer = app.listen(PORT, HOST, () => {
+  console.log(`Server running on http://${HOST}:${PORT}`);
+  console.log(`Environment: ${env.nodeEnv}`);
   console.log(`Client URL: ${CLIENT_URL}`);
-  console.log('Database: Neon PostgreSQL');
+  console.log(`Trust Proxy: ${JSON.stringify(env.trustProxy)}`);
+  console.log('Database: PostgreSQL');
+
+  // Background workers start only when their flag is exactly 'true'.
+  const workers = startConfiguredWorkers();
+  console.log(`Background workers enabled: ${workers.length ? workers.join(', ') : 'none'}`);
 });
+
+// Graceful shutdown: drain HTTP, stop workers, close the pool, then exit.
+const shutdown = createGracefulShutdown({
+  server: httpServer,
+  stopWorkers: stopAllWorkers,
+  closePool: () => pool.end(),
+  drainTimeoutMs: parseDrainTimeoutMs(process.env.SHUTDOWN_DRAIN_TIMEOUT_MS),
+});
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));

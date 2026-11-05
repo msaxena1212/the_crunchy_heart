@@ -1,0 +1,244 @@
+<section class="confirmation-page">
+  <div class="confirmation-shell">
+
+    <!-- TOP NAVIGATION -->
+    <div class="top-nav">
+      <a routerLink="/" class="home-link">
+        ← Back to Storefront
+      </a>
+      <span class="brand-tag">The Crunchy Heart</span>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div *ngIf="isLoading" class="state-card loading-card">
+      <div class="spinner"></div>
+      <h2>Retrieving Order Details</h2>
+      <p>Verifying your guest access token with the server...</p>
+    </div>
+
+    <!-- TOKEN MISSING / RESTRICTED STATE -->
+    <div *ngIf="!isLoading && isTokenMissing" class="state-card token-missing-card">
+      <div class="state-icon lock-icon">🔒</div>
+      <h2>Order Access Restricted</h2>
+      <p>
+        To protect customer privacy and security, order details are accessible only from the device and browser used during checkout.
+      </p>
+      <p class="secondary-note">
+        If you completed this checkout on a different browser, in incognito mode, or your session expired, your order remains safe. Please refer to your SMS/WhatsApp confirmation or contact customer care at support@thecrunchyheart.com with your Order Reference: <strong>{{ orderNumber || 'your order' }}</strong>.
+      </p>
+
+      <div class="card-footer-actions">
+        <a routerLink="/" class="primary-btn">Return to Storefront</a>
+        <a routerLink="/cart" class="secondary-btn">View Cart</a>
+        <a routerLink="/recover-order" class="secondary-btn">Recover My Order</a>
+      </div>
+    </div>
+
+    <!-- ERROR STATE (NOT FOUND / NETWORK ERROR) -->
+    <div *ngIf="!isLoading && !isTokenMissing && errorMessage && !orderDetails" class="state-card error-card">
+      <div class="state-icon error-icon">⚠</div>
+      <h2>Notice</h2>
+      <p>{{ errorMessage }}</p>
+      <div class="card-footer-actions">
+        <button type="button" class="primary-btn" (click)="loadOrderData()">Try Again</button>
+        <a routerLink="/" class="secondary-btn">Return to Storefront</a>
+      </div>
+    </div>
+
+    <!-- MAIN ORDER CONFIRMATION VIEW -->
+    <div *ngIf="!isLoading && orderDetails" class="order-content">
+
+      <!-- HERO STATUS BANNER -->
+      <div class="status-banner" [ngClass]="getStatusBadgeClass()">
+        <div class="banner-icon-wrap">
+          <span *ngIf="isStockShortage() || isDuplicatePaymentSettled()">⚠</span>
+          <span *ngIf="!isStockShortage() && !isDuplicatePaymentSettled() && (orderDetails.order.status === 'confirmed' || orderDetails.order.paymentStatus === 'paid')">✓</span>
+          <span *ngIf="isAmbiguousTimeout() || (!isStockShortage() && orderDetails.order.status === 'pending')">⏳</span>
+          <span *ngIf="orderDetails.order.status === 'failed' || orderDetails.order.paymentStatus === 'failed'">✕</span>
+        </div>
+        <div class="banner-text">
+          <p class="order-ref">Order Reference: <strong>{{ orderDetails.order.orderNumber }}</strong></p>
+          <h1>{{ getStatusDisplayTitle() }}</h1>
+          <p class="status-narrative">{{ getStatusMessage() }}</p>
+        </div>
+      </div>
+
+      <!-- RETRY ERROR ALERT -->
+      <div *ngIf="retryErrorMessage" class="alert-box alert-error">
+        <span>⚠</span>
+        <div>{{ retryErrorMessage }}</div>
+      </div>
+
+      <!-- TWO-COLUMN DETAIL GRID -->
+      <div class="details-grid">
+
+        <!-- LEFT COLUMN: ITEMS & FINANCIALS -->
+        <div class="grid-main">
+
+          <!-- STOCK SHORTAGE EXCEPTION ALERT CARD -->
+          <div *ngIf="isStockShortage()" class="info-card exception-notice-card">
+            <div class="exception-title">
+              <span class="exception-icon">⚠</span>
+              <h3>Inventory Shortage Under Review</h3>
+            </div>
+            <p>
+              Your payment has been received and verified. However, the requested stock for this order was exhausted by another customer right before checkout settlement.
+            </p>
+            <div *ngIf="orderDetails.refund && orderDetails.refund.status === 'pending'" class="refund-box">
+              <p>
+                <strong>Pending Refund Queued:</strong> A refund of <strong>₹{{ orderDetails.refund.amount | number:'1.0-0' }}</strong> has been recorded (Reference: {{ orderDetails.refund.id }}) and is awaiting manual processing by our fulfillment team.
+              </p>
+            </div>
+            <div *ngIf="!orderDetails.refund" class="refund-box">
+              <p>
+                <strong>Customer Support Review:</strong> Our team will contact you at <strong>+91 {{ orderDetails.order.phone }}</strong> to provide a replacement or arrange a full refund.
+              </p>
+            </div>
+          </div>
+
+          <!-- DUPLICATE PAYMENT ALERT CARD -->
+          <div *ngIf="isDuplicatePaymentSettled()" class="info-card exception-notice-card">
+            <div class="exception-title">
+              <span class="exception-icon">ℹ</span>
+              <h3>Duplicate Payment Captured</h3>
+            </div>
+            <p>
+              This order was already confirmed by an earlier payment. An additional payment attempt was captured by your bank.
+            </p>
+            <div *ngIf="orderDetails.refund && orderDetails.refund.status === 'pending'" class="refund-box">
+              <p>
+                <strong>Pending Refund Queued:</strong> A refund of <strong>₹{{ orderDetails.refund.amount | number:'1.0-0' }}</strong> has been recorded (Reference: {{ orderDetails.refund.id }}) and is awaiting processing.
+              </p>
+            </div>
+          </div>
+
+          <!-- ORDER ITEMS CARD -->
+          <div class="info-card">
+            <h2>Purchased Items</h2>
+            <div class="items-list">
+              <div *ngFor="let item of orderDetails.items" class="item-row">
+                <div class="item-info">
+                  <strong>{{ item.productName }}</strong>
+                  <span class="variant-tag">{{ item.variantName }}</span>
+                  <span class="sku-tag">SKU: {{ item.sku }}</span>
+                </div>
+                <div class="item-qty">
+                  Qty: {{ item.quantity }}
+                </div>
+                <div class="item-price">
+                  ₹{{ item.totalPrice | number:'1.0-0' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PRICING SUMMARY CARD -->
+          <div class="info-card">
+            <h2>Payment & Invoice Breakdown</h2>
+            <div class="pricing-rows">
+              <div class="price-row">
+                <span>Subtotal</span>
+                <span>₹{{ orderDetails.order.subtotal | number:'1.0-0' }}</span>
+              </div>
+              <div class="price-row">
+                <span>Shipping & Handling</span>
+                <span *ngIf="orderDetails.order.shippingAmount === 0" class="free-text">FREE</span>
+                <span *ngIf="orderDetails.order.shippingAmount > 0">₹{{ orderDetails.order.shippingAmount | number:'1.0-0' }}</span>
+              </div>
+              <div class="price-row muted-row">
+                <span>Taxes Included (18% GST)</span>
+                <span>₹{{ orderDetails.order.taxAmount | number:'1.2-2' }}</span>
+              </div>
+              <div class="price-divider"></div>
+              <div class="price-row total-row">
+                <strong>Grand Total</strong>
+                <strong class="total-amount">₹{{ orderDetails.order.totalAmount | number:'1.0-0' }}</strong>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: CUSTOMER & ACTIONS -->
+        <div class="grid-sidebar">
+
+          <!-- CUSTOMER & DELIVERY INFO -->
+          <div class="info-card">
+            <h2>Delivery Details</h2>
+            <div class="customer-info">
+              <p><strong>Name:</strong> {{ orderDetails.order.customerName }}</p>
+              <p><strong>Phone:</strong> +91 {{ orderDetails.order.phone }}</p>
+              <p *ngIf="orderDetails.order.email"><strong>Email:</strong> {{ orderDetails.order.email }}</p>
+              <p><strong>Method:</strong> {{ orderDetails.order.paymentMethod === 'COD' ? 'Cash on Delivery (COD)' : 'Online Payment' }}</p>
+              <p><strong>Order Date:</strong> {{ orderDetails.order.createdAt | date:'medium' }}</p>
+
+              <div class="address-block">
+                <strong>Shipping Address:</strong>
+                <address>
+                  {{ orderDetails.order.shippingAddress.addressLine1 }}<br />
+                  <span *ngIf="orderDetails.order.shippingAddress.addressLine2">{{ orderDetails.order.shippingAddress.addressLine2 }}<br /></span>
+                  <span *ngIf="orderDetails.order.shippingAddress.landmark">Near: {{ orderDetails.order.shippingAddress.landmark }}<br /></span>
+                  {{ orderDetails.order.shippingAddress.city }}, {{ orderDetails.order.shippingAddress.state }} — {{ orderDetails.order.shippingAddress.pincode }}<br />
+                  India
+                </address>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIONS CARD -->
+          <div class="info-card actions-card">
+            <h2>Order Actions</h2>
+
+            <!-- RETRY PAYMENT BUTTON (WHEN ELIGIBLE) -->
+            <div *ngIf="orderDetails.canRetry" class="retry-wrap">
+              <p class="retry-hint">Your payment has not yet been completed. You can safely complete it now:</p>
+              <button
+                type="button"
+                class="primary-btn retry-btn"
+                [disabled]="isRetrying"
+                (click)="onRetryPayment()">
+                <span *ngIf="!isRetrying">Retry Payment via Cashfree</span>
+                <span *ngIf="isRetrying" class="btn-spinner-wrap">
+                  <span class="spinner-small"></span> Opening gateway...
+                </span>
+              </button>
+            </div>
+
+            <!-- RESTORE CART BUTTON (IF RECOVERY SNAPSHOT EXISTS) -->
+            <div *ngIf="hasCartRecovery()" class="restore-cart-section">
+              <button
+                type="button"
+                class="secondary-btn restore-cart-btn"
+                (click)="restoreCart()">
+                🛒 Restore Items to Cart
+              </button>
+              <p *ngIf="cartRestoredMessage" class="restore-success-msg">
+                {{ cartRestoredMessage }}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              class="refresh-btn"
+              [disabled]="isLoading"
+              (click)="loadOrderData()">
+              ↻ Refresh Status
+            </button>
+
+            <a routerLink="/" class="secondary-btn continue-btn">
+              Continue Shopping
+            </a>
+
+            <p class="privacy-footnote">
+              🔒 Session authorized via order-bound token.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>

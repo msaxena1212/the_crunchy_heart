@@ -1,0 +1,65 @@
+<div class="announcement-bar">
+  <span>Free shipping on orders above ₹499</span>
+  <span class="announcement-separator">•</span>
+  <span>Premium Makhana</span>
+  <span class="announcement-separator">•</span>
+  <span>Heartfully crunched</span>
+</div>
+
+<header class="site-header">
+  <div class="nav-shell">
+    <button class="brand" type="button" aria-label="The Crunchy Heart home" (click)="goHome()">
+      <span class="brand-heart" aria-hidden="true">♡</span>
+      <span class="brand-copy">
+        <strong>The Crunchy Heart</strong>
+        <small>PREMIUM MAKHANA</small>
+      </span>
+    </button>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <button type="button" (click)="goHome()">Home</button>
+      <button type="button" (click)="navigateToSection('raw-makhana')">Raw Makhana</button>
+      <button type="button" (click)="navigateToSection('flavoured-makhana')">Flavours</button>
+      <button type="button" (click)="navigateToSection('our-story')">Our Story</button>
+      <button type="button" (click)="navigateToSection('why-us')">Why Us</button>
+    </nav>
+
+    <div class="nav-actions">
+      <button
+        class="mobile-menu-toggle"
+        type="button"
+        [attr.aria-expanded]="mobileMenuOpen"
+        aria-controls="storefront-mobile-navigation"
+        [attr.aria-label]="mobileMenuOpen ? 'Close menu' : 'Open menu'"
+        (click)="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+
+      <a routerLink="/cart" class="nav-cart" aria-label="Shopping cart">
+        <svg viewBox="0 0 24 24" width="23" height="23" fill="none"
+             stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="19" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span class="cart-count" *ngIf="cartCount > 0">{{ cartCount }}</span>
+      </a>
+    </div>
+  </div>
+
+  <nav
+    id="storefront-mobile-navigation"
+    class="mobile-navigation"
+    aria-label="Mobile navigation"
+    [class.is-open]="mobileMenuOpen"
+    [attr.aria-hidden]="!mobileMenuOpen"
+    [attr.inert]="mobileMenuOpen ? null : ''">
+    <button type="button" (click)="goHome()">Home <span>→</span></button>
+    <button type="button" (click)="navigateToSection('raw-makhana')">Raw Makhana <span>→</span></button>
+    <button type="button" (click)="navigateToSection('flavoured-makhana')">Flavours <span>→</span></button>
+    <button type="button" (click)="navigateToSection('our-story')">Our Story <span>→</span></button>
+    <button type="button" (click)="navigateToSection('why-us')">Why Us <span>→</span></button>
+  </nav>
+</header>

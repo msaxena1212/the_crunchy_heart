@@ -10,29 +10,30 @@ const CASHFREE_PRODUCTION_URL =
     'https://api.cashfree.com';
 
 
-function getBaseUrl() {
+export function getBaseUrl() {
     return env.cashfreeEnvironment === 'production'
         ? CASHFREE_PRODUCTION_URL
         : CASHFREE_SANDBOX_URL;
 }
 
 
-function ensureConfigured() {
+export function ensureConfigured() {
+    // Thrown before any network call, so the provider was never contacted.
     if (!env.cashfreeClientId) {
-        throw new Error(
+        throw Object.assign(new Error(
             'CASHFREE_CLIENT_ID is not configured.'
-        );
+        ), { code: 'CASHFREE_NOT_CONFIGURED' });
     }
 
     if (!env.cashfreeClientSecret) {
-        throw new Error(
+        throw Object.assign(new Error(
             'CASHFREE_CLIENT_SECRET is not configured.'
-        );
+        ), { code: 'CASHFREE_NOT_CONFIGURED' });
     }
 }
 
 
-function buildHeaders() {
+export function buildHeaders() {
     ensureConfigured();
 
     return {
@@ -53,6 +54,10 @@ function buildHeaders() {
  * - order_id
  * - payment_session_id
  */
+// Upper bound for the order-creation call. Kept well below ATTEMPT_LEASE_MS in
+// order.service.js, so a live call can never look stale to another request.
+export const CASHFREE_CREATE_TIMEOUT_MS = 15000;
+
 export async function createCashfreeOrder({
     orderId,
     orderAmount,
@@ -103,6 +108,7 @@ export async function createCashfreeOrder({
         method: 'POST',
         headers: buildHeaders(),
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(CASHFREE_CREATE_TIMEOUT_MS),
     });
 
     const responseText = await response.text();
@@ -147,9 +153,75 @@ export async function createCashfreeOrder({
 
 
 /**
+ * Fetch Cashfree order details by merchant order_id.
+ *
+ * GET /pg/orders/{order_id}
+ */
+export async function getCashfreeOrder(orderId) {
+    if (!orderId || typeof orderId !== 'string') {
+        const error = new Error('Cashfree order_id is required.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    ensureConfigured();
+
+    const url =
+        `${getBaseUrl()}/pg/orders/${encodeURIComponent(orderId)}`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: buildHeaders(),
+    });
+
+    const responseText = await response.text();
+
+    let data;
+
+    try {
+        data = responseText
+            ? JSON.parse(responseText)
+            : {};
+    } catch {
+        data = {
+            raw: responseText,
+        };
+    }
+
+    if (!response.ok) {
+        const error = new Error(
+            data?.message ||
+            data?.type ||
+            `Cashfree get order failed with HTTP ${response.status}.`
+        );
+
+        error.statusCode = response.status;
+        error.cashfreeResponse = data;
+
+        throw error;
+    }
+
+    if (!data || typeof data !== 'object') {
+        const error = new Error('Cashfree returned malformed order data.');
+        error.statusCode = 502;
+        error.cashfreeResponse = data;
+        throw error;
+    }
+
+    return data;
+}
+
+
+/**
  * Fetch all payment attempts for a Cashfree order.
  */
 export async function getCashfreePayments(orderId) {
+    if (!orderId || typeof orderId !== 'string') {
+        const error = new Error('Cashfree order_id is required.');
+        error.statusCode = 400;
+        throw error;
+    }
+
     ensureConfigured();
 
     const url =

@@ -1,0 +1,53 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">What needs attention today, and how the store is doing.</p>
+  </div>
+</div>
+
+<div *ngIf="errorMessage" class="alert-danger" role="alert">
+  <span>{{ errorMessage }}</span>
+  <button class="btn" (click)="load()">Retry</button>
+</div>
+
+<div *ngIf="isLoading" class="loading-state"><div class="spinner"></div><p>Loading…</p></div>
+
+<ng-container *ngIf="!isLoading && data">
+  <h2 class="section-title">Needs attention</h2>
+  <div class="stats-grid">
+    <a class="stat-card stat-warn" routerLink="/admin/payments">
+      <div class="stat-label">Payments to review</div>
+      <div class="stat-value">{{ data.attention.paymentsToReview }}</div>
+    </a>
+    <a class="stat-card" [class.stat-warn]="data.attention.refundExceptions > 0" routerLink="/admin/refunds">
+      <div class="stat-label">Refund exceptions</div>
+      <div class="stat-value">{{ data.attention.refundExceptions }}</div>
+    </a>
+    <a class="stat-card" [class.stat-warn]="data.attention.lowStockVariants > 0" routerLink="/admin/inventory">
+      <div class="stat-label">Low-stock variants</div>
+      <div class="stat-value">{{ data.attention.lowStockVariants }}</div>
+    </a>
+  </div>
+
+  <h2 class="section-title">Orders</h2>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Last 24 hours</div><div class="stat-value">{{ data.orders.last24Hours }}</div></div>
+    <div class="stat-card"><div class="stat-label">Last 7 days</div><div class="stat-value">{{ data.orders.last7Days }}</div></div>
+    <div class="stat-card"><div class="stat-label">All time</div><div class="stat-value">{{ data.orders.total }}</div></div>
+    <div class="stat-card"><div class="stat-label">Awaiting online payment</div><div class="stat-value">{{ data.orders.awaitingOnlinePayment }}</div></div>
+  </div>
+
+  <h2 class="section-title">Revenue</h2>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Paid, last 30 days</div>
+      <div class="stat-value">₹{{ data.revenue.paidLast30Days | number:'1.2-2' }}</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Catalogue</h2>
+  <div class="stats-grid">
+    <a class="stat-card" routerLink="/admin/products"><div class="stat-label">Active products</div><div class="stat-value">{{ data.catalogue.activeProducts }}</div></a>
+    <a class="stat-card" routerLink="/admin/coupons"><div class="stat-label">Active coupons</div><div class="stat-value">{{ data.catalogue.activeCoupons }}</div></a>
+  </div>
+</ng-container>

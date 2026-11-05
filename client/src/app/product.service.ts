@@ -1,4 +1,4 @@
-﻿import { Injectable, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
@@ -30,6 +30,19 @@ export interface ProductDetail {
 }
 
 
+export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined' && (window as any).__API_BASE_URL__) {
+    return (window as any).__API_BASE_URL__;
+  }
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]') {
+      return 'http://localhost:5000/api';
+    }
+  }
+  return '/api';
+}
+
 /* =========================================================
    PRODUCT SERVICE
    ========================================================= */
@@ -43,10 +56,7 @@ export class ProductService {
     inject(HttpClient);
 
 
-  private readonly api =
-    window.location.hostname === 'localhost'
-      ? 'http://localhost:5000/api'
-      : 'https://the-crunchy-heart.onrender.com/api';
+  private readonly api = getApiBaseUrl();
 
 
   /* =======================================================
@@ -115,7 +125,7 @@ export class ProductService {
 
   /* =======================================================
      GET PRODUCT BY SLUG â€” FRONTEND MODEL
-     
+
      This converts the backend ProductDetail response
      into the Product model already used throughout
      the Angular application.

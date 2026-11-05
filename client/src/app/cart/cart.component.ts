@@ -41,4 +41,12 @@ export class CartComponent {
     clearCart(): void {
         this.cartService.clearCart();
     }
+
+    get hasRecoverySnapshot(): boolean {
+        return this.cartService.hasCartSnapshot();
+    }
+
+    restorePreviousCart(): void {
+        this.cartService.restoreCartSnapshot(this.items.length === 0 ? 'replace' : 'merge');
+    }
 }

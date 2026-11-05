@@ -1,0 +1,61 @@
+.console { display: flex; min-height: 100vh; background: #f7f5f1; }
+
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: #0f3d2a;
+  color: #e9f1ec;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 12px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.brand { padding: 4px 10px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.12); margin-bottom: 12px; }
+.brand-title { display: block; font-weight: 700; font-size: 1.05rem; }
+.brand-tag { display: block; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; margin-top: 2px; }
+
+.group-title { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; padding: 12px 10px 4px; }
+
+.nav-link {
+  display: block;
+  color: #e9f1ec;
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+.nav-link:hover { background: rgba(255, 255, 255, 0.08); }
+.nav-link.active { background: rgba(255, 255, 255, 0.16); font-weight: 600; }
+
+.sidebar-foot { margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 10px; }
+
+.console-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e6e1d8;
+}
+.user-email { color: #5a5248; font-size: 0.9rem; }
+.logout-button { background: none; border: 1px solid #cfc7bb; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+
+.console-content { padding: 24px; box-sizing: border-box; }
+
+@media (max-width: 800px) {
+  .console { flex-direction: column; }
+  .sidebar { width: auto; height: auto; position: static; flex-direction: row; flex-wrap: wrap; gap: 4px; padding: 10px; }
+  .brand { border: none; margin: 0; padding: 4px 8px; }
+  .group-title { display: none; }
+  .nav-group { display: flex; flex-wrap: wrap; gap: 4px; }
+  .sidebar-foot { display: none; }
+  .console-content { padding: 16px; }
+}

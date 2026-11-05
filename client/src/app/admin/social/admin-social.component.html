@@ -1,0 +1,82 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Social media</h1>
+    <p class="page-subtitle">
+      Draft posts for Instagram, TikTok, YouTube, and Pinterest. Drafts are saved for review. Publishing is only
+      available once that platform's account is connected.
+    </p>
+  </div>
+</div>
+
+<div class="tabs" role="tablist">
+  <button role="tab" class="tab" *ngFor="let p of platforms"
+          [class.active]="platform === p" [attr.aria-selected]="platform === p"
+          (click)="selectPlatform(p)">
+    {{ labels[p] }}
+  </button>
+</div>
+
+<div *ngIf="errorMessage" class="alert-danger" role="alert"><span>{{ errorMessage }}</span></div>
+<div *ngIf="infoMessage" class="alert-info" role="status">{{ infoMessage }}</div>
+
+<div class="card" *ngIf="accountStatus as status">
+  <div class="row-head">
+    <strong>{{ labels[platform] }} account</strong>
+    <span class="badge badge-ok" *ngIf="status.connected">Connected</span>
+    <span class="badge badge-warn" *ngIf="!status.connected">Not connected</span>
+  </div>
+  <p class="muted" *ngIf="!status.connected">
+    Publishing stays disabled until these settings are present. Only their names are shown.
+  </p>
+  <ul *ngIf="!status.connected">
+    <li *ngFor="let name of status.missingConfig"><code>{{ name }}</code> is missing</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2 class="section-title" style="margin-top:0">{{ editingId ? 'Edit draft' : 'New draft' }}</h2>
+  <div class="form-grid">
+    <label for="social-title">Title (internal, max {{ titleLimit }})</label>
+    <input id="social-title" class="wide" [(ngModel)]="form.title" [maxlength]="titleLimit" />
+
+    <label for="social-body">Caption or text ({{ form.body.length }} / {{ bodyLimit }})</label>
+    <textarea id="social-body" rows="5" [(ngModel)]="form.body" [maxlength]="bodyLimit"></textarea>
+
+    <label for="social-media">Media link (https, optional)</label>
+    <input id="social-media" class="wide" [(ngModel)]="form.mediaUrl" placeholder="https://" />
+  </div>
+
+  <div class="actions-row">
+    <button class="btn btn-primary" (click)="save()" [disabled]="!formValid || isSaving">
+      {{ isSaving ? 'Saving…' : (editingId ? 'Save changes' : 'Save draft') }}
+    </button>
+    <button class="btn" *ngIf="editingId" (click)="resetForm()" [disabled]="isSaving">Cancel edit</button>
+  </div>
+</div>
+
+<h2 class="section-title">{{ labels[platform] }} drafts</h2>
+
+<div *ngIf="isLoading" class="loading-state"><div class="spinner"></div><p>Loading drafts…</p></div>
+
+<div *ngIf="!isLoading && drafts.length === 0" class="card empty-state">
+  <h3>No drafts yet</h3>
+  <p>Saved drafts for this platform appear here.</p>
+</div>
+
+<div class="card" *ngFor="let d of drafts">
+  <div class="row-head">
+    <strong>{{ d.title }}</strong>
+    <span class="badge badge-off">{{ d.status }}</span>
+    <span class="muted">Updated {{ d.updatedAt | date:'dd MMM yyyy, HH:mm' }}</span>
+  </div>
+  <p class="draft-body">{{ d.body }}</p>
+  <p class="muted" *ngIf="d.mediaUrl">Media: <code>{{ d.mediaUrl }}</code></p>
+  <div class="actions-row">
+    <button class="btn" (click)="edit(d)" [disabled]="isSaving">Edit</button>
+    <button class="btn btn-primary" (click)="publish(d)" [disabled]="!canPublish || busy"
+            [attr.title]="canPublish ? 'Publish this draft' : 'Connect the ' + labels[platform] + ' account to publish'">
+      Publish
+    </button>
+    <span class="muted" *ngIf="!canPublish">Publishing is disabled until the account is connected.</span>
+  </div>
+</div>

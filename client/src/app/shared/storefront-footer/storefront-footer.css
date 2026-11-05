@@ -1,0 +1,376 @@
+:host {
+  display: block;
+  width: 100%;
+  --footer-green: #0b4937;
+  --footer-deep: #073729;
+  --footer-ivory: #fffaf2;
+  --footer-gold: #d5b477;
+  --footer-muted: #c7d9cf;
+  --footer-border: rgba(213, 180, 119, 0.28);
+}
+
+.storefront-footer {
+  width: 100%;
+  box-sizing: border-box;
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(213, 180, 119, 0.12),
+      transparent 35%
+    ),
+    linear-gradient(160deg, var(--footer-green), var(--footer-deep));
+  color: var(--footer-ivory);
+  border-top: 1px solid var(--footer-border);
+  padding: 56px clamp(20px, 5vw, 80px) 28px;
+  position: relative;
+  z-index: 10;
+}
+
+/* =========================================================
+   1. BRAND STORY SECTION
+   ========================================================= */
+.footer-love-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 36px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--footer-border);
+  margin-bottom: 48px;
+}
+
+.footer-love-content {
+  max-width: 580px;
+}
+
+.footer-eyebrow {
+  display: inline-block;
+  color: var(--footer-gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.footer-love-heading,
+.footer-love-section h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(26px, 3.2vw, 36px);
+  line-height: 1.25;
+  margin: 0 0 14px;
+  color: var(--footer-ivory);
+  font-weight: 700;
+}
+
+.footer-love-section h2 em {
+  font-style: italic;
+  color: var(--footer-gold);
+}
+
+.footer-love-content p {
+  color: var(--footer-muted);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0 0 20px;
+}
+
+.footer-shop-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--footer-ivory);
+  background: rgba(213, 180, 119, 0.2);
+  border: 1px solid var(--footer-gold);
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 200ms ease;
+}
+
+.footer-shop-link:hover {
+  background: var(--footer-gold);
+  color: var(--footer-deep);
+  transform: translateY(-2px);
+}
+
+.footer-love-decoration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed var(--footer-border);
+  border-radius: 16px;
+  min-width: 200px;
+}
+
+.footer-big-heart {
+  font-size: 42px;
+  color: var(--footer-gold);
+  line-height: 1;
+}
+
+.footer-heart-caption {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--footer-muted);
+  font-family: Georgia, serif;
+}
+
+/* =========================================================
+   2. MAIN FOOTER COLUMNS
+   ========================================================= */
+.footer-main {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1.3fr;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+
+/* Brand Column */
+.footer-brand-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.footer-brand-symbol {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid var(--footer-gold);
+  color: var(--footer-gold);
+  font-size: 18px;
+}
+
+.footer-brand-copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-brand-copy strong {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 20px;
+  letter-spacing: -0.3px;
+  color: var(--footer-ivory);
+}
+
+.footer-brand-copy small {
+  color: var(--footer-gold);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.footer-brand-description {
+  color: var(--footer-muted);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 360px;
+}
+
+.footer-instagram-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--footer-gold);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+  transition: color 180ms ease;
+}
+
+.footer-instagram-link:hover {
+  color: var(--footer-ivory);
+  text-decoration: underline;
+}
+
+/* Link Columns */
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-column h2 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--footer-gold);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+.footer-column a {
+  color: var(--footer-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.footer-column a:hover {
+  color: var(--footer-ivory);
+  transform: translateX(2px);
+}
+
+/* Help column */
+.footer-help-column p {
+  color: var(--footer-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.footer-help-column a[href^='mailto'] {
+  color: var(--footer-gold);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer-shipping-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px !important;
+  color: var(--footer-ivory) !important;
+  font-weight: 600;
+  font-size: 12px !important;
+}
+
+.footer-shipping-note span {
+  color: var(--footer-gold);
+}
+
+.footer-shipping-detail {
+  font-size: 11px !important;
+  color: #9cb8a9 !important;
+}
+
+/* =========================================================
+   3. BRAND COMMITMENTS STRIP
+   ========================================================= */
+.footer-trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 18px 24px;
+  background: rgba(7, 55, 41, 0.45);
+  border: 1px solid var(--footer-border);
+  border-radius: 12px;
+  margin-bottom: 32px;
+}
+
+.footer-trust-strip div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--footer-ivory);
+  font-weight: 500;
+}
+
+.footer-trust-strip span[aria-hidden='true'] {
+  color: var(--footer-gold);
+  font-size: 15px;
+}
+
+/* =========================================================
+   4. COPYRIGHT AND BACK TO TOP
+   ========================================================= */
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-top: 24px;
+  border-top: 1px solid var(--footer-border);
+  color: #9bb7a8;
+  font-size: 12px;
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+.footer-bottom-love span {
+  color: #f28b82;
+}
+
+.footer-back-to-top {
+  color: var(--footer-gold);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 180ms ease;
+}
+
+.footer-back-to-top:hover {
+  color: var(--footer-ivory);
+  text-decoration: underline;
+}
+
+/* =========================================================
+   5. RESPONSIVE MEDIA QUERIES
+   ========================================================= */
+@media (max-width: 992px) {
+  .footer-main {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 36px 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .storefront-footer {
+    padding: 40px 20px 24px;
+  }
+
+  .footer-love-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .footer-love-decoration {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .footer-main {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .footer-trust-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}

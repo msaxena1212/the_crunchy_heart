@@ -1,0 +1,68 @@
+<div class="admin-login-layout">
+  <div class="login-card">
+    <div class="login-brand">
+      <span class="brand-badge">Owner Access</span>
+      <h1 class="login-title">The Crunchy Heart</h1>
+      <p class="login-subtitle">Sign in to manage orders, dispatch COD deliveries, and review payment exceptions.</p>
+    </div>
+
+    <!-- Error Alert Banner -->
+    <div *ngIf="errorMessage" class="error-banner" role="alert">
+      <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="login-form" novalidate>
+      <div class="form-group">
+        <label for="adminEmail" class="form-label">Owner Email</label>
+        <input
+          id="adminEmail"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          class="form-input"
+          placeholder="owner@thecrunchyheart.com"
+          autocomplete="email"
+          [disabled]="isSubmitting"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="adminPassword" class="form-label">Password</label>
+        <input
+          id="adminPassword"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          class="form-input"
+          placeholder="••••••••••••"
+          autocomplete="current-password"
+          [disabled]="isSubmitting"
+          required
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="login-button"
+        [disabled]="isSubmitting"
+      >
+        <span *ngIf="!isSubmitting">Sign In to Dashboard</span>
+        <span *ngIf="isSubmitting" class="submitting-spinner">
+          <svg class="spinner" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Signing in...
+        </span>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <a routerLink="/" class="back-link">← Return to Storefront</a>
+    </div>
+  </div>
+</div>

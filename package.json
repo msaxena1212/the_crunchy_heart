@@ -1,4 +1,15 @@
 {
+  "name": "the-crunchy-heart",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:client": "npm --prefix client run build",
+    "test:client": "npm --prefix client run test",
+    "start:client": "npm --prefix client start",
+    "start:server": "npm --prefix server start",
+    "dev:server": "npm --prefix server run dev",
+    "test:server": "npm --prefix server test"
+  },
   "dependencies": {
     "@neon/config": "^1.7.3",
     "@neon/env": "^1.4.4",

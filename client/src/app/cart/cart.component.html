@@ -55,11 +55,15 @@
                 delicious for your next snack break.
             </p>
 
-            <a routerLink="/" class="primary-button">
+            <div class="empty-cart-actions" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a routerLink="/" class="primary-button">
+                    Explore Makhana
+                </a>
 
-                Explore Makhana
-
-            </a>
+                <button *ngIf="hasRecoverySnapshot" type="button" class="secondary-button" (click)="restorePreviousCart()" style="padding: 14px 24px; border: 1px solid #dcd1c2; border-radius: 8px; background: #ffffff; color: #1e392a; font-weight: 600; cursor: pointer;">
+                    Restore Previous Cart
+                </button>
+            </div>
 
         </div>
 

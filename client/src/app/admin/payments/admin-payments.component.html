@@ -1,0 +1,189 @@
+<div class="admin-dashboard-layout">
+  
+
+  <main class="dashboard-main">
+    <div class="content-container">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Payment attempts</h1>
+          <p class="page-subtitle">
+            Orders whose payment outcome is unknown, in conflict, or waiting for an operator. Actions
+            never create a provider order and never mark an order paid without provider evidence.
+          </p>
+        </div>
+        <div class="header-stats" *ngIf="tab === 'review'">
+          <span class="stat-pill stat-warning">To review: <strong>{{ reviewAttempts.length }}</strong></span>
+          <span class="stat-pill stat-conflict" *ngIf="conflicts.length">Conflicts: <strong>{{ conflicts.length }}</strong></span>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button role="tab" class="tab" [class.active]="tab === 'review'" [attr.aria-selected]="tab === 'review'" (click)="setTab('review')">
+          Needs review
+        </button>
+        <button role="tab" class="tab" [class.active]="tab === 'orders'" [attr.aria-selected]="tab === 'orders'" (click)="setTab('orders')">
+          All online orders
+        </button>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert-danger" role="alert">
+        <span>{{ errorMessage }}</span>
+        <button (click)="refresh()" class="retry-link">Retry</button>
+      </div>
+      <div *ngIf="infoMessage" class="alert-info" role="status">{{ infoMessage }}</div>
+
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading payment attempts…</p>
+      </div>
+
+      <!-- NEEDS REVIEW -->
+      <ng-container *ngIf="!isLoading && tab === 'review'">
+        <div *ngIf="conflicts.length" class="conflict-card card">
+          <h2>Orders with conflicting live sessions</h2>
+          <p>Checkout is refused for these orders until support resolves the conflict. Do not act on either session alone.</p>
+          <ul>
+            <li *ngFor="let c of conflicts"><code>{{ c.orderNumber }}</code> — {{ c.liveSessions }} live sessions</li>
+          </ul>
+        </div>
+
+        <div *ngIf="reviewAttempts.length === 0" class="empty-state card">
+          <h3>Nothing to review</h3>
+          <p>No payment attempt is waiting for an operator.</p>
+        </div>
+
+        <ng-container *ngTemplateOutlet="attemptTable; context: { attempts: reviewAttempts }"></ng-container>
+      </ng-container>
+
+      <!-- ALL ONLINE ORDERS -->
+      <ng-container *ngIf="!isLoading && tab === 'orders'">
+        <div class="filter-row">
+          <label for="state-filter">Payment state</label>
+          <select id="state-filter" [(ngModel)]="stateFilter" (change)="onFilterChange()">
+            <option value="">All states</option>
+            <option *ngFor="let s of stateOptions" [value]="s">{{ stateLabel(s) }}</option>
+          </select>
+        </div>
+
+        <div *ngIf="orders.length === 0" class="empty-state card">
+          <h3>No orders match</h3>
+          <p>Change the filter to see other orders.</p>
+        </div>
+
+        <div *ngIf="orders.length" class="table-card card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Order status</th>
+                <th>Payment</th>
+                <th>Amount</th>
+                <th>Payment state</th>
+                <th>Attempts</th>
+                <th>Placed</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let o of orders">
+                <td><code>{{ o.orderNumber }}</code></td>
+                <td>{{ o.orderStatus }}</td>
+                <td>{{ o.paymentStatus }}</td>
+                <td>₹{{ o.totalAmount | number:'1.2-2' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="stateBadgeClass(o.paymentState)">{{ stateLabel(o.paymentState) }}</span>
+                  <div class="reasons" *ngIf="o.reasons.length">{{ o.reasons.join(', ') }}</div>
+                </td>
+                <td>{{ o.attempts.length }}</td>
+                <td>{{ o.createdAt | date:'dd MMM yyyy, HH:mm' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-container *ngIf="orders.length">
+          <h2 class="section-title">Attempts that need an action</h2>
+          <ng-container *ngIf="actionableAttempts.length; else noActionable">
+            <ng-container *ngTemplateOutlet="attemptTable; context: { attempts: actionableAttempts }"></ng-container>
+          </ng-container>
+          <ng-template #noActionable>
+            <p class="muted">No attempt in this list needs an action.</p>
+          </ng-template>
+        </ng-container>
+      </ng-container>
+    </div>
+  </main>
+</div>
+
+<!-- Shared attempt table with the operator actions -->
+<ng-template #attemptTable let-attempts="attempts">
+  <div class="table-card card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th>Provider order id</th>
+          <th>Gateway status</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let a of attempts">
+          <tr>
+            <td><code>{{ a.orderNumber }}</code></td>
+            <td>
+              <code *ngIf="a.providerOrderId; else noProviderId">{{ a.providerOrderId }}</code>
+              <ng-template #noProviderId><span class="muted">none (legacy)</span></ng-template>
+            </td>
+            <td>
+              <span class="badge badge-unresolved">{{ a.gatewayStatus }}</span>
+              <span class="muted" *ngIf="a.legacyUnbound"> · legacy</span>
+            </td>
+            <td>{{ a.createdAt | date:'dd MMM yyyy, HH:mm' }}</td>
+            <td class="actions">
+              <button *ngIf="canLookup(a)" class="btn-action" (click)="lookup(a)"
+                      [disabled]="!!busyKey" [attr.aria-busy]="isBusy('lookup:' + a.paymentId)">
+                {{ isBusy('lookup:' + a.paymentId) ? 'Looking up…' : 'Lookup' }}
+              </button>
+              <button *ngIf="canLookup(a)" class="btn-action" (click)="reconcile(a)"
+                      [disabled]="!!busyKey" [attr.aria-busy]="isBusy('reconcile:' + a.paymentId)">
+                {{ isBusy('reconcile:' + a.paymentId) ? 'Reconciling…' : 'Reconcile' }}
+              </button>
+              <button *ngIf="canClose(a)" class="btn-action btn-danger" (click)="openClose(a)"
+                      [disabled]="!!busyKey || closingId === a.paymentId">
+                Close as not submitted
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="closingId === a.paymentId" class="close-row">
+            <td colspan="5">
+              <div class="close-panel">
+                <p>
+                  Only close this attempt after checking the Cashfree dashboard for the order number
+                  <code>{{ a.orderNumber }}</code> and confirming it is absent. Lookup must also return
+                  not found; the server re-checks this before it closes.
+                </p>
+                <label for="close-confirm-{{ a.paymentId }}">
+                  Type <code>{{ confirmationValue }}</code> to confirm
+                </label>
+                <input id="close-confirm-{{ a.paymentId }}" [(ngModel)]="closeConfirmation" autocomplete="off" />
+
+                <label for="close-note-{{ a.paymentId }}">Note (10 to 500 characters): what you checked, and when</label>
+                <textarea id="close-note-{{ a.paymentId }}" [(ngModel)]="closeNote" rows="3" maxlength="500"></textarea>
+
+                <div class="close-actions">
+                  <button class="btn-action btn-danger" (click)="submitClose(a)"
+                          [disabled]="!closeReady || !!busyKey">
+                    {{ isBusy('close:' + a.paymentId) ? 'Closing…' : 'Confirm close' }}
+                  </button>
+                  <button class="btn-action" (click)="cancelClose()" [disabled]="!!busyKey">Cancel</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</ng-template>

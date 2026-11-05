@@ -1,0 +1,74 @@
+<section class="recover-page">
+  <div class="recover-card">
+    <!-- Always present, so the step change is announced when its text changes. -->
+    <p class="sr-only" role="status" aria-live="polite">{{ step === 'code' ? 'Verification code step. Enter the six-digit code from the email.' : '' }}</p>
+
+    <h1>Find your order</h1>
+
+    <p class="intro">
+      Lost the confirmation page from checkout? Enter the email address you used at checkout.
+      We will send a six-digit code to that address.
+    </p>
+
+    <!-- EMAIL STEP -->
+    <form *ngIf="step === 'email'" (ngSubmit)="requestCode()" novalidate class="recover-form">
+      <label for="recover-email">Email address</label>
+      <input
+        id="recover-email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        required
+        maxlength="254"
+        [(ngModel)]="email"
+        [disabled]="isSending"
+      />
+
+      <button type="submit" class="primary-btn" [disabled]="isSending">
+        {{ isSending ? 'Sending code…' : 'Send code' }}
+      </button>
+    </form>
+
+    <!-- CODE STEP -->
+    <form *ngIf="step === 'code'" (ngSubmit)="verifyCode()" novalidate class="recover-form">
+      <p class="info-line">
+        If an order matches <strong>{{ email }}</strong>, a code has been sent to it. The code expires in 10 minutes.
+      </p>
+
+      <label for="recover-code">Six-digit code</label>
+      <input
+        #codeInput
+        id="recover-code"
+        name="code"
+        type="text"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        maxlength="6"
+        [(ngModel)]="code"
+        [disabled]="isVerifying"
+      />
+
+      <button type="submit" class="primary-btn" [disabled]="isVerifying">
+        {{ isVerifying ? 'Checking code…' : 'Open my order' }}
+      </button>
+
+      <div class="secondary-row">
+        <button type="button" class="link-btn" (click)="requestCode()" [disabled]="isSending || isVerifying">
+          {{ isSending ? 'Sending…' : 'Send a new code' }}
+        </button>
+        <button type="button" class="link-btn" (click)="changeEmail()" [disabled]="isVerifying">
+          Use a different email
+        </button>
+      </div>
+    </form>
+
+    <p *ngIf="infoMessage && step === 'email'" class="info-line" role="status">{{ infoMessage }}</p>
+    <p *ngIf="step === 'code' && infoMessage" class="info-line" role="status">Code sent, if the address matches an order.</p>
+    <p *ngIf="errorMessage" class="error-line" role="alert">{{ errorMessage }}</p>
+
+    <p class="help-line">
+      Still stuck? Contact customer care at support@thecrunchyheart.com.
+      <a routerLink="/">Return to storefront</a>
+    </p>
+  </div>
+</section>

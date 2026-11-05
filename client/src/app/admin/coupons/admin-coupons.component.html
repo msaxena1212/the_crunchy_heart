@@ -1,0 +1,62 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Offers &amp; coupons</h1>
+    <p class="page-subtitle">
+      Discount codes and their terms, with usage. Offers are coupons in this store. Creating and editing
+      coupons is not in this build yet, so changes are made in the database until it is.
+    </p>
+  </div>
+</div>
+
+<div *ngIf="errorMessage" class="alert-danger" role="alert">
+  <span>{{ errorMessage }}</span>
+  <button class="btn" (click)="load()">Retry</button>
+</div>
+
+<div *ngIf="isLoading" class="loading-state"><div class="spinner"></div><p>Loading coupons…</p></div>
+
+<div *ngIf="!isLoading && coupons.length === 0" class="card empty-state">
+  <h3>No coupons yet</h3>
+  <p>When a coupon is created it will appear here with its usage.</p>
+</div>
+
+<div *ngIf="!isLoading && coupons.length" class="card table-card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Discount</th>
+        <th>Minimum order</th>
+        <th>Usage</th>
+        <th>Valid</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of coupons">
+        <td>
+          <code>{{ c.code }}</code>
+          <div class="muted" *ngIf="c.description">{{ c.description }}</div>
+        </td>
+        <td>
+          {{ discountLabel(c) }}
+          <div class="muted" *ngIf="c.maximumDiscount !== null">Up to ₹{{ c.maximumDiscount }}</div>
+        </td>
+        <td>₹{{ c.minimumOrderValue | number:'1.0-2' }}</td>
+        <td>
+          {{ c.usageCount }}<span *ngIf="c.usageLimit !== null"> / {{ c.usageLimit }}</span>
+          <div class="muted" *ngIf="c.perCustomerLimit !== null">{{ c.perCustomerLimit }} per customer</div>
+        </td>
+        <td>
+          <span *ngIf="c.startsAt">from {{ c.startsAt | date:'dd MMM yyyy' }}</span>
+          <span *ngIf="c.expiresAt"><br />until {{ c.expiresAt | date:'dd MMM yyyy' }}</span>
+          <span *ngIf="!c.startsAt && !c.expiresAt" class="muted">No dates</span>
+        </td>
+        <td>
+          <span class="badge badge-ok" *ngIf="c.isActive">Active</span>
+          <span class="badge badge-off" *ngIf="!c.isActive">Inactive</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

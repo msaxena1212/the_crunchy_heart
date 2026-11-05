@@ -1,0 +1,142 @@
+<div class="admin-dashboard-layout">
+  <!-- Top Navbar -->
+  
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <div class="content-container">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Pending Refund & Payment Exceptions</h1>
+          <p class="page-subtitle">
+            Inspect unresolved stock shortages, duplicate captured payments, and unprocessed refund requests.
+          </p>
+        </div>
+        <div class="header-stats">
+          <span class="stat-pill stat-warning">Unresolved: <strong>{{ totalExceptions }}</strong></span>
+        </div>
+      </div>
+
+      <!-- Policy Notice Banner -->
+      <div class="policy-notice">
+        <svg class="notice-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <div class="notice-content">
+          <strong>Read-Only Exception Review Queue:</strong>
+          This operational view highlights captures requiring investigation or manual settlement. In accordance with safety policies, real payment gateway refunds are not automatically initiated from this interface.
+        </div>
+      </div>
+
+      <!-- Error Alert -->
+      <div *ngIf="errorMessage" class="alert-danger" role="alert">
+        <svg class="alert-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ errorMessage }}</span>
+        <button (click)="loadRefundExceptions(currentPage)" class="retry-link">Retry</button>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading pending refund exceptions...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && exceptions.length === 0" class="empty-state card">
+        <div class="empty-icon-wrap">
+          <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3>No Pending Refund Exceptions</h3>
+        <p>All recorded payments and stock levels are currently in a reconciled, valid state.</p>
+      </div>
+
+      <!-- Exceptions Table -->
+      <div *ngIf="!isLoading && exceptions.length > 0" class="table-card card">
+        <table class="exceptions-table">
+          <thead>
+            <tr>
+              <th>Order Number</th>
+              <th>Exception Type</th>
+              <th>Amount</th>
+              <th>Customer</th>
+              <th>Reason / Details</th>
+              <th>Payment ID</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of exceptions">
+              <td class="cell-order-number">
+                <a [routerLink]="['/admin/orders', item.orderNumber]" class="order-link">
+                  {{ item.orderNumber }}
+                </a>
+              </td>
+              <td class="cell-type">
+                <span class="badge" [ngClass]="getExceptionBadgeClass(item.exceptionType)">
+                  {{ item.exceptionType.replace('_', ' ') }}
+                </span>
+              </td>
+              <td class="cell-amount">
+                ₹{{ item.amount | number:'1.2-2' }}
+              </td>
+              <td class="cell-customer">
+                <div class="customer-name">{{ item.customerName }}</div>
+                <div class="customer-phone">{{ item.phone }}</div>
+              </td>
+              <td class="cell-reason">
+                <div class="reason-text">{{ item.reason }}</div>
+                <div class="notes-text" *ngIf="item.orderNotes">{{ item.orderNotes }}</div>
+              </td>
+              <td class="cell-payment-id">
+                <code>{{ item.providerPaymentId || 'N/A' }}</code>
+              </td>
+              <td class="cell-status">
+                <span class="badge" [ngClass]="getRefundStatusBadgeClass(item.refundStatus)">
+                  {{ item.refundStatus | uppercase }}
+                </span>
+              </td>
+              <td class="cell-date">
+                {{ item.createdAt | date:'dd MMM yyyy, HH:mm' }}
+              </td>
+              <td class="cell-action">
+                <a [routerLink]="['/admin/orders', item.orderNumber]" class="btn-inspect">
+                  Inspect
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination-footer" *ngIf="totalPages > 1">
+          <span class="pagination-info">
+            Showing page {{ currentPage }} of {{ totalPages }} ({{ totalExceptions }} total exceptions)
+          </span>
+          <div class="pagination-buttons">
+            <button 
+              (click)="goToPage(currentPage - 1)" 
+              [disabled]="currentPage === 1"
+              class="btn-page"
+            >
+              Previous
+            </button>
+            <button 
+              (click)="goToPage(currentPage + 1)" 
+              [disabled]="currentPage === totalPages"
+              class="btn-page"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

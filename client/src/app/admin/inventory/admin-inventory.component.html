@@ -1,0 +1,53 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Inventory</h1>
+    <p class="page-subtitle">Stock on hand, reserved for open orders, and what is available to sell. Stock adjustments are not in this build yet.</p>
+  </div>
+</div>
+
+<div class="filter-row">
+  <label><input type="checkbox" [(ngModel)]="lowStockOnly" (change)="load()" /> Low stock only</label>
+</div>
+
+<div *ngIf="errorMessage" class="alert-danger" role="alert">
+  <span>{{ errorMessage }}</span>
+  <button class="btn" (click)="load()">Retry</button>
+</div>
+
+<div *ngIf="isLoading" class="loading-state"><div class="spinner"></div><p>Loading inventory…</p></div>
+
+<div *ngIf="!isLoading && variants.length === 0" class="card empty-state">
+  <h3>No variants to show</h3>
+  <p>{{ lowStockOnly ? 'Nothing is at or below its reorder level.' : 'No stock is recorded yet.' }}</p>
+</div>
+
+<div *ngIf="!isLoading && variants.length" class="card table-card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>Product</th>
+        <th>On hand</th>
+        <th>Reserved</th>
+        <th>Available</th>
+        <th>Reorder at</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let v of variants">
+        <td><code>{{ v.sku }}</code></td>
+        <td>{{ v.productName }} <span class="muted">· {{ v.variantName }}</span></td>
+        <td>{{ v.onHand }}</td>
+        <td>{{ v.reserved }}</td>
+        <td><strong>{{ v.available }}</strong></td>
+        <td>{{ v.reorderLevel }}</td>
+        <td>
+          <span class="badge badge-warn" *ngIf="v.lowStock">Low stock</span>
+          <span class="badge badge-ok" *ngIf="!v.lowStock">OK</span>
+          <span class="badge badge-off" *ngIf="!v.isActive">Hidden</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

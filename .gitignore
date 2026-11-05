@@ -6,3 +6,7 @@ dist/
 .angular/
 *.zip
 *.backup*
+
+# Sandbox monitor reports (local, never committed)
+server/reports/
+reports/

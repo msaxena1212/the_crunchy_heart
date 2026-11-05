@@ -1,0 +1,351 @@
+<section class="checkout-page">
+  <div class="checkout-shell">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="checkout-header">
+      <a routerLink="/cart" class="back-link">
+        ← Return to Cart
+      </a>
+      <p class="eyebrow">The Crunchy Heart</p>
+      <h1>Customer Checkout</h1>
+      <p class="checkout-subtitle">Complete your details to enjoy premium roasted makhana.</p>
+    </header>
+
+    <!-- EMPTY CART STATE -->
+    <div *ngIf="!cartItems.length && !isSubmitting" class="empty-state-card">
+      <div class="empty-icon">♡</div>
+      <h2>Your cart is empty</h2>
+      <p>Please add makhana to your cart before proceeding to checkout.</p>
+      <a routerLink="/" class="primary-button">Explore Makhana</a>
+    </div>
+
+    <!-- MAIN CHECKOUT LAYOUT -->
+    <div *ngIf="cartItems.length > 0" class="checkout-layout">
+
+      <!-- LEFT COLUMN: FORM -->
+      <div class="checkout-form-column">
+
+        <!-- ERROR ALERT -->
+        <div *ngIf="errorMessage" class="alert-box alert-error" role="alert">
+          <span class="alert-icon">⚠</span>
+          <div class="alert-content">
+            <strong>Order Notice</strong>
+            <p>{{ errorMessage }}</p>
+          </div>
+        </div>
+
+        <!-- VALIDATION WARNINGS -->
+        <div *ngIf="validationErrors.length > 0" class="alert-box alert-warning">
+          <span class="alert-icon">!</span>
+          <div class="alert-content">
+            <strong>Please check the following:</strong>
+            <ul>
+              <li *ngFor="let err of validationErrors">{{ err }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" novalidate>
+
+          <!-- CONTACT DETAILS -->
+          <div class="form-section-card">
+            <div class="section-title-row">
+              <span class="step-num">1</span>
+              <h2>Contact Information</h2>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="cust-name">Full Name <span class="required">*</span></label>
+                <input
+                  id="cust-name"
+                  type="text"
+                  formControlName="name"
+                  placeholder="e.g. Priyanshu Sharma"
+                  [class.has-error]="checkoutForm.get('name')?.invalid && checkoutForm.get('name')?.touched" />
+                <span class="field-error" *ngIf="checkoutForm.get('name')?.invalid && checkoutForm.get('name')?.touched">
+                  Full name is required (minimum 2 characters).
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label for="cust-phone">Mobile Number <span class="required">*</span></label>
+                <div class="input-with-prefix">
+                  <span class="prefix">+91</span>
+                  <input
+                    id="cust-phone"
+                    type="tel"
+                    formControlName="phone"
+                    placeholder="9876543210"
+                    maxlength="10"
+                    [class.has-error]="checkoutForm.get('phone')?.invalid && checkoutForm.get('phone')?.touched" />
+                </div>
+                <span class="field-error" *ngIf="checkoutForm.get('phone')?.invalid && checkoutForm.get('phone')?.touched">
+                  Valid 10-digit Indian mobile number required.
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label for="cust-email">Email Address <span class="optional">(Optional)</span></label>
+                <input
+                  id="cust-email"
+                  type="email"
+                  formControlName="email"
+                  placeholder="name@example.com"
+                  [class.has-error]="checkoutForm.get('email')?.invalid && checkoutForm.get('email')?.touched" />
+                <span class="field-error" *ngIf="checkoutForm.get('email')?.invalid && checkoutForm.get('email')?.touched">
+                  Please enter a valid email format.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- DELIVERY ADDRESS -->
+          <div class="form-section-card">
+            <div class="section-title-row">
+              <span class="step-num">2</span>
+              <h2>Delivery Address</h2>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="addr-line1">Address (House / Flat / Street) <span class="required">*</span></label>
+                <input
+                  id="addr-line1"
+                  type="text"
+                  formControlName="addressLine1"
+                  placeholder="Flat 402, Sunshine Apartments, MG Road"
+                  [class.has-error]="checkoutForm.get('addressLine1')?.invalid && checkoutForm.get('addressLine1')?.touched" />
+                <span class="field-error" *ngIf="checkoutForm.get('addressLine1')?.invalid && checkoutForm.get('addressLine1')?.touched">
+                  Delivery address is required (minimum 5 characters).
+                </span>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="addr-line2">Apartment, Suite, Unit, etc. <span class="optional">(Optional)</span></label>
+                <input
+                  id="addr-line2"
+                  type="text"
+                  formControlName="addressLine2"
+                  placeholder="Floor 4, Block B" />
+              </div>
+
+              <div class="form-group">
+                <label for="addr-landmark">Landmark <span class="optional">(Optional)</span></label>
+                <input
+                  id="addr-landmark"
+                  type="text"
+                  formControlName="landmark"
+                  placeholder="Near Central Park" />
+              </div>
+
+              <div class="form-group">
+                <label for="addr-pincode">PIN Code <span class="required">*</span></label>
+                <input
+                  id="addr-pincode"
+                  type="text"
+                  formControlName="pincode"
+                  placeholder="110001"
+                  maxlength="6"
+                  [class.has-error]="checkoutForm.get('pincode')?.invalid && checkoutForm.get('pincode')?.touched" />
+                <span class="field-error" *ngIf="checkoutForm.get('pincode')?.invalid && checkoutForm.get('pincode')?.touched">
+                  Valid 6-digit Indian PIN code required.
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label for="addr-city">City <span class="required">*</span></label>
+                <input
+                  id="addr-city"
+                  type="text"
+                  formControlName="city"
+                  placeholder="New Delhi"
+                  [class.has-error]="checkoutForm.get('city')?.invalid && checkoutForm.get('city')?.touched" />
+                <span class="field-error" *ngIf="checkoutForm.get('city')?.invalid && checkoutForm.get('city')?.touched">
+                  City is required.
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label for="addr-state">State <span class="required">*</span></label>
+                <select
+                  id="addr-state"
+                  formControlName="state"
+                  [class.has-error]="checkoutForm.get('state')?.invalid && checkoutForm.get('state')?.touched">
+                  <option value="" disabled selected>Select State</option>
+                  <option *ngFor="let st of indianStates" [value]="st">{{ st }}</option>
+                </select>
+                <span class="field-error" *ngIf="checkoutForm.get('state')?.invalid && checkoutForm.get('state')?.touched">
+                  State is required.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAYMENT METHOD -->
+          <div class="form-section-card">
+            <div class="section-title-row">
+              <span class="step-num">3</span>
+              <h2>Payment Method</h2>
+            </div>
+
+            <div class="payment-options">
+              <!-- ONLINE PAYMENT OPTION -->
+              <label class="payment-option-card" [class.selected]="checkoutForm.get('paymentMethod')?.value === 'ONLINE'">
+                <div class="radio-wrap">
+                  <input
+                    type="radio"
+                    formControlName="paymentMethod"
+                    value="ONLINE" />
+                </div>
+                <div class="option-details">
+                  <div class="option-header">
+                    <strong>Online Payment</strong>
+                    <span class="badge-recommended">Instant Confirmation</span>
+                  </div>
+                  <p class="option-desc">UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, NetBanking via Cashfree Secure Gateway.</p>
+                </div>
+              </label>
+
+              <!-- COD OPTION -->
+              <label class="payment-option-card" [class.selected]="checkoutForm.get('paymentMethod')?.value === 'COD'">
+                <div class="radio-wrap">
+                  <input
+                    type="radio"
+                    formControlName="paymentMethod"
+                    value="COD" />
+                </div>
+                <div class="option-details">
+                  <div class="option-header">
+                    <strong>Cash on Delivery (COD)</strong>
+                  </div>
+                  <p class="option-desc">Pay in cash or UPI when your crunch is safely delivered at your doorstep.</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- NOTES -->
+          <div class="form-section-card">
+            <label for="order-notes" class="section-subheading">Delivery Instructions <span class="optional">(Optional)</span></label>
+            <textarea
+              id="order-notes"
+              formControlName="notes"
+              rows="2"
+              placeholder="Any specific delivery instructions, gate code, or preferences..."></textarea>
+          </div>
+
+          <!-- SUBMIT BUTTON ON MOBILE -->
+          <div class="mobile-submit-wrap">
+            <button
+              type="submit"
+              class="submit-order-button"
+              [disabled]="isSubmitting || isLoadingPreview">
+              <span *ngIf="!isSubmitting">
+                {{ checkoutForm.get('paymentMethod')?.value === 'ONLINE' ? 'Proceed to Payment' : 'Confirm Order' }}
+                · ₹{{ preview?.totalAmount || '...' }}
+              </span>
+              <span *ngIf="isSubmitting" class="button-loading">
+                <span class="spinner"></span> Securing your order...
+              </span>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+
+      <!-- RIGHT COLUMN: ORDER SUMMARY -->
+      <aside class="checkout-summary-column">
+        <div class="summary-card">
+          <h2>Order Summary</h2>
+
+          <div *ngIf="isLoadingPreview" class="summary-loading">
+            <span class="spinner"></span>
+            <p>Verifying server pricing & availability...</p>
+          </div>
+
+          <div *ngIf="!isLoadingPreview && preview">
+            <!-- ITEMS LIST -->
+            <div class="summary-items-list">
+              <div *ngFor="let item of preview.items" class="summary-item">
+                <div class="summary-item-details">
+                  <strong>{{ item.productName }}</strong>
+                  <span class="item-variant-label">{{ item.variantName }}</span>
+                  <span class="item-qty-tag">Qty: {{ item.quantity }}</span>
+                </div>
+                <div class="summary-item-price">
+                  ₹{{ item.grossAmount | number:'1.0-0' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <!-- PRICING CALCULATIONS -->
+            <div class="summary-lines">
+              <div class="summary-line">
+                <span>Subtotal</span>
+                <span>₹{{ preview.subtotal | number:'1.0-0' }}</span>
+              </div>
+
+              <div class="summary-line">
+                <span>Shipping</span>
+                <span *ngIf="preview.shippingAmount === 0" class="free-shipping">FREE</span>
+                <span *ngIf="preview.shippingAmount > 0">₹{{ preview.shippingAmount | number:'1.0-0' }}</span>
+              </div>
+
+              <div class="shipping-threshold-info" *ngIf="preview.subtotal < 499">
+                <span>Add ₹{{ 499 - preview.subtotal | number:'1.0-0' }} more for FREE delivery</span>
+              </div>
+
+              <div class="summary-line tax-note">
+                <span>Includes 18% GST</span>
+                <span>₹{{ preview.taxAmount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-total-row">
+              <div>
+                <strong>Total Amount</strong>
+                <span class="tax-inclusive-tag">All taxes included</span>
+              </div>
+              <strong class="total-figure">₹{{ preview.totalAmount | number:'1.0-0' }}</strong>
+            </div>
+
+            <!-- DESKTOP SUBMIT BUTTON -->
+            <button
+              type="button"
+              class="submit-order-button desktop-submit"
+              (click)="onSubmit()"
+              [disabled]="isSubmitting || isLoadingPreview">
+              <span *ngIf="!isSubmitting">
+                {{ checkoutForm.get('paymentMethod')?.value === 'ONLINE' ? 'Proceed to Payment' : 'Confirm Order' }}
+                →
+              </span>
+              <span *ngIf="isSubmitting" class="button-loading">
+                <span class="spinner"></span> Securing your order...
+              </span>
+            </button>
+
+            <!-- TRUST BADGES -->
+            <div class="trust-footer">
+              <div class="trust-item">
+                <span class="trust-icon">🛡</span>
+                <span>100% Secure Checkout via Cashfree</span>
+              </div>
+              <div class="trust-item">
+                <span class="trust-icon">📦</span>
+                <span>Freshly Packed & Dispatched</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+  </div>
+</section>

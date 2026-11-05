@@ -1,0 +1,33 @@
+[Unit]
+Description=The Crunchy Heart API Backend Service
+After=network.target
+
+[Service]
+Type=simple
+User=tch-api
+Group=tch-api
+WorkingDirectory=/var/www/thecrunchyheart-api/current
+EnvironmentFile=/etc/thecrunchyheart/api.env
+ExecStart=/usr/bin/node src/server.js
+Restart=on-failure
+RestartSec=5s
+
+# Graceful shutdown settings
+KillSignal=SIGTERM
+TimeoutStopSec=35
+SendSIGKILL=yes
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+# Standard output and error logging to journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tch-api
+
+[Install]
+WantedBy=multi-user.target
+

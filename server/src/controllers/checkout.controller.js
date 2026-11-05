@@ -46,11 +46,27 @@ export async function previewCheckout(req, res, next) {
         }
 
         // --------------------------------------------------
+        // Aggregate duplicate variant items
+        // --------------------------------------------------
+
+        const aggregatedMap = new Map();
+        for (const item of items) {
+            const vId = String(item.variantId).trim();
+            const qty = Number(item.quantity);
+            if (!aggregatedMap.has(vId)) {
+                aggregatedMap.set(vId, { variantId: vId, quantity: qty });
+            } else {
+                aggregatedMap.get(vId).quantity += qty;
+            }
+        }
+        const aggregatedItems = Array.from(aggregatedMap.values());
+
+        // --------------------------------------------------
         // Fetch variants
         // --------------------------------------------------
 
-        const variantIds = items.map(
-            (item) => String(item.variantId)
+        const variantIds = aggregatedItems.map(
+            (item) => item.variantId
         );
 
         const variants = await getVariantsForCheckout(
@@ -68,7 +84,7 @@ export async function previewCheckout(req, res, next) {
         // Check all requested variants exist
         // --------------------------------------------------
 
-        for (const item of items) {
+        for (const item of aggregatedItems) {
             const variant = variantMap.get(
                 String(item.variantId)
             );
@@ -102,7 +118,7 @@ export async function previewCheckout(req, res, next) {
         let taxableSubtotal = 0;
         let taxAmount = 0;
 
-        for (const item of items) {
+        for (const item of aggregatedItems) {
             const variant = variantMap.get(
                 String(item.variantId)
             );

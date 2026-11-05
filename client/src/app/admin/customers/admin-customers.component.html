@@ -1,0 +1,51 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Customers</h1>
+    <p class="page-subtitle">
+      Customers are built from their orders, grouped by phone number. Accounts and sign-in are not in this build.
+    </p>
+  </div>
+</div>
+
+<div class="filter-row">
+  <label for="customer-search">Search</label>
+  <input id="customer-search" [(ngModel)]="search" (keyup.enter)="load()" placeholder="Name, phone, or email" />
+  <button class="btn" (click)="load()">Search</button>
+</div>
+
+<div *ngIf="errorMessage" class="alert-danger" role="alert">
+  <span>{{ errorMessage }}</span>
+  <button class="btn" (click)="load()">Retry</button>
+</div>
+
+<div *ngIf="isLoading" class="loading-state"><div class="spinner"></div><p>Loading customers…</p></div>
+
+<div *ngIf="!isLoading && customers.length === 0" class="card empty-state">
+  <h3>No customers match</h3>
+  <p>Try a different search.</p>
+</div>
+
+<div *ngIf="!isLoading && customers.length" class="card table-card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Orders</th>
+        <th>Paid total</th>
+        <th>Last order</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of customers">
+        <td>{{ c.name || '—' }}</td>
+        <td><code>{{ c.phone }}</code></td>
+        <td>{{ c.email || '—' }}</td>
+        <td>{{ c.orderCount }}</td>
+        <td>₹{{ c.paidTotal | number:'1.2-2' }}</td>
+        <td>{{ c.lastOrderAt | date:'dd MMM yyyy' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,102 @@
+.admin-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e6e1d8;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.brand-title { font-weight: 700; margin-right: 8px; }
+.brand-tag { color: #7a6f63; font-size: 0.85rem; }
+
+.navbar-nav { display: flex; gap: 16px; flex-wrap: wrap; }
+.nav-item { color: #5a5248; text-decoration: none; padding: 6px 4px; }
+.nav-item.active { color: #7a1f2b; font-weight: 600; border-bottom: 2px solid #7a1f2b; }
+
+.navbar-user { display: flex; align-items: center; gap: 12px; }
+.user-email { color: #5a5248; font-size: 0.9rem; }
+.logout-button { background: none; border: 1px solid #cfc7bb; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+
+.dashboard-main { padding: 24px; }
+.content-container { max-width: 1200px; margin: 0 auto; }
+
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.page-title { margin: 0 0 6px; font-size: 1.5rem; }
+.page-subtitle { margin: 0; color: #5a5248; max-width: 680px; line-height: 1.5; }
+
+.header-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.stat-pill { padding: 4px 10px; border-radius: 999px; background: #f5f3ef; font-size: 0.9rem; }
+.stat-warning { background: #fff4e0; }
+.stat-conflict { background: #fde2e2; }
+
+.tabs { display: flex; gap: 8px; margin: 8px 0 16px; border-bottom: 1px solid #e6e1d8; }
+.tab { background: none; border: none; padding: 8px 12px; cursor: pointer; color: #5a5248; border-bottom: 2px solid transparent; }
+.tab.active { color: #7a1f2b; border-bottom-color: #7a1f2b; font-weight: 600; }
+
+.card { background: #fff; border: 1px solid #e6e1d8; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.table-card { overflow-x: auto; }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.data-table th, .data-table td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #efebe4; vertical-align: top; }
+.data-table th { color: #5a5248; font-weight: 600; }
+code { font-size: 0.85rem; background: #f5f3ef; padding: 1px 4px; border-radius: 4px; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.8rem; background: #efebe4; }
+.badge-paid { background: #dff3e4; color: #1f6b35; }
+.badge-conflict { background: #fde2e2; color: #9b1c1c; }
+.badge-unresolved { background: #fff4e0; color: #7a4b00; }
+.badge-resumable { background: #e3ecfb; color: #1f4f9b; }
+.reasons { font-size: 0.8rem; color: #7a6f63; margin-top: 4px; }
+
+.muted { color: #7a6f63; font-size: 0.85rem; }
+.section-title { font-size: 1.1rem; margin: 24px 0 8px; }
+.filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+select, textarea, input { font: inherit; padding: 8px; border: 1px solid #cfc7bb; border-radius: 6px; }
+textarea, input { width: 100%; box-sizing: border-box; }
+
+.btn-action {
+  background: #fff;
+  border: 1px solid #cfc7bb;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 2px 4px 2px 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+}
+.btn-action:disabled { opacity: 0.55; cursor: default; }
+.btn-danger { color: #9b1c1c; border-color: #e7b7b7; }
+
+.actions { white-space: nowrap; }
+.close-row td { background: #fbf9f6; }
+.close-panel { display: grid; gap: 8px; max-width: 640px; padding: 8px 0; }
+.close-panel label { font-size: 0.9rem; }
+.close-actions { display: flex; gap: 8px; }
+
+.alert-danger, .alert-info { padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; }
+.alert-danger { background: #fde2e2; color: #7a1717; display: flex; justify-content: space-between; gap: 8px; }
+.alert-info { background: #e3ecfb; color: #1f4f9b; }
+.retry-link { background: none; border: none; text-decoration: underline; cursor: pointer; color: inherit; }
+
+.empty-state h3 { margin: 0 0 6px; }
+.conflict-card { border-color: #e7b7b7; }
+.conflict-card h2 { font-size: 1.05rem; margin: 0 0 6px; }
+
+.loading-state { text-align: center; padding: 32px 0; color: #5a5248; }
+.spinner { width: 24px; height: 24px; border: 3px solid #e6e1d8; border-top-color: #7a1f2b; border-radius: 50%; margin: 0 auto 8px; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 720px) {
+  .dashboard-main { padding: 16px; }
+  .page-title { font-size: 1.25rem; }
+}

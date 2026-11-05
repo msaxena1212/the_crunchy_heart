@@ -134,7 +134,7 @@ export class CartService {
 
   /* =======================================================
      ADD PRODUCT
-     
+
      Existing homepage API.
      ======================================================= */
 
@@ -162,7 +162,7 @@ export class CartService {
 
   /* =======================================================
      ADD TO CART
-     
+
      New product-detail API.
      ======================================================= */
 
@@ -473,7 +473,7 @@ export class CartService {
 
   /* =======================================================
      BACKWARD COMPATIBILITY
-     
+
      Allows existing homepage code to call
      removeFromCart().
      ======================================================= */
@@ -497,6 +497,124 @@ export class CartService {
 
     this.saveCart([]);
 
+  }
+
+
+  /* =======================================================
+     CART RECOVERY SNAPSHOT (P1 RESILIENCE)
+     ======================================================= */
+
+  private readonly recoveryStorageKey =
+    'the-crunchy-heart-cart-recovery';
+
+
+  /**
+   * Save a recoverable cart snapshot before checkout clearance.
+   * Expires after 24 hours. Does not automatically recreate an order.
+   */
+  saveCartSnapshot(orderNumber?: string): void {
+    if (!this.items.length) {
+      return;
+    }
+
+    try {
+      const snapshot = {
+        orderNumber: orderNumber || null,
+        items: this.items,
+        savedAt: Date.now(),
+      };
+
+      localStorage.setItem(
+        this.recoveryStorageKey,
+        JSON.stringify(snapshot)
+      );
+    } catch (error) {
+      console.warn('Unable to save cart recovery snapshot:', error);
+    }
+  }
+
+
+  /**
+   * Retrieve active cart recovery snapshot, enforcing 24-hour expiration.
+   */
+  getCartSnapshot(): { orderNumber: string | null; items: CartItem[]; savedAt: number } | null {
+    try {
+      const stored = localStorage.getItem(this.recoveryStorageKey);
+      if (!stored) {
+        return null;
+      }
+
+      const parsed = JSON.parse(stored);
+      if (!parsed || !Array.isArray(parsed.items) || !parsed.items.length) {
+        return null;
+      }
+
+      // Expire after 24 hours
+      const MAX_AGE_MS = 24 * 60 * 60 * 1000;
+      if (Date.now() - Number(parsed.savedAt || 0) > MAX_AGE_MS) {
+        this.clearCartSnapshot();
+        return null;
+      }
+
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+
+  /**
+   * Check whether a valid recovery snapshot is available.
+   */
+  hasCartSnapshot(): boolean {
+    return this.getCartSnapshot() !== null;
+  }
+
+
+  /**
+   * Restore cart items from the recovery snapshot.
+   *
+   * @param mode 'replace' (default when active cart is empty) or 'merge' (combines quantities)
+   * If active cart is non-empty and mode is 'replace', caller must explicitly confirm.
+   */
+  restoreCartSnapshot(mode: 'replace' | 'merge' = 'replace'): boolean {
+    const snapshot = this.getCartSnapshot();
+    if (!snapshot || !snapshot.items.length) {
+      return false;
+    }
+
+    if (this.items.length === 0 || mode === 'replace') {
+      this.saveCart(snapshot.items);
+      return true;
+    }
+
+    if (mode === 'merge') {
+      const mergedMap = new Map<string, CartItem>();
+      for (const item of this.items) {
+        mergedMap.set(item.variantId, { ...item });
+      }
+      for (const item of snapshot.items) {
+        if (mergedMap.has(item.variantId)) {
+          mergedMap.get(item.variantId)!.quantity += item.quantity;
+        } else {
+          mergedMap.set(item.variantId, { ...item });
+        }
+      }
+      this.saveCart(Array.from(mergedMap.values()));
+      return true;
+    }
+
+    return false;
+  }
+
+
+  /**
+   * Clear the recovery snapshot once an order is confirmed or customer dismisses it.
+   */
+  clearCartSnapshot(): void {
+    try {
+      localStorage.removeItem(this.recoveryStorageKey);
+    } catch {}
   }
 
 

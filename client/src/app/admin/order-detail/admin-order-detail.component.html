@@ -1,0 +1,301 @@
+<div class="admin-dashboard-layout">
+  <!-- Top Navbar -->
+  
+
+  <!-- Main Content -->
+  <main class="dashboard-main">
+    <div class="content-container">
+      <!-- Breadcrumb / Back Link -->
+      <div class="breadcrumb-bar">
+        <a routerLink="/admin/orders" class="back-link">
+          ← Back to Orders
+        </a>
+      </div>
+
+      <!-- Action / Success Alert -->
+      <div *ngIf="actionMessage" class="alert-success" role="status">
+        <svg class="alert-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ actionMessage }}</span>
+      </div>
+
+      <!-- Action Error Alert -->
+      <div *ngIf="actionError" class="alert-danger" role="alert">
+        <svg class="alert-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ actionError }}</span>
+      </div>
+
+      <!-- General Page Error -->
+      <div *ngIf="errorMessage" class="alert-danger" role="alert">
+        <svg class="alert-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ errorMessage }}</span>
+        <button (click)="loadOrderDetail(orderNumber)" class="retry-link">Retry</button>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading order details for {{ orderNumber }}...</p>
+      </div>
+
+      <!-- Confirmation Modal for COD Dispatch -->
+      <div *ngIf="showDispatchConfirm" class="modal-backdrop">
+        <div class="confirm-modal">
+          <div class="modal-icon-wrap warning">
+            <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h3 class="modal-title">Confirm COD Dispatch</h3>
+          <p class="modal-text">
+            Are you sure you want to dispatch order <strong>{{ orderNumber }}</strong>?
+          </p>
+          <div class="modal-callout">
+            This will atomically check inventory availability and permanently deduct stock for all line items in this order. This action cannot be undone.
+          </div>
+          <div class="modal-actions">
+            <button (click)="cancelDispatch()" class="btn-cancel" [disabled]="isDispatching">Cancel</button>
+            <button (click)="confirmDispatch()" class="btn-confirm-dispatch" [disabled]="isDispatching">
+              {{ isDispatching ? 'Dispatching...' : 'Yes, Dispatch Order' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Detail View -->
+      <div *ngIf="!isLoading && detail" class="detail-container">
+        <!-- Top Summary Header Card -->
+        <div class="card summary-header-card">
+          <div class="summary-left">
+            <span class="detail-label">Order Reference</span>
+            <h1 class="order-title">{{ detail.order.orderNumber }}</h1>
+            <div class="order-meta-row">
+              <span class="meta-item">Placed on {{ detail.order.createdAt | date:'dd MMM yyyy, HH:mm' }}</span>
+              <span class="meta-divider">•</span>
+              <span class="meta-item">Payment: <strong>{{ detail.order.paymentMethod }}</strong></span>
+            </div>
+          </div>
+
+          <div class="summary-right">
+            <div class="badges-row">
+              <span class="badge" [ngClass]="getStatusBadgeClass(detail.order.status)">
+                {{ detail.order.status | uppercase }}
+              </span>
+              <span class="badge" [ngClass]="getPaymentBadgeClass(detail.order.paymentStatus)">
+                {{ detail.order.paymentStatus | uppercase }}
+              </span>
+            </div>
+
+            <!-- Dispatch Button if eligible -->
+            <div class="dispatch-action-area" *ngIf="detail.canDispatch">
+              <button 
+                (click)="promptDispatch()" 
+                class="btn-primary-dispatch"
+                [disabled]="isDispatching"
+              >
+                Dispatch COD Order
+              </button>
+            </div>
+            <div class="dispatched-notice" *ngIf="detail.order.status === 'dispatched'">
+              <span class="text-dispatched">✓ Order has been dispatched</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <!-- Left Column: Line Items & History -->
+          <div class="main-column">
+            <!-- Line Items Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Order Line Items ({{ detail.items.length }})</h2>
+              </div>
+              <div class="card-body no-padding">
+                <table class="items-table">
+                  <thead>
+                    <tr>
+                      <th>Product & Variant</th>
+                      <th>SKU</th>
+                      <th class="text-right">Unit Price</th>
+                      <th class="text-center">Qty</th>
+                      <th class="text-right">Line Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of detail.items">
+                      <td class="cell-product-name">
+                        <div class="product-title">{{ item.productName }}</div>
+                        <div class="variant-tag" *ngIf="item.variantName">{{ item.variantName }}</div>
+                      </td>
+                      <td class="cell-sku">{{ item.sku }}</td>
+                      <td class="cell-price text-right">₹{{ item.unitPrice | number:'1.2-2' }}</td>
+                      <td class="cell-qty text-center">{{ item.quantity }}</td>
+                      <td class="cell-total text-right">₹{{ item.totalPrice | number:'1.2-2' }}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="4" class="text-right footer-label">Subtotal:</td>
+                      <td class="text-right footer-val">₹{{ detail.order.subtotal | number:'1.2-2' }}</td>
+                    </tr>
+                    <tr *ngIf="detail.order.discountAmount > 0">
+                      <td colspan="4" class="text-right footer-label">Discount:</td>
+                      <td class="text-right footer-val text-green">-₹{{ detail.order.discountAmount | number:'1.2-2' }}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="4" class="text-right footer-label">Shipping:</td>
+                      <td class="text-right footer-val">
+                        {{ detail.order.shippingAmount === 0 ? 'FREE' : '₹' + (detail.order.shippingAmount | number:'1.2-2') }}
+                      </td>
+                    </tr>
+                    <tr *ngIf="detail.order.taxAmount > 0">
+                      <td colspan="4" class="text-right footer-label">Tax / GST:</td>
+                      <td class="text-right footer-val">₹{{ detail.order.taxAmount | number:'1.2-2' }}</td>
+                    </tr>
+                    <tr class="total-row">
+                      <td colspan="4" class="text-right grand-total-label">Grand Total:</td>
+                      <td class="text-right grand-total-val">₹{{ detail.order.totalAmount | number:'1.2-2' }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            <!-- Payment Attempts Card -->
+            <div class="card" *ngIf="detail.payments && detail.payments.length > 0">
+              <div class="card-header">
+                <h2 class="card-title">Payment Attempts ({{ detail.payments.length }})</h2>
+              </div>
+              <div class="card-body no-padding">
+                <table class="simple-table">
+                  <thead>
+                    <tr>
+                      <th>Attempt ID / Order ID</th>
+                      <th>Provider</th>
+                      <th>Gateway Status</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let p of detail.payments">
+                      <td class="cell-id">
+                        <div>{{ p.providerOrderId }}</div>
+                        <div class="subtext" *ngIf="p.providerPaymentId">Payment: {{ p.providerPaymentId }}</div>
+                      </td>
+                      <td>{{ p.provider }}</td>
+                      <td>
+                        <span class="pill-gateway">{{ p.gatewayStatus || 'N/A' }}</span>
+                      </td>
+                      <td>
+                        <span class="badge" [ngClass]="getPaymentBadgeClass(p.status)">{{ p.status }}</span>
+                      </td>
+                      <td class="cell-date">{{ p.createdAt | date:'dd MMM yyyy, HH:mm' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Status History Card -->
+            <div class="card" *ngIf="detail.statusHistory && detail.statusHistory.length > 0">
+              <div class="card-header">
+                <h2 class="card-title">Status Audit Log</h2>
+              </div>
+              <div class="card-body">
+                <ul class="timeline">
+                  <li *ngFor="let log of detail.statusHistory" class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <div class="timeline-header">
+                        <span class="timeline-status">{{ log.status | uppercase }}</span>
+                        <span class="timeline-date">{{ log.createdAt | date:'dd MMM yyyy, HH:mm' }}</span>
+                      </div>
+                      <p class="timeline-note" *ngIf="log.note">{{ log.note }}</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Customer & Delivery Info -->
+          <div class="side-column">
+            <!-- Customer Information Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Customer Information</h2>
+              </div>
+              <div class="card-body">
+                <div class="info-block">
+                  <span class="info-label">Customer Name</span>
+                  <div class="info-value">{{ detail.order.customerName }}</div>
+                </div>
+                <div class="info-block">
+                  <span class="info-label">Phone Number</span>
+                  <div class="info-value">{{ detail.order.phone }}</div>
+                </div>
+                <div class="info-block" *ngIf="detail.order.email">
+                  <span class="info-label">Email Address</span>
+                  <div class="info-value">{{ detail.order.email }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shipping Address Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Shipping Address</h2>
+              </div>
+              <div class="card-body">
+                <div *ngIf="detail.order.shippingAddress as addr; else noAddress">
+                  <div class="address-line">{{ addr.line1 || addr.address1 || addr.street }}</div>
+                  <div class="address-line" *ngIf="addr.line2 || addr.address2">{{ addr.line2 || addr.address2 }}</div>
+                  <div class="address-line">
+                    {{ addr.city }}, {{ addr.state }} {{ addr.postalCode || addr.pincode || addr.zip }}
+                  </div>
+                  <div class="address-line" *ngIf="addr.country">{{ addr.country }}</div>
+                </div>
+                <ng-template #noAddress>
+                  <p class="text-muted">No explicit shipping address recorded.</p>
+                </ng-template>
+              </div>
+            </div>
+
+            <!-- Order Notes Card -->
+            <div class="card" *ngIf="detail.order.notes">
+              <div class="card-header">
+                <h2 class="card-title">Order Notes</h2>
+              </div>
+              <div class="card-body">
+                <p class="notes-text">{{ detail.order.notes }}</p>
+              </div>
+            </div>
+
+            <!-- Refund Exceptions Card if any -->
+            <div class="card card-warning" *ngIf="detail.refunds && detail.refunds.length > 0">
+              <div class="card-header">
+                <h2 class="card-title">Refund State</h2>
+              </div>
+              <div class="card-body">
+                <div *ngFor="let ref of detail.refunds" class="refund-entry">
+                  <div class="refund-header">
+                    <span class="refund-amount">₹{{ ref.amount | number:'1.2-2' }}</span>
+                    <span class="badge badge-warning">{{ ref.status | uppercase }}</span>
+                  </div>
+                  <div class="refund-reason" *ngIf="ref.reason">Reason: {{ ref.reason }}</div>
+                  <div class="refund-date">Created: {{ ref.createdAt | date:'dd MMM yyyy, HH:mm' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

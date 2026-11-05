@@ -1,0 +1,35 @@
+<div class="console">
+  <aside class="sidebar" aria-label="Owner console navigation">
+    <div class="brand">
+      <span class="brand-title">The Crunchy Heart</span>
+      <span class="brand-tag">Owner console</span>
+    </div>
+
+    <nav>
+      <div class="nav-group" *ngFor="let group of navGroups">
+        <div class="group-title">{{ group.title }}</div>
+        <a *ngFor="let item of group.items"
+           [routerLink]="item.path"
+           routerLinkActive="active"
+           class="nav-link">
+          {{ item.label }}
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <a routerLink="/" target="_blank" class="nav-link">Storefront ↗</a>
+    </div>
+  </aside>
+
+  <div class="console-main">
+    <header class="topbar">
+      <span class="user-email" *ngIf="adminService.currentAdmin() as admin">{{ admin.email }}</span>
+      <button class="logout-button" (click)="onLogout()" title="Sign out">Sign out</button>
+    </header>
+
+    <main class="console-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

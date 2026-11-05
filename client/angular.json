@@ -19,7 +19,15 @@
             "styles": ["src/styles.css"]
           },
           "configurations": {
-            "production": { "budgets": [{ "type": "initial", "maximumWarning": "2mb", "maximumError": "5mb" }], "outputHashing": "all" },
+            "production": {
+              "optimization": {
+                "scripts": true,
+                "styles": { "minify": true },
+                "fonts": false
+              },
+              "budgets": [{ "type": "initial", "maximumWarning": "2mb", "maximumError": "5mb" }],
+              "outputHashing": "all"
+            },
             "development": { "optimization": false, "sourceMap": true }
           },
           "defaultConfiguration": "production"
@@ -31,6 +39,14 @@
             "development": { "buildTarget": "the-crunchy-heart:build:development" }
           },
           "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "runner": "vitest",
+            "buildTarget": "the-crunchy-heart:build:development",
+            "tsConfig": "tsconfig.spec.json"
+          }
         }
       }
     }
