@@ -87,7 +87,8 @@ VALUES
     ('p0000000-0000-0000-0000-000000000002', 'TCH-FLV-ONION', 'Cream & Onion', 70, 'Cream & Onion', 220, 195, 110, 18, 'Savory', 'onion', TRUE, 4),
     ('p0000000-0000-0000-0000-000000000002', 'TCH-FLV-TOMATO', 'Tomato Tangy', 70, 'Tomato Tangy', 220, 199, 110, 18, 'Tangy', 'tomato', TRUE, 5),
     ('p0000000-0000-0000-0000-000000000002', 'TCH-FLV-CHILLI', 'Chilli Garlic', 70, 'Chilli Garlic', 220, 199, 110, 18, 'Zesty', 'chilli', TRUE, 6),
-    ('p0000000-0000-0000-0000-000000000002', 'TCH-FLV-BIHARI', 'Bihari Chat', 70, 'Bihari Chat', 250, 229, 125, 18, 'Desi Spices', 'bihari', TRUE, 7)
+    ('p0000000-0000-0000-0000-000000000002', 'TCH-FLV-BIHARI', 'Bihari Chat', 70, 'Bihari Chat', 250, 229, 125, 18, 'Desi Spices', 'bihari', TRUE, 7),
+    ('p0000000-0000-0000-0000-000000000002', 'TCH-FLV-CHEESE', 'Cheese & Herbs', 70, 'Cheese & Herbs', 220, 199, 110, 18, 'Chef Special', 'cheese', TRUE, 8)
 ON CONFLICT (sku) DO UPDATE
 SET
     variant_name = EXCLUDED.variant_name,
@@ -104,7 +105,7 @@ SET
     updated_at = NOW();
 
 -- 5. INITIAL INVENTORY ROWS
--- Initializes stock on hand (default 100 units each) and sets reorder level to 15.
+-- Initializes stock on hand (100 units each) and sets reorder level to 15.
 INSERT INTO inventory (variant_id, quantity_on_hand, quantity_reserved, reorder_level)
 SELECT
     pv.id,
@@ -112,7 +113,8 @@ SELECT
     0,
     15
 FROM product_variants pv
-ON CONFLICT (variant_id) DO NOTHING;
+ON CONFLICT (variant_id) DO UPDATE
+SET quantity_on_hand = GREATEST(inventory.quantity_on_hand, 100);
 
 -- 6. STORE SETTINGS (Shipping & Tax)
 INSERT INTO store_settings(setting_key, setting_value, description)

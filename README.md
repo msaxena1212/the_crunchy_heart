@@ -22,8 +22,12 @@ Premium Makhana ecommerce website for **thecrunchyheart.com**.
 ### Flavoured Makhana
 - Himalayan Salt — 70g
 - Peri Peri — 70g
-- Pudina — 70g
+- Mint Pudina — 70g
 - Cream & Onion — 70g
+- Tomato Tangy — 70g
+- Chilli Garlic — 70g
+- Bihari Chat — 70g
+- Cheese & Herbs — 70g
 
 ## 1. Create the Neon database
 

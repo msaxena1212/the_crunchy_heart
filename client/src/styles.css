@@ -1020,6 +1020,42 @@ h4 {
         #f0dfc3;
 }
 
+.product-image-wrap.himalayan,
+.product-image-wrap.rose {
+    background: #fae8e8;
+}
+
+.product-image-wrap.peri,
+.product-image-wrap.orange {
+    background: #fde8db;
+}
+
+.product-image-wrap.pudina,
+.product-image-wrap.green {
+    background: #e2f0e6;
+}
+
+.product-image-wrap.onion,
+.product-image-wrap.gold {
+    background: #f5eedc;
+}
+
+.product-image-wrap.tomato {
+    background: #fce4e4;
+}
+
+.product-image-wrap.chilli {
+    background: #fde2dc;
+}
+
+.product-image-wrap.bihari {
+    background: #f5e6d3;
+}
+
+.product-image-wrap.cheese {
+    background: #fef3c7;
+}
+
 
 .raw-product-image,
 .flavour-product-image {

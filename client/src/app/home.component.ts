@@ -101,7 +101,8 @@ export class HomeComponent
     'TCH-FLV-TOMATO': 'assets/tomato-tangy.png',
     'TCH-FLV-CHILLI': 'assets/chilli-garlic.png',
     'TCH-FLV-PUDINA': 'assets/pudina.png',
-    'TCH-FLV-BIHARI': 'assets/bihari-chat.png'
+    'TCH-FLV-BIHARI': 'assets/bihari-chat.png',
+    'TCH-FLV-CHEESE': 'assets/cheese-herbs.png'
   };
 
   /* =========================================================

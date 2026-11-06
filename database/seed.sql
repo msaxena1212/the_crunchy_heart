@@ -111,10 +111,14 @@ SELECT
 FROM products p
 CROSS JOIN (
     VALUES
-        ('TCH-FLV-HIMALAYAN', 'Himalayan Salt', 'Himalayan Salt', '', 'rose', 1),
+        ('TCH-FLV-HIMALAYAN', 'Himalayan Salt', 'Himalayan Salt', 'Classic', 'rose', 1),
         ('TCH-FLV-PERI', 'Peri Peri', 'Peri Peri', 'Best Seller', 'orange', 2),
-        ('TCH-FLV-PUDINA', 'Pudina', 'Pudina', '', 'green', 3),
-        ('TCH-FLV-ONION', 'Cream & Onion', 'Cream & Onion', '', 'gold', 4)
+        ('TCH-FLV-PUDINA', 'Mint Pudina', 'Mint Pudina', 'Refreshing', 'green', 3),
+        ('TCH-FLV-ONION', 'Cream & Onion', 'Cream & Onion', 'Savory', 'gold', 4),
+        ('TCH-FLV-TOMATO', 'Tomato Tangy', 'Tomato Tangy', 'Tangy', 'tomato', 5),
+        ('TCH-FLV-CHILLI', 'Chilli Garlic', 'Chilli Garlic', 'Zesty', 'chilli', 6),
+        ('TCH-FLV-BIHARI', 'Bihari Chat', 'Bihari Chat', 'Desi Spices', 'bihari', 7),
+        ('TCH-FLV-CHEESE', 'Cheese & Herbs', 'Cheese & Herbs', 'Chef Special', 'cheese', 8)
 ) AS v(sku, variant_name, flavor, badge, tone, sort_order)
 WHERE p.slug = 'flavoured-makhana'
   AND NOT EXISTS (

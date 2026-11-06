@@ -158,6 +158,13 @@ try {
       name: 'Bihari Chat',
       price: 229,
       tone: 'bihari'
+    },
+
+    {
+      sku: 'TCH-FLV-CHEESE',
+      name: 'Cheese & Herbs',
+      price: 199,
+      tone: 'cheese'
     }
 
   ];
@@ -248,7 +255,9 @@ try {
             ? 5
             : flavour.sku === 'TCH-FLV-CHILLI'
               ? 6
-              : 7
+              : flavour.sku === 'TCH-FLV-BIHARI'
+                ? 7
+                : 8
         ]
       );
 
@@ -299,12 +308,12 @@ try {
       )
       VALUES (
         $1,
-        0,
+        100,
         0,
         10
       )
       ON CONFLICT (variant_id)
-      DO NOTHING
+      DO UPDATE SET quantity_on_hand = GREATEST(inventory.quantity_on_hand, 100)
       `,
       [variantId]
     );
