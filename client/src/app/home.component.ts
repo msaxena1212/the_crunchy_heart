@@ -64,6 +64,8 @@ export class HomeComponent
   products: Product[] = [];
   rawProducts: Product[] = [];
   flavourProducts: Product[] = [];
+  festiveProducts: Product[] = [];
+  bulkProducts: Product[] = [];
 
   loading = true;
   error = '';
@@ -102,8 +104,101 @@ export class HomeComponent
     'TCH-FLV-CHILLI': 'assets/chilli-garlic.png',
     'TCH-FLV-PUDINA': 'assets/pudina.png',
     'TCH-FLV-BIHARI': 'assets/bihari-chat.png',
-    'TCH-FLV-CHEESE': 'assets/cheese-herbs.png'
+    'TCH-FLV-CHEESE': 'assets/cheese-herbs.png',
+
+    'TCH-GIFT-ALL8': 'assets/festive-box.png',
+    'TCH-GIFT-4PACK': 'assets/festive-box.png',
+    'TCH-BLK-5KG': 'assets/bulk-makhana.png',
+    'TCH-BLK-10KG': 'assets/bulk-makhana.png'
   };
+
+  /* =========================================================
+     WHATSAPP & SUPPORT
+     ========================================================= */
+
+  readonly whatsappUrl = 'https://wa.me/919999999999?text=' + encodeURIComponent('Hi The Crunchy Heart! I would like to inquire about your premium makhana / bulk & festive gifting options.');
+
+  /* =========================================================
+     FAQ ACCORDION
+     ========================================================= */
+
+  faqs = [
+    {
+      q: 'What makes 6+ Suta Jumbo Makhana different from regular lotus seeds?',
+      a: 'Suta is the authentic size-grading measurement in Mithilanchal (Bihar). 6+ Suta represents the highest export quality — jumbo in diameter, uniformly popped, and remarkably light and fluffy with almost zero bitter unpopped kernels.',
+      open: true
+    },
+    {
+      q: 'Where are The Crunchy Heart makhana seeds sourced from?',
+      a: 'Every lotus seed is sourced directly from certified farmer collectives across the wetlands of Darbhanga and Madhubani in Bihar — India\'s GI-tagged capital of authentic Makhana production.',
+      open: false
+    },
+    {
+      q: 'Are your flavoured fox nuts fried or roasted?',
+      a: '100% slow dry-roasted, never fried! We use zero palm oil, zero artificial colors, and no trans fats. You get full superfood nutrition and guilt-free crunch in every bite.',
+      open: false
+    },
+    {
+      q: 'Can I consume your Makhana during religious fasts (Vrat)?',
+      a: 'Absolutely! Raw Makhana is a pure, satvik superfood revered for fasting during Navratri, Shivratri, and Ekadashi. For fasting cravings, we recommend our Raw Makhana varieties and Himalayan Pink Salt.',
+      open: false
+    },
+    {
+      q: 'How should I store Makhana to maintain peak crunchiness?',
+      a: 'Keep the pouches sealed in a cool, dry place. In humid monsoon weather, you can easily revive maximum crispness by lightly tossing the seeds in a dry pan for 60 seconds.',
+      open: false
+    },
+    {
+      q: 'How fast is delivery and can I place bulk / corporate gifting orders?',
+      a: 'Orders are dispatched within 24 hours and delivered across India in 2–4 business days. All orders above ₹499 enjoy free shipping. For bulk orders (5kg to 500kg+) or bespoke wedding/corporate gifting hampers, contact us directly via our WhatsApp button for custom quotes and packaging.',
+      open: false
+    }
+  ];
+
+  toggleFaq(index: number): void {
+    if (this.faqs[index]) {
+      this.faqs[index].open = !this.faqs[index].open;
+    }
+  }
+
+  /* =========================================================
+     CUSTOMER REVIEWS & SOCIAL PROOF
+     ========================================================= */
+
+  readonly reviews = [
+    {
+      name: 'Priya Sharma',
+      city: 'Mumbai',
+      rating: 5,
+      tag: 'Verified Buyer',
+      text: 'The Himalayan Salt and Cheese & Herbs are unbelievable! So much lighter and crunchier than grocery store brands. My evening chai routine is officially incomplete without it.',
+      pack: 'All 8 Flavours Gift Set'
+    },
+    {
+      name: 'Vikramaditya Roy',
+      city: 'Bengaluru',
+      rating: 5,
+      tag: 'Fitness Enthusiast',
+      text: 'As someone tracking macros, the jumbo 6+ Suta raw makhana is a game-changer. Almost zero unpopped hard seeds, clean taste, and fills you up with clean plant protein.',
+      pack: 'Raw Makhana 1kg Pack'
+    },
+    {
+      name: 'Ananya Deshmukh',
+      city: 'Pune',
+      rating: 5,
+      tag: 'Wedding Gifting',
+      text: 'Ordered 60 custom gift hampers for our family celebration. The team was super helpful on WhatsApp, and our guests loved having a healthy, crunchy alternative to traditional sweets!',
+      pack: 'Celebration 4-Pack Hampers'
+    },
+    {
+      name: 'Rohit Kulkarni',
+      city: 'Delhi NCR',
+      rating: 5,
+      tag: 'Daily Snacker',
+      text: 'The Peri Peri and Bihari Chat have the perfect kick without feeling greasy or overly salty. Love that it uses zero palm oil. You can taste the quality in every bite.',
+      pack: 'Peri Peri & Bihari Chat'
+    }
+  ];
 
   /* =========================================================
      SOCIAL CONTENT
@@ -243,6 +338,14 @@ export class HomeComponent
 
           this.flavourProducts = products.filter(
             product => product.category?.slug === 'flavoured-makhana'
+          );
+
+          this.festiveProducts = products.filter(
+            product => product.category?.slug === 'festive-gifting'
+          );
+
+          this.bulkProducts = products.filter(
+            product => product.category?.slug === 'bulk-wholesale'
           );
 
           this.loading = false;

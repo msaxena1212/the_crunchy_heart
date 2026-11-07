@@ -59,6 +59,41 @@
     </div>
   </section>
 
+  <!-- HERITAGE & ORIGIN TRUST STRIP -->
+  <section class="heritage-strip reveal-section">
+    <div class="heritage-item">
+      <span class="heritage-icon">🌾</span>
+      <div class="heritage-text">
+        <strong>Origin Sourced</strong>
+        <span>Darbhanga, Bihar (Mithila)</span>
+      </div>
+    </div>
+    <div class="heritage-separator" aria-hidden="true">•</div>
+    <div class="heritage-item">
+      <span class="heritage-icon">✨</span>
+      <div class="heritage-text">
+        <strong>Jumbo 6+ Suta Sorting</strong>
+        <span>Fluffiest, export-grade lotus seeds</span>
+      </div>
+    </div>
+    <div class="heritage-separator" aria-hidden="true">•</div>
+    <div class="heritage-item">
+      <span class="heritage-icon">🌿</span>
+      <div class="heritage-text">
+        <strong>Slow-Roasted, Never Fried</strong>
+        <span>Zero palm oil • Zero trans fat</span>
+      </div>
+    </div>
+    <div class="heritage-separator" aria-hidden="true">•</div>
+    <div class="heritage-item">
+      <span class="heritage-icon">🧘</span>
+      <div class="heritage-text">
+        <strong>100% Satvik &amp; Pure</strong>
+        <span>Ideal for fasting (Vrat) &amp; tea-time</span>
+      </div>
+    </div>
+  </section>
+
   <!-- LOADING STATE -->
   <section class="catalog-state reveal-section" *ngIf="loading">
     <div class="loading-spinner"></div>
@@ -239,6 +274,165 @@
     <div class="empty-products" *ngIf="!flavourProducts.length">
       <span>♡</span>
       <p>Our flavour collection is being prepared.</p>
+    </div>
+  </section>
+
+  <!-- FESTIVE & GIFT BOXES -->
+  <section
+    id="festive-gifting"
+    class="products-section festive-section reveal-section"
+    *ngIf="!loading && !error && festiveProducts.length">
+
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Celebrate with Heart</span>
+        <h2>Festive &amp; Celebration Gift Boxes</h2>
+      </div>
+
+      <p>
+        The thoughtful, healthier gifting alternative. Handcrafted luxury hampers
+        packed with our signature flavours for weddings, festivals &amp; corporate celebrations.
+      </p>
+    </div>
+
+    <div class="product-grid festive-grid">
+      <article
+        class="product-card festive-card"
+        *ngFor="let product of festiveProducts; trackBy: trackByProduct">
+
+        <a
+          [routerLink]="['/product', product.slug]"
+          class="product-image-wrap festive-product-image"
+          [class]="product.variant.tone || 'gold'"
+          style="display:flex;text-decoration:none;color:inherit;">
+
+          <img
+            [src]="productImage(product)"
+            [alt]="product.name"
+            loading="lazy"
+            (error)="handleImageError($event)" />
+
+          <span
+            class="product-badge festive-badge"
+            *ngIf="product.variant.badge">
+            ✦ {{ product.variant.badge }}
+          </span>
+        </a>
+
+        <div class="product-info">
+          <a
+            [routerLink]="['/product', product.slug]"
+            class="product-name"
+            style="text-decoration:none;color:inherit;cursor:pointer;display:block;">
+            {{ product.variant.name }}
+          </a>
+
+          <span class="product-weight">
+            {{ product.shortDescription || 'Luxury Gift Hamper' }}
+          </span>
+
+          <div class="product-price-row">
+            <strong *ngIf="getPrice(product) !== null">
+              ₹{{ getPrice(product) }}
+            </strong>
+            <span class="mrp-strike" *ngIf="product.variant.mrp && product.variant.mrp > product.variant.sellingPrice">
+              ₹{{ product.variant.mrp }}
+            </span>
+          </div>
+
+          <button
+            class="add"
+            type="button"
+            [disabled]="!isAvailable(product)"
+            (click)="addToCart(product)">
+            {{ isAvailable(product) ? 'Add to Cart' : 'Coming Soon' }}
+          </button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- BULK & WHOLESALE SUPPLY -->
+  <section
+    id="bulk-wholesale"
+    class="products-section bulk-section reveal-section"
+    *ngIf="!loading && !error && bulkProducts.length">
+
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Direct from Origin</span>
+        <h2>Bulk &amp; Wholesale Supply</h2>
+      </div>
+
+      <p>
+        Jumbo 6+ Suta raw phool makhana directly from Darbhanga, Bihar wetlands.
+        Scalable supply, competitive wholesale pricing, and food-grade packaging for businesses, caterers &amp; large families.
+      </p>
+    </div>
+
+    <div class="product-grid bulk-grid">
+      <article
+        class="product-card bulk-card"
+        *ngFor="let product of bulkProducts; trackBy: trackByProduct">
+
+        <a
+          [routerLink]="['/product', product.slug]"
+          class="product-image-wrap bulk-product-image"
+          style="display:flex;text-decoration:none;color:inherit;">
+
+          <img
+            [src]="productImage(product)"
+            [alt]="product.name"
+            loading="lazy"
+            (error)="handleImageError($event)" />
+
+          <span
+            class="product-badge"
+            *ngIf="product.variant.badge">
+            {{ product.variant.badge }}
+          </span>
+        </a>
+
+        <div class="product-info">
+          <a
+            [routerLink]="['/product', product.slug]"
+            class="product-name"
+            style="text-decoration:none;color:inherit;cursor:pointer;display:block;">
+            {{ product.variant.name }}
+          </a>
+
+          <span class="product-weight">
+            {{ formatWeight(product) }} • 6+ Suta Jumbo
+          </span>
+
+          <div class="product-price-row">
+            <strong *ngIf="getPrice(product) !== null">
+              ₹{{ getPrice(product) }}
+            </strong>
+            <span class="mrp-strike" *ngIf="product.variant.mrp && product.variant.mrp > product.variant.sellingPrice">
+              ₹{{ product.variant.mrp }}
+            </span>
+          </div>
+
+          <div class="bulk-card-actions">
+            <button
+              class="add"
+              type="button"
+              [disabled]="!isAvailable(product)"
+              (click)="addToCart(product)">
+              {{ isAvailable(product) ? 'Add to Cart' : 'Coming Soon' }}
+            </button>
+            <a
+              [href]="whatsappUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="bulk-inquiry-button"
+              aria-label="Inquire wholesale quote on WhatsApp">
+              WhatsApp Quote
+            </a>
+          </div>
+        </div>
+      </article>
     </div>
   </section>
 
@@ -475,18 +669,62 @@
       <span class="eyebrow">The happy shoutouts</span>
       <h2>Good crunch deserves <em>good company.</em></h2>
       <p>
-        Customer reviews will appear here once verified
-        reviews are collected.
+        Loved by mindful snackers, fitness enthusiasts, and gifting families across India.
       </p>
     </div>
 
-    <div class="testimonial-placeholder">
-      <span>♡</span>
-      <strong>Your happy shoutouts could be here.</strong>
+    <div class="reviews-grid">
+      <article class="review-card" *ngFor="let review of reviews">
+        <div class="review-header">
+          <div class="review-stars" aria-label="5 stars rating">
+            <span *ngFor="let s of [1,2,3,4,5]">★</span>
+          </div>
+          <span class="review-verified-badge">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
+              <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+            </svg>
+            {{ review.tag }}
+          </span>
+        </div>
+        <p class="review-quote">“{{ review.text }}”</p>
+        <div class="review-footer">
+          <div class="review-author">
+            <strong>{{ review.name }}</strong>
+            <small>{{ review.city }}</small>
+          </div>
+          <span class="review-pack-pill">{{ review.pack }}</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- FREQUENTLY ASKED QUESTIONS -->
+  <section id="faqs" class="faq-section reveal-section">
+    <div class="section-heading centered">
+      <span class="eyebrow">Got Questions?</span>
+      <h2>Everything you need to know about <em>our crunch.</em></h2>
       <p>
-        We're keeping this section ready for real customer
-        experiences — no made-up reviews.
+        From authentic Darbhanga wetland harvesting to crispness revival and wholesale bulk shipping.
       </p>
+    </div>
+
+    <div class="faq-container">
+      <div
+        class="faq-item"
+        *ngFor="let item of faqs; let i = index"
+        [class.is-open]="item.open">
+        <button
+          type="button"
+          class="faq-question"
+          (click)="toggleFaq(i)"
+          [attr.aria-expanded]="item.open">
+          <span>{{ item.q }}</span>
+          <span class="faq-toggle-icon" aria-hidden="true">{{ item.open ? '−' : '+' }}</span>
+        </button>
+        <div class="faq-answer" *ngIf="item.open">
+          <p>{{ item.a }}</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -517,5 +755,18 @@
       <div class="club-heart">♡</div>
     </div>
   </section>
+
+  <!-- FLOATING WHATSAPP CHAT PILL -->
+  <a
+    [href]="whatsappUrl"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="floating-whatsapp-pill"
+    aria-label="Chat with The Crunchy Heart support on WhatsApp">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.05 7.79C8.85 7.79 8.52 7.86 8.24 8.16C7.96 8.47 7.18 9.2 7.18 10.68C7.18 12.16 8.26 13.58 8.41 13.78C8.56 13.98 10.5 17.11 13.56 18.31C16.1 19.3 16.62 19.1 17.17 19.05C17.72 19 18.94 18.32 19.19 17.61C19.44 16.9 19.44 16.29 19.37 16.16C19.3 16.04 19.1 15.96 18.8 15.81C18.5 15.66 17.03 14.94 16.76 14.84C16.48 14.74 16.28 14.69 16.08 14.99C15.89 15.3 15.3 15.99 15.12 16.19C14.95 16.39 14.77 16.42 14.47 16.27C14.17 16.12 13.21 15.81 12.08 14.8C11.2 14.01 10.6 13.04 10.43 12.74C10.25 12.44 10.41 12.28 10.56 12.13C10.7 12 10.87 11.77 11.02 11.6C11.17 11.42 11.22 11.3 11.32 11.1C11.42 10.9 11.37 10.72 11.3 10.57C11.22 10.42 10.63 8.97 10.38 8.38C10.14 7.8 9.89 7.88 9.71 7.87C9.54 7.86 9.34 7.79 9.05 7.79Z"/>
+    </svg>
+    <span>Chat on WhatsApp</span>
+  </a>
 
 </main>
