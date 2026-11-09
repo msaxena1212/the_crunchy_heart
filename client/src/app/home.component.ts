@@ -254,17 +254,47 @@ export class HomeComponent
   }
 
   /* =========================================================
-     SUTA GRADE COMPARISON & UNIFIED BULK CONFIGURATOR
-     Matching mukejamakhana.in: Single interactive configurator
-     rather than dumping multiple repetitive cards upfront.
+     BULK & WHOLESALE SUPPLY CONFIGURATOR
+     - Bifurcated by Quality Category: Normal & Handpicked
+     - Nut Size (Suta): 4, 5, 6, and 7 Suta
+       * 4 Suta : Normal - ₹720/kg ; Handpicked - ₹770/kg
+       * 5 Suta : Normal - ₹880/kg ; Handpicked - ₹930/kg
+       * 6 Suta : Normal - ₹1070/kg ; Handpicked - ₹1120/kg
+       * 7 Suta : Normal - ₹1280/kg ; Handpicked - ₹1330/kg
+     - Minimum Order Quantity (MOQ): 100 kg
+     - No Add to Cart CTA; dedicated "Get Quote" CTA redirecting
+       to WhatsApp for formal B2B invoice inquiries.
      ========================================================= */
 
-  selectedBulkSuta: '5' | '6' | '7' = '6';
-  selectedBulkWeightKg: 5 | 10 = 5;
-  showSutaComparisonModal = false;
+  selectedBulkSuta: '4' | '5' | '6' | '7' = '6';
+  selectedBulkQuality: 'normal' | 'handpicked' = 'normal';
+  selectedBulkQtyKg: number = 100;
+  readonly bulkMoqKg: number = 100;
+  showSutaComparisonModal: boolean = false;
   activeSutaTab: string = 'all';
 
+  readonly bulkPricing: Record<'4' | '5' | '6' | '7', { normal: number; handpicked: number }> = {
+    '4': { normal: 720, handpicked: 770 },
+    '5': { normal: 880, handpicked: 930 },
+    '6': { normal: 1070, handpicked: 1120 },
+    '7': { normal: 1280, handpicked: 1330 }
+  };
+
   readonly sutaGuides = [
+    {
+      grade: '4',
+      name: '4 Suta Micro Popped',
+      diameter: '10 – 12 mm',
+      tag: 'Namkeen & Food Processing',
+      desc: 'Uniform crisp micro blossoms. Highest kernel count per kilogram, engineered specifically for industrial namkeen, snack mixtures, premixes and extruded bars.',
+      bestFor: 'Commercial namkeen, chivda mixtures, snack premixes & sweet makers',
+      seedsPerKg: '~18,000 – 22,000 seeds',
+      popRatio: '92%+ Uniform Micro',
+      badge: 'High-Yield Commercial',
+      accentColor: '#8a624a',
+      normalPrice: '₹720/kg',
+      handpickedPrice: '₹770/kg'
+    },
     {
       grade: '5',
       name: '5 Suta Classic',
@@ -276,7 +306,8 @@ export class HomeComponent
       popRatio: '95%+',
       badge: 'High-Yield Value',
       accentColor: '#9a6039',
-      startingPrice: '₹769/kg'
+      normalPrice: '₹880/kg',
+      handpickedPrice: '₹930/kg'
     },
     {
       grade: '6',
@@ -289,7 +320,8 @@ export class HomeComponent
       popRatio: '98%+ Export Grade',
       badge: '★ Best Seller',
       accentColor: '#d4af37',
-      startingPrice: '₹949/kg'
+      normalPrice: '₹1,070/kg',
+      handpickedPrice: '₹1,120/kg'
     },
     {
       grade: '7',
@@ -302,79 +334,71 @@ export class HomeComponent
       popRatio: '99% Supreme Giant',
       badge: '👑 Royal Reserve',
       accentColor: '#b8860b',
-      startingPrice: '₹1,179/kg'
+      normalPrice: '₹1,280/kg',
+      handpickedPrice: '₹1,330/kg'
     }
   ];
 
-  selectBulkSuta(grade: '5' | '6' | '7'): void {
+  selectBulkSuta(grade: '4' | '5' | '6' | '7'): void {
     this.selectedBulkSuta = grade;
   }
 
-  selectBulkWeight(weight: 5 | 10): void {
-    this.selectedBulkWeightKg = weight;
+  selectBulkQuality(quality: 'normal' | 'handpicked'): void {
+    this.selectedBulkQuality = quality;
+  }
+
+  setBulkQty(qty: number): void {
+    this.selectedBulkQtyKg = Math.max(this.bulkMoqKg, Math.round(qty));
+  }
+
+  increaseBulkQty(step = 50): void {
+    this.selectedBulkQtyKg += step;
+  }
+
+  decreaseBulkQty(step = 50): void {
+    this.selectedBulkQtyKg = Math.max(this.bulkMoqKg, this.selectedBulkQtyKg - step);
   }
 
   toggleSutaComparisonModal(): void {
     this.showSutaComparisonModal = !this.showSutaComparisonModal;
   }
 
-  getActiveBulkProduct(): Product | undefined {
-    const targetSku = `TCH-BLK-${this.selectedBulkSuta}S-${this.selectedBulkWeightKg}KG`;
-    const found = this.bulkProducts.find(p => p.variant?.sku === targetSku);
-    if (found) return found;
-
-    // Fallback: match by grade and weight in flavor or sku
-    return this.bulkProducts.find(p => {
-      const sku = p.variant?.sku ?? '';
-      const grams = p.variant?.weightGrams ?? 0;
-      return sku.includes(`${this.selectedBulkSuta}S`) && grams === this.selectedBulkWeightKg * 1000;
-    }) || this.bulkProducts.find(p => {
-      const grams = p.variant?.weightGrams ?? 0;
-      return grams === this.selectedBulkWeightKg * 1000;
-    }) || this.bulkProducts[0];
-  }
-
   getActiveSutaGuide() {
-    return this.sutaGuides.find(g => g.grade === this.selectedBulkSuta) || this.sutaGuides[1];
+    return this.sutaGuides.find(g => g.grade === this.selectedBulkSuta) || this.sutaGuides[2];
   }
 
-  getActiveBulkPrice(): number {
-    const prod = this.getActiveBulkProduct();
-    return Number(prod?.variant?.sellingPrice || 0);
+  get bulkRatePerKg(): number {
+    const sutaRates = this.bulkPricing[this.selectedBulkSuta] || this.bulkPricing['6'];
+    return sutaRates[this.selectedBulkQuality] || 1070;
   }
 
-  getActiveBulkMrp(): number {
-    const prod = this.getActiveBulkProduct();
-    return Number(prod?.variant?.mrp || 0);
+  get bulkEstimatedTotal(): number {
+    return this.bulkRatePerKg * this.selectedBulkQtyKg;
   }
 
-  getActiveBulkSavings(): number {
-    const mrp = this.getActiveBulkMrp();
-    const price = this.getActiveBulkPrice();
-    return mrp > price ? mrp - price : 0;
-  }
-
-  getActiveBulkPerKg(): number {
-    const price = this.getActiveBulkPrice();
-    return Math.round(price / this.selectedBulkWeightKg);
-  }
-
-  getActiveBulkWhatsAppUrl(): string {
+  get bulkWhatsAppQuoteUrl(): string {
     const guide = this.getActiveSutaGuide();
-    const price = this.getActiveBulkPrice();
-    const text = encodeURIComponent(
-      `Hello The Crunchy Heart Team! I am interested in wholesale/bulk supply for ${guide.name} (${this.selectedBulkWeightKg}kg bag @ ₹${price}). Please share your B2B rate card, bulk GST invoice details, and delivery timelines to my location.`
-    );
-    return `https://wa.me/919999999999?text=${text}`;
+    const qualityLabel = this.selectedBulkQuality === 'handpicked'
+      ? 'Handpicked (Double-Sorted, Zero Black Spots)'
+      : 'Normal (Standard Machine-Graded)';
+    const rate = this.bulkRatePerKg;
+    const qty = this.selectedBulkQtyKg;
+    const total = this.bulkEstimatedTotal.toLocaleString('en-IN');
+
+    const message =
+      `Hello The Crunchy Heart B2B Desk!\n\n` +
+      `I would like to request an official wholesale/bulk quote for:\n` +
+      `• Nut Size: ${guide.name} (${guide.diameter})\n` +
+      `• Quality Category: ${qualityLabel}\n` +
+      `• Order Quantity: ${qty} kg (MOQ: 100 kg)\n` +
+      `• Indicated Price: ₹${rate}/kg\n` +
+      `• Estimated Order Value: ₹${total}\n\n` +
+      `Please provide formal GST proforma invoice, laboratory COA report, dispatch lead time, and freight charges to my delivery pincode.`;
+
+    return `https://wa.me/919999999999?text=${encodeURIComponent(message)}`;
   }
 
-  addActiveBulkToCart(): void {
-    const prod = this.getActiveBulkProduct();
-    if (prod && this.isAvailable(prod)) {
-      this.addToCart(prod);
-      this.cartOpen = true;
-    }
-  }
+
 
   filterSuta(grade: string): void {
     this.activeSutaTab = grade;

@@ -6611,7 +6611,11 @@ body {
 }
 
 /* =========================================================
-   UNIFIED INTERACTIVE BULK CONFIGURATOR (5, 6 & 7 SUTA)
+   UNIFIED INTERACTIVE BULK CONFIGURATOR (4, 5, 6 & 7 SUTA)
+   - Quality Bifurcation: Normal & Handpicked
+   - Nut Size: 4, 5, 6, 7 Suta
+   - Minimum Order Quantity: 100 kg
+   - "Get Quote" WhatsApp CTA (No Add to Cart)
    ========================================================= */
 
 .bulk-master-configurator {
@@ -6626,6 +6630,10 @@ body {
   overflow: hidden;
 }
 
+.bulk-step-block {
+  margin-bottom: 28px;
+}
+
 .step-indicator {
   display: block;
   font-size: 0.82rem;
@@ -6636,21 +6644,121 @@ body {
   margin-bottom: 12px;
 }
 
-.bulk-grade-selector-bar {
-  margin-bottom: 32px;
+.step-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.bulk-grade-tabs {
+.active-quality-indicator {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.active-quality-indicator strong {
+  color: var(--green-dark);
+}
+
+/* Quality Bifurcation Cards */
+.quality-selector-group {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-.bulk-tab-btn {
+.quality-toggle-btn {
   background: var(--surface-warm);
   border: 2px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 18px 16px;
+  padding: 18px 20px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.quality-toggle-btn:hover {
+  border-color: var(--green);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.quality-toggle-btn.active {
+  background: #ffffff;
+  border-color: var(--green-dark);
+  box-shadow: 0 8px 24px rgba(20, 86, 60, 0.16);
+}
+
+.quality-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quality-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.quality-toggle-btn.active .quality-name {
+  color: var(--green-dark);
+}
+
+.quality-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(44, 34, 23, 0.08);
+  color: var(--muted);
+}
+
+.quality-pill.luxury {
+  background: #d4af37;
+  color: #ffffff;
+}
+
+.quality-desc {
+  font-size: 0.84rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 12px;
+  flex-grow: 1;
+}
+
+.quality-rate-hint {
+  font-size: 0.86rem;
+  color: var(--muted);
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(44, 34, 23, 0.1);
+}
+
+.quality-rate-hint strong {
+  font-size: 1.05rem;
+  color: var(--green-dark);
+}
+
+/* 4 Nut Size Tabs */
+.bulk-grade-tabs-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.bulk-grade-tabs-4 .bulk-tab-btn {
+  background: var(--surface-warm);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 14px;
   text-align: center;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -6660,25 +6768,25 @@ body {
   align-items: center;
 }
 
-.bulk-tab-btn:hover {
+.bulk-grade-tabs-4 .bulk-tab-btn:hover {
   border-color: var(--green);
   transform: translateY(-3px);
   box-shadow: var(--shadow-sm);
 }
 
-.bulk-tab-btn.active {
+.bulk-grade-tabs-4 .bulk-tab-btn.active {
   background: #ffffff;
   border-color: var(--green);
   box-shadow: 0 10px 28px rgba(20, 86, 60, 0.18);
 }
 
 .tab-badge-pill {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 3px 8px;
+  border-radius: 10px;
   background: rgba(44, 34, 23, 0.08);
   color: var(--muted);
   margin-bottom: 6px;
@@ -6705,16 +6813,33 @@ body {
 }
 
 .tab-dim {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--brown);
   margin-bottom: 4px;
 }
 
 .tab-sub {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   color: var(--muted);
   line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.tab-price-tag {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--green-dark);
+  background: var(--surface-warm);
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-top: auto;
+  border: 1px solid rgba(20, 86, 60, 0.15);
+}
+
+.bulk-tab-btn.active .tab-price-tag {
+  background: var(--green-dark);
+  color: #ffffff;
 }
 
 /* Configurator Body (2 Columns) */
@@ -6740,7 +6865,7 @@ body {
 }
 
 .suta-scale-visualizer {
-  height: 140px;
+  height: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6755,6 +6880,13 @@ body {
   background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f3e5d3 60%, #c4aa8a 100%);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+}
+
+.suta-3d-blossom.circle-suta-4 {
+  width: 58px;
+  height: 58px;
+  border: 2px solid #8a624a;
+  box-shadow: 0 8px 18px rgba(138, 98, 74, 0.22);
 }
 
 .suta-3d-blossom.circle-suta-5 {
@@ -6842,51 +6974,118 @@ body {
   flex-direction: column;
 }
 
-.bulk-pkg-selection {
-  margin-bottom: 20px;
+/* Quantity Selection & MOQ 100 kg */
+.bulk-qty-selection {
+  margin-bottom: 22px;
 }
 
-.pkg-toggle-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.qty-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.moq-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #8c6b00;
+  background: #fbf3d5;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  padding: 4px 10px;
+  border-radius: 14px;
+}
+
+.bulk-qty-stepper-wrap {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.pkg-toggle-btn {
-  background: var(--surface-warm);
+.bulk-stepper {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  width: fit-content;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(48, 34, 20, 0.06);
+}
+
+.bulk-step-btn {
+  background: var(--surface-warm);
+  border: none;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  width: 48px;
+  height: 46px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.18s ease;
 }
 
-.pkg-toggle-btn:hover {
-  border-color: var(--green);
+.bulk-step-btn:hover:not(:disabled) {
+  background: var(--green);
+  color: #ffffff;
 }
 
-.pkg-toggle-btn.active {
-  background: #ffffff;
-  border-color: var(--green-dark);
-  box-shadow: 0 4px 14px rgba(11, 60, 41, 0.12);
+.bulk-step-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
-.pkg-weight {
-  font-size: 1.1rem;
+.bulk-qty-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 0 20px;
+}
+
+.qty-number {
+  font-size: 1.5rem;
   font-weight: 800;
-  color: var(--text);
-}
-
-.pkg-toggle-btn.active .pkg-weight {
   color: var(--green-dark);
 }
 
-.pkg-type {
-  font-size: 0.74rem;
+.qty-unit {
+  font-size: 0.85rem;
+  font-weight: 700;
   color: var(--muted);
+}
+
+.bulk-preset-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-pill {
+  background: var(--surface-warm);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-pill:hover {
+  border-color: var(--green);
+  color: var(--green-dark);
+}
+
+.preset-pill.active {
+  background: var(--green-dark);
+  border-color: var(--green-dark);
+  color: #ffffff;
 }
 
 /* Specs Matrix */
@@ -6923,81 +7122,128 @@ body {
 /* Bulk Pricing Row */
 .bulk-pricing-row {
   margin-bottom: 22px;
+  padding: 16px;
+  background: linear-gradient(135deg, #fffdf8 0%, #faf3e8 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: var(--radius-sm);
 }
 
 .pricing-headline {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .bulk-price-main {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 800;
   color: var(--green-dark);
   line-height: 1;
 }
 
-.per-kg-rate {
-  font-size: 0.88rem;
+.bulk-price-per-kg {
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--muted);
-  margin-top: 6px;
 }
 
-.per-kg-rate strong {
+.bulk-quality-pill {
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: var(--green-dark);
+  color: #ffffff;
+  margin-left: 6px;
+}
+
+.bulk-order-estimate {
+  font-size: 0.94rem;
   color: var(--text);
+  margin-top: 8px;
 }
 
-/* Bulk CTA Actions */
+.estimate-total-amount {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--green-dark);
+}
+
+.bulk-order-estimate small {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Dedicated Get Quote CTA (No Add to Cart) */
 .bulk-cta-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   margin-top: auto;
 }
 
-.bulk-add-cart-btn {
-  background: var(--green);
-  border: none;
+.bulk-get-quote-btn {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
   color: #ffffff;
-  padding: 14px 24px;
+  padding: 16px 24px;
   border-radius: var(--radius-sm);
-  font-size: 1rem;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(20, 86, 60, 0.25);
-  transition: all 0.22s ease;
-}
-
-.bulk-add-cart-btn:hover {
-  background: var(--green-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(11, 60, 41, 0.35);
-}
-
-.bulk-whatsapp-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  color: #128c7e;
-  border: 2px solid #25d366;
-  padding: 12px 20px;
-  border-radius: var(--radius-sm);
-  font-size: 0.92rem;
-  font-weight: 700;
+  gap: 14px;
   text-decoration: none;
-  transition: all 0.22s ease;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35);
+  transition: all 0.25s ease;
 }
 
-.bulk-whatsapp-btn:hover {
-  background: #25d366;
+.bulk-get-quote-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(37, 211, 102, 0.45);
+  background: linear-gradient(135deg, #20ba5a 0%, #0d7569 100%);
   color: #ffffff;
-  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.3);
+}
+
+.bulk-get-quote-btn .wa-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.bulk-get-quote-btn .quote-text {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.bulk-get-quote-btn .quote-text strong {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.bulk-get-quote-btn .quote-text small {
+  font-size: 0.76rem;
+  opacity: 0.92;
+  margin-top: 2px;
+}
+
+.bulk-get-quote-btn .quote-arrow {
+  font-size: 1.4rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.bulk-support-note {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--muted);
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 4px;
 }
 
 /* Side-by-Side Comparison Drawer */
@@ -7040,6 +7286,7 @@ body {
 
 .suta-table {
   width: 100%;
+  min-width: 680px;
   border-collapse: collapse;
   background: #ffffff;
   font-size: 0.88rem;
@@ -7059,8 +7306,29 @@ body {
   font-size: 0.86rem;
 }
 
-.suta-table tbody tr:hover {
+.suta-table tbody tr:hover,
+.suta-table tbody tr.highlighted-row {
   background: #faf6ef;
+}
+
+.suta-table tbody tr.highlighted-row {
+  border-left: 4px solid var(--green);
+}
+
+.rate-green {
+  color: var(--green-dark);
+}
+
+.rate-gold {
+  color: #b8860b;
+}
+
+.table-moq-footer {
+  padding: 10px 16px;
+  background: var(--surface-warm);
+  font-size: 0.78rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
 }
 
 .table-select-btn {
@@ -7073,6 +7341,7 @@ body {
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .table-select-btn:hover,
@@ -7082,7 +7351,24 @@ body {
   color: #ffffff;
 }
 
-/* Responsive Breakpoints */
+/* =========================================================
+   COMPREHENSIVE MOBILE & RESPONSIVE PERFECTION
+   Fixes layout, typography, touch targets, and overflow
+   for seamless experience on Mobile (320px - 768px) and Web
+   ========================================================= */
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+@media (max-width: 1024px) {
+  .bulk-grade-tabs-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 992px) {
   .combo-3x3-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -7090,31 +7376,197 @@ body {
   .bulk-configurator-body {
     grid-template-columns: 1fr;
   }
+  .quality-selector-group {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .quality-selector-group {
+    grid-template-columns: 1fr;
+  }
+  .hero-section {
+    padding: 32px 16px;
+    gap: 28px;
+  }
+  .hero-copy h1 {
+    font-size: clamp(2.2rem, 8vw, 3.4rem);
+  }
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .hero-actions button {
+    width: 100%;
+    min-height: 48px;
+  }
+  .hero-trust {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.78rem;
+  }
+  .heritage-strip {
+    padding: 16px 12px;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  .heritage-separator {
+    display: none;
+  }
+  .heritage-item {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 640px) {
   .combo-3x3-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
-  .bulk-grade-tabs {
-    grid-template-columns: 1fr;
+  .combo-tile {
+    padding: 12px 10px;
   }
+  .combo-tile-img-wrap {
+    height: 85px;
+    margin-bottom: 6px;
+  }
+  .combo-tile-img-wrap img {
+    max-height: 80px;
+  }
+  .combo-tile-title {
+    font-size: 0.88rem;
+  }
+  .combo-tile-meta {
+    font-size: 0.72rem;
+  }
+  .combo-tile-price {
+    font-size: 0.95rem;
+  }
+  .combo-quick-add {
+    font-size: 0.78rem;
+    padding: 6px 10px;
+  }
+  .stepper-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+  .stepper-count {
+    font-size: 0.85rem;
+    min-width: 24px;
+  }
+  .combo-packaging-tile {
+    grid-column: span 2;
+  }
+  .packaging-icon-wrap {
+    height: 70px;
+  }
+  .packaging-emblem {
+    font-size: 2.2rem;
+  }
+
+  .bulk-grade-tabs-4 {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .bulk-grade-tabs-4 .bulk-tab-btn {
+    padding: 12px 10px;
+  }
+  .bulk-grade-tabs-4 .tab-title {
+    font-size: 1rem;
+  }
+  .bulk-grade-tabs-4 .tab-dim {
+    font-size: 0.74rem;
+  }
+  .bulk-grade-tabs-4 .tab-sub {
+    display: none;
+  }
+  .bulk-grade-tabs-4 .tab-price-tag {
+    font-size: 0.82rem;
+    padding: 2px 8px;
+  }
+
   .festive-combo-builder-wrap,
   .bulk-master-configurator {
-    padding: 24px 16px;
+    padding: 20px 14px;
+    border-radius: var(--radius-md);
+  }
+
+  .milestone-track-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
   .milestone-pin .pin-label {
     display: none;
   }
+
   .combo-checkout-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 16px;
   }
   .combo-add-cart-btn {
     width: 100%;
     justify-content: center;
+    font-size: 0.9rem;
+    padding: 13px 16px;
+  }
+  .combo-reset-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .bulk-stepper {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .bulk-step-btn {
+    width: 54px;
+    height: 48px;
+  }
+  .bulk-qty-display {
+    padding: 0 10px;
+  }
+  .bulk-preset-pills {
+    width: 100%;
+  }
+  .preset-pill {
+    flex: 1 1 auto;
+    text-align: center;
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+
+  .bulk-get-quote-btn {
+    padding: 14px 16px;
+  }
+  .bulk-get-quote-btn .quote-text strong {
+    font-size: 1.02rem;
+  }
+  .bulk-get-quote-btn .quote-text small {
+    font-size: 0.7rem;
+  }
+  .bulk-support-note {
+    flex-direction: column;
+    gap: 4px;
   }
 }
+
+@media (max-width: 400px) {
+  .combo-3x3-grid {
+    grid-template-columns: 1fr;
+  }
+  .combo-packaging-tile {
+    grid-column: span 1;
+  }
+  .bulk-grade-tabs-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 
 
