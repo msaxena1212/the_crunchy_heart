@@ -119,9 +119,149 @@ export class HomeComponent
   };
 
   /* =========================================================
-     SUTA GRADE COMPARISON & BULK STATE
+     FESTIVE CUSTOM COMBO BUILDER (3x3 FORMAT, MAX 10 ITEMS)
+     Milestones:
+     - 4 to 6 items: 5% OFF
+     - 7 to 9 items: 8% OFF
+     - 10 items: 10% OFF (Max limit: 10 items)
      ========================================================= */
 
+  readonly maxComboLimit = 10;
+  comboCounts: Record<string, number> = {};
+  comboToastMessage = '';
+  private comboToastTimer: any = null;
+
+  get totalComboCount(): number {
+    return Object.values(this.comboCounts).reduce((sum, count) => sum + count, 0);
+  }
+
+  get comboDiscountPercent(): number {
+    const count = this.totalComboCount;
+    if (count >= 10) return 10;
+    if (count >= 7) return 8;
+    if (count >= 4) return 5;
+    return 0;
+  }
+
+  get comboSubtotal(): number {
+    let subtotal = 0;
+    for (const [sku, count] of Object.entries(this.comboCounts)) {
+      if (count <= 0) continue;
+      const product = this.flavourProducts.find(p => p.variant?.sku === sku);
+      const price = Number(product?.variant?.sellingPrice || 0);
+      subtotal += price * count;
+    }
+    return subtotal;
+  }
+
+  get comboDiscountAmount(): number {
+    const percent = this.comboDiscountPercent;
+    if (percent <= 0) return 0;
+    return Math.round(this.comboSubtotal * (percent / 100));
+  }
+
+  get comboFinalPrice(): number {
+    return Math.max(0, this.comboSubtotal - this.comboDiscountAmount);
+  }
+
+  get comboProgressPercent(): number {
+    return Math.min(100, Math.round((this.totalComboCount / this.maxComboLimit) * 100));
+  }
+
+  get comboNextMilestoneText(): string {
+    const count = this.totalComboCount;
+    if (count === 0) {
+      return 'Add any 4 flavours to unlock 5% Festive Discount!';
+    }
+    if (count < 4) {
+      const remaining = 4 - count;
+      return `Add ${remaining} more pack${remaining > 1 ? 's' : ''} to unlock 5% Festive Discount!`;
+    }
+    if (count < 7) {
+      const remaining = 7 - count;
+      return `🎉 5% OFF unlocked! Add ${remaining} more to unlock 8% OFF!`;
+    }
+    if (count < 10) {
+      const remaining = 10 - count;
+      return `🌟 8% OFF unlocked! Add ${remaining} more to unlock the Grand 10% OFF!`;
+    }
+    return `👑 Grand 10% Festive Discount Unlocked! Hamper Box is at full capacity (10/10).`;
+  }
+
+  getComboItemCount(sku: string): number {
+    return this.comboCounts[sku] || 0;
+  }
+
+  canAddMoreComboItems(): boolean {
+    return this.totalComboCount < this.maxComboLimit;
+  }
+
+  addComboItem(product: Product): void {
+    const sku = product.variant?.sku;
+    if (!sku) return;
+    if (this.totalComboCount >= this.maxComboLimit) {
+      this.showComboToast('Maximum 10 items allowed in your custom festive gift box!');
+      return;
+    }
+    this.comboCounts[sku] = (this.comboCounts[sku] || 0) + 1;
+  }
+
+  removeComboItem(product: Product): void {
+    const sku = product.variant?.sku;
+    if (!sku || !this.comboCounts[sku]) return;
+    this.comboCounts[sku] -= 1;
+    if (this.comboCounts[sku] <= 0) {
+      delete this.comboCounts[sku];
+    }
+  }
+
+  resetCombo(): void {
+    this.comboCounts = {};
+    this.showComboToast('Custom combo box cleared.');
+  }
+
+  addCustomComboToCart(): void {
+    if (this.totalComboCount === 0) {
+      this.showComboToast('Please add at least 1 flavour to your custom box.');
+      return;
+    }
+
+    for (const [sku, count] of Object.entries(this.comboCounts)) {
+      if (count <= 0) continue;
+      const product = this.flavourProducts.find(p => p.variant?.sku === sku);
+      if (product && product.variant) {
+        this.cartService.addToCart({
+          product,
+          variant: product.variant,
+          quantity: count
+        });
+      }
+    }
+
+    const discountMsg = this.comboDiscountPercent > 0
+      ? ` with ${this.comboDiscountPercent}% festive discount applied!`
+      : '!';
+    this.showComboToast(`Added ${this.totalComboCount} custom hamper items to cart${discountMsg}`);
+    this.cartOpen = true;
+  }
+
+  showComboToast(message: string): void {
+    this.comboToastMessage = message;
+    if (this.comboToastTimer) clearTimeout(this.comboToastTimer);
+    this.comboToastTimer = setTimeout(() => {
+      this.comboToastMessage = '';
+    }, 4000);
+  }
+
+  /* =========================================================
+     SUTA GRADE COMPARISON & UNIFIED BULK CONFIGURATOR
+     Matching mukejamakhana.in: Single interactive configurator
+     rather than dumping multiple repetitive cards upfront.
+     ========================================================= */
+
+  selectedBulkSuta: '5' | '6' | '7' = '6';
+  selectedBulkWeightKg: 5 | 10 = 5;
+  showSutaComparisonModal = false;
   activeSutaTab: string = 'all';
 
   readonly sutaGuides = [
@@ -165,6 +305,76 @@ export class HomeComponent
       startingPrice: '₹1,179/kg'
     }
   ];
+
+  selectBulkSuta(grade: '5' | '6' | '7'): void {
+    this.selectedBulkSuta = grade;
+  }
+
+  selectBulkWeight(weight: 5 | 10): void {
+    this.selectedBulkWeightKg = weight;
+  }
+
+  toggleSutaComparisonModal(): void {
+    this.showSutaComparisonModal = !this.showSutaComparisonModal;
+  }
+
+  getActiveBulkProduct(): Product | undefined {
+    const targetSku = `TCH-BLK-${this.selectedBulkSuta}S-${this.selectedBulkWeightKg}KG`;
+    const found = this.bulkProducts.find(p => p.variant?.sku === targetSku);
+    if (found) return found;
+
+    // Fallback: match by grade and weight in flavor or sku
+    return this.bulkProducts.find(p => {
+      const sku = p.variant?.sku ?? '';
+      const grams = p.variant?.weightGrams ?? 0;
+      return sku.includes(`${this.selectedBulkSuta}S`) && grams === this.selectedBulkWeightKg * 1000;
+    }) || this.bulkProducts.find(p => {
+      const grams = p.variant?.weightGrams ?? 0;
+      return grams === this.selectedBulkWeightKg * 1000;
+    }) || this.bulkProducts[0];
+  }
+
+  getActiveSutaGuide() {
+    return this.sutaGuides.find(g => g.grade === this.selectedBulkSuta) || this.sutaGuides[1];
+  }
+
+  getActiveBulkPrice(): number {
+    const prod = this.getActiveBulkProduct();
+    return Number(prod?.variant?.sellingPrice || 0);
+  }
+
+  getActiveBulkMrp(): number {
+    const prod = this.getActiveBulkProduct();
+    return Number(prod?.variant?.mrp || 0);
+  }
+
+  getActiveBulkSavings(): number {
+    const mrp = this.getActiveBulkMrp();
+    const price = this.getActiveBulkPrice();
+    return mrp > price ? mrp - price : 0;
+  }
+
+  getActiveBulkPerKg(): number {
+    const price = this.getActiveBulkPrice();
+    return Math.round(price / this.selectedBulkWeightKg);
+  }
+
+  getActiveBulkWhatsAppUrl(): string {
+    const guide = this.getActiveSutaGuide();
+    const price = this.getActiveBulkPrice();
+    const text = encodeURIComponent(
+      `Hello The Crunchy Heart Team! I am interested in wholesale/bulk supply for ${guide.name} (${this.selectedBulkWeightKg}kg bag @ ₹${price}). Please share your B2B rate card, bulk GST invoice details, and delivery timelines to my location.`
+    );
+    return `https://wa.me/919999999999?text=${text}`;
+  }
+
+  addActiveBulkToCart(): void {
+    const prod = this.getActiveBulkProduct();
+    if (prod && this.isAvailable(prod)) {
+      this.addToCart(prod);
+      this.cartOpen = true;
+    }
+  }
 
   filterSuta(grade: string): void {
     this.activeSutaTab = grade;

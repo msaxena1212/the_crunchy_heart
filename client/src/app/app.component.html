@@ -322,27 +322,29 @@
     </div>
   </section>
 
-  <!-- FESTIVE & GIFT BOXES -->
+  <!-- FESTIVE & GIFT BOXES (WITH 3X3 CUSTOM COMBO BUILDER) -->
   <section
     id="festive-gifting"
     class="products-section festive-section reveal-section"
-    *ngIf="!loading && !error && festiveProducts.length">
+    *ngIf="!loading && !error && (festiveProducts.length || flavourProducts.length)">
 
     <div class="section-heading">
       <div>
-        <span class="eyebrow">Celebrate with Heart</span>
+        <span class="eyebrow">Celebrate with Heart • Handcrafted Gifting</span>
         <h2>Festive &amp; Celebration Gift Boxes</h2>
       </div>
 
       <p>
         The thoughtful, healthier gifting alternative. Handcrafted luxury hampers
-        packed with our signature flavours for weddings, festivals &amp; corporate celebrations.
+        packed with our signature slow-roasted flavours for weddings, festivals &amp; corporate celebrations.
+        Choose our master-curated gift boxes or craft your bespoke 10-pack hamper below!
       </p>
     </div>
 
-    <div class="product-grid festive-grid">
+    <!-- PRE-CURATED CHEF'S GIFT BOXES -->
+    <div class="product-grid festive-curated-grid" *ngIf="festiveProducts.length">
       <article
-        class="product-card festive-card"
+        class="product-card festive-card card-3d"
         *ngFor="let product of festiveProducts; trackBy: trackByProduct">
 
         <a
@@ -373,170 +375,7 @@
           </a>
 
           <span class="product-weight">
-            {{ product.shortDescription || 'Luxury Gift Hamper' }}
-          </span>
-
-          <div class="product-price-row">
-            <strong *ngIf="getPrice(product) !== null">
-              ₹{{ getPrice(product) }}
-            </strong>
-            <span class="mrp-strike" *ngIf="product.variant.mrp && product.variant.mrp > product.variant.sellingPrice">
-              ₹{{ product.variant.mrp }}
-            </span>
-          </div>
-
-          <button
-            class="add"
-            type="button"
-            [disabled]="!isAvailable(product)"
-            (click)="addToCart(product)">
-            {{ isAvailable(product) ? 'Add to Cart' : 'Coming Soon' }}
-          </button>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <!-- BULK & WHOLESALE SUPPLY (5, 6 & 7 SUTA GRADES) -->
-  <section
-    id="bulk-wholesale"
-    class="products-section bulk-section reveal-section"
-    *ngIf="!loading && !error && bulkProducts.length">
-
-    <div class="section-heading">
-      <div>
-        <span class="eyebrow">Direct from Origin • Mithilanchal Hub</span>
-        <h2>Bulk &amp; Wholesale Supply (5, 6 &amp; 7 Suta)</h2>
-      </div>
-
-      <p>
-        Direct-from-origin phool makhana harvested across Darbhanga and Madhubani wetlands.
-        Graded into authentic 5 Suta, 6 Suta and 7 Suta sizes for food manufacturers,
-        caterers, sweet makers, and retail brands with food-grade bulk packaging.
-      </p>
-    </div>
-
-    <!-- 3D SUTA GRADE VISUAL COMPARISON DECK -->
-    <div class="suta-comparison-deck">
-      <div
-        class="suta-grade-card card-3d"
-        *ngFor="let guide of sutaGuides"
-        [class.selected-grade]="activeSutaTab === guide.grade"
-        (click)="filterSuta(guide.grade === activeSutaTab ? 'all' : guide.grade)">
-
-        <div class="suta-visual-wrap">
-          <div
-            class="suta-circle-3d"
-            [class]="'circle-suta-' + guide.grade">
-            <span class="suta-diameter-pill">{{ guide.diameter }}</span>
-          </div>
-        </div>
-
-        <div class="suta-grade-info">
-          <div class="suta-header-row">
-            <h3>{{ guide.name }}</h3>
-            <span class="suta-tag-pill">{{ guide.tag }}</span>
-          </div>
-
-          <p class="suta-desc">{{ guide.desc }}</p>
-
-          <div class="suta-specs-list">
-            <div class="spec-row">
-              <span class="spec-label">Ideal For:</span>
-              <span class="spec-val">{{ guide.bestFor }}</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Blossom Yield:</span>
-              <span class="spec-val">{{ guide.seedsPerKg }}</span>
-            </div>
-            <div class="spec-row">
-              <span class="spec-label">Pop Ratio:</span>
-              <span class="spec-val">{{ guide.popRatio }}</span>
-            </div>
-          </div>
-
-          <div class="suta-grade-footer">
-            <span class="suta-rate">Starts at <strong>{{ guide.startingPrice }}</strong></span>
-            <button
-              type="button"
-              class="suta-filter-btn"
-              [class.active]="activeSutaTab === guide.grade">
-              {{ activeSutaTab === guide.grade ? 'Showing Packs ✓' : 'View ' + guide.grade + ' Suta Packs →' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SUTA FILTER TABS -->
-    <div class="suta-tab-filter-bar">
-      <span class="filter-lead">Filter By Grade:</span>
-      <div class="suta-filter-buttons">
-        <button
-          type="button"
-          class="suta-pill"
-          [class.active]="activeSutaTab === 'all'"
-          (click)="filterSuta('all')">
-          All Grades ({{ bulkProducts.length }} Packs)
-        </button>
-        <button
-          type="button"
-          class="suta-pill"
-          [class.active]="activeSutaTab === '5'"
-          (click)="filterSuta('5')">
-          5 Suta Classic (13–15mm)
-        </button>
-        <button
-          type="button"
-          class="suta-pill"
-          [class.active]="activeSutaTab === '6'"
-          (click)="filterSuta('6')">
-          6 Suta Jumbo Export (16–18mm)
-        </button>
-        <button
-          type="button"
-          class="suta-pill"
-          [class.active]="activeSutaTab === '7'"
-          (click)="filterSuta('7')">
-          7 Suta Royal King (20mm+)
-        </button>
-      </div>
-    </div>
-
-    <!-- BULK PRODUCT GRID -->
-    <div class="product-grid bulk-grid" *ngIf="getFilteredBulkProducts().length">
-      <article
-        class="product-card bulk-card card-3d"
-        *ngFor="let product of getFilteredBulkProducts(); trackBy: trackByProduct">
-
-        <a
-          [routerLink]="['/product', product.slug]"
-          class="product-image-wrap bulk-product-image"
-          style="display:flex;text-decoration:none;color:inherit;">
-
-          <img
-            [src]="productImage(product)"
-            [alt]="product.name"
-            loading="lazy"
-            (error)="handleImageError($event)" />
-
-          <span
-            class="product-badge"
-            *ngIf="product.variant.badge">
-            {{ product.variant.badge }}
-          </span>
-        </a>
-
-        <div class="product-info">
-          <a
-            [routerLink]="['/product', product.slug]"
-            class="product-name"
-            style="text-decoration:none;color:inherit;cursor:pointer;display:block;">
-            {{ product.variant.name }}
-          </a>
-
-          <span class="product-weight">
-            {{ formatWeight(product) }} • {{ product.variant.flavor || 'Mithila Harvest' }}
+            {{ product.shortDescription || 'Luxury Handcrafted Gift Hamper' }}
           </span>
 
           <div class="product-price-row">
@@ -551,25 +390,485 @@
             </span>
           </div>
 
-          <div class="bulk-card-actions">
+          <button
+            class="add"
+            type="button"
+            [disabled]="!isAvailable(product)"
+            (click)="addToCart(product)">
+            {{ isAvailable(product) ? 'Add to Cart' : 'Coming Soon' }}
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <!-- 3X3 CUSTOM COMBO BUILDER (UP TO 10 ITEMS) -->
+    <div class="festive-combo-builder-wrap card-3d">
+      <div class="builder-header">
+        <div class="builder-title-group">
+          <span class="builder-badge">✦ Bespoke Hamper Studio</span>
+          <h3>Build Your Custom Festive Box (3×3 Format)</h3>
+          <p class="builder-subtitle">
+            Curate your dream hamper from our 8 gourmet 70g flavours (maximum 10 packs per box).
+            Unlock progressive milestone discounts: <strong>4 packs = 5% OFF</strong> • <strong>7 packs = 8% OFF</strong> • <strong>10 packs = 10% OFF!</strong>
+          </p>
+        </div>
+
+        <div class="builder-counter-badge" [class.full]="totalComboCount === maxComboLimit">
+          <span class="counter-num">{{ totalComboCount }} / {{ maxComboLimit }}</span>
+          <span class="counter-label">Items Selected</span>
+        </div>
+      </div>
+
+      <!-- 3X3 SELECTION GRID: 8 FLAVOURS + 1 LUXURY HAMPER PACKAGING TILE -->
+      <div class="combo-3x3-grid">
+        <!-- 8 FLAVOUR TILES -->
+        <div
+          class="combo-tile"
+          *ngFor="let flavour of flavourProducts; trackBy: trackByProduct"
+          [class.has-qty]="getComboItemCount(flavour.variant.sku) > 0">
+
+          <div class="combo-tile-img-wrap">
+            <img
+              [src]="productImage(flavour)"
+              [alt]="getFlavorName(flavour)"
+              loading="lazy"
+              (error)="handleImageError($event)" />
+            <span class="combo-tile-qty-tag" *ngIf="getComboItemCount(flavour.variant.sku) > 0">
+              {{ getComboItemCount(flavour.variant.sku) }} in Box
+            </span>
+          </div>
+
+          <div class="combo-tile-details">
+            <h4 class="combo-tile-title">{{ getFlavorName(flavour) }}</h4>
+            <span class="combo-tile-meta">70g • Roasted Fox Nut</span>
+            <div class="combo-tile-price">₹{{ getPrice(flavour) }}</div>
+          </div>
+
+          <div class="combo-tile-actions">
+            <!-- Quantity Stepper -->
+            <div class="combo-stepper" *ngIf="getComboItemCount(flavour.variant.sku) > 0">
+              <button
+                type="button"
+                class="stepper-btn minus"
+                (click)="removeComboItem(flavour)"
+                aria-label="Decrease quantity">
+                −
+              </button>
+              <span class="stepper-count">{{ getComboItemCount(flavour.variant.sku) }}</span>
+              <button
+                type="button"
+                class="stepper-btn plus"
+                [disabled]="!canAddMoreComboItems()"
+                (click)="addComboItem(flavour)"
+                aria-label="Increase quantity">
+                +
+              </button>
+            </div>
+
+            <!-- Quick Add Button -->
             <button
-              class="add"
               type="button"
-              [disabled]="!isAvailable(product)"
-              (click)="addToCart(product)">
-              {{ isAvailable(product) ? 'Add to Cart' : 'Coming Soon' }}
+              class="combo-quick-add"
+              *ngIf="getComboItemCount(flavour.variant.sku) === 0"
+              [disabled]="!canAddMoreComboItems()"
+              (click)="addComboItem(flavour)">
+              + Add to Box
             </button>
+          </div>
+        </div>
+
+        <!-- 9TH TILE: LUXURY GIFT HAMPER PACKAGING (COMPLIMENTARY) -->
+        <div class="combo-tile combo-packaging-tile">
+          <div class="packaging-icon-wrap">
+            <span class="packaging-emblem">🎁</span>
+            <span class="packaging-ribbon-tag">✦ FREE GIFT</span>
+          </div>
+
+          <div class="combo-tile-details">
+            <h4 class="combo-tile-title">Festive Rigid Box &amp; Ribbon</h4>
+            <p class="packaging-desc">
+              Rigid golden-embossed keepsake box, satin bow &amp; personalized greeting card.
+            </p>
+            <div class="packaging-value">
+              <span class="free-text">FREE</span>
+              <span class="mrp-strike">₹299 Value</span>
+            </div>
+          </div>
+
+          <div class="packaging-status">
+            <span class="status-pill" *ngIf="totalComboCount >= 4">✓ Included Free</span>
+            <span class="status-pill pending" *ngIf="totalComboCount < 4">Select 4+ items to unlock</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROGRESSIVE MILESTONE PROGRESS TRACKER -->
+      <div class="combo-milestone-dock">
+        <div class="milestone-track-header">
+          <span class="milestone-status-text">
+            {{ comboNextMilestoneText }}
+          </span>
+          <span class="milestone-capacity">
+            {{ totalComboCount }} / {{ maxComboLimit }} Packs
+          </span>
+        </div>
+
+        <!-- Visual Progress Bar with Pins -->
+        <div class="milestone-progress-bar">
+          <div
+            class="milestone-progress-fill"
+            [style.width.%]="comboProgressPercent">
+          </div>
+
+          <!-- Pin 1: 4 Items -> 5% OFF -->
+          <div
+            class="milestone-pin pin-4"
+            [class.unlocked]="totalComboCount >= 4">
+            <span class="pin-marker">{{ totalComboCount >= 4 ? '✓' : '4' }}</span>
+            <span class="pin-label">4 items • 5% OFF</span>
+          </div>
+
+          <!-- Pin 2: 7 Items -> 8% OFF -->
+          <div
+            class="milestone-pin pin-7"
+            [class.unlocked]="totalComboCount >= 7">
+            <span class="pin-marker">{{ totalComboCount >= 7 ? '✓' : '7' }}</span>
+            <span class="pin-label">7 items • 8% OFF</span>
+          </div>
+
+          <!-- Pin 3: 10 Items -> 10% OFF -->
+          <div
+            class="milestone-pin pin-10"
+            [class.unlocked]="totalComboCount >= 10">
+            <span class="pin-marker">{{ totalComboCount >= 10 ? '👑' : '10' }}</span>
+            <span class="pin-label">10 items • 10% OFF</span>
+          </div>
+        </div>
+
+        <!-- Live Price Calculation & Cart Actions -->
+        <div class="combo-checkout-bar">
+          <div class="combo-price-summary">
+            <div class="price-line">
+              <span class="summary-label">Box Subtotal:</span>
+              <span class="summary-val">₹{{ comboSubtotal }}</span>
+            </div>
+
+            <div class="price-line discount-line" *ngIf="comboDiscountPercent > 0">
+              <span class="summary-label">Milestone Savings ({{ comboDiscountPercent }}% OFF):</span>
+              <span class="summary-discount">−₹{{ comboDiscountAmount }}</span>
+            </div>
+
+            <div class="price-line final-line">
+              <span class="final-label">Custom Hamper Total:</span>
+              <span class="final-price">₹{{ comboFinalPrice }}</span>
+              <span class="unlocked-badge" *ngIf="comboDiscountPercent > 0">
+                ✦ {{ comboDiscountPercent }}% OFF UNLOCKED
+              </span>
+            </div>
+          </div>
+
+          <div class="combo-action-group">
+            <button
+              type="button"
+              class="combo-add-cart-btn"
+              [disabled]="totalComboCount === 0"
+              (click)="addCustomComboToCart()">
+              <span class="btn-icon">🎁</span>
+              <span>Add Custom Hamper to Cart ({{ totalComboCount }} Items • ₹{{ comboFinalPrice }})</span>
+            </button>
+
+            <button
+              type="button"
+              class="combo-reset-btn"
+              *ngIf="totalComboCount > 0"
+              (click)="resetCombo()"
+              title="Reset combo selections">
+              Clear Box
+            </button>
+          </div>
+        </div>
+
+        <!-- Toast Feedback -->
+        <div class="combo-toast-banner" *ngIf="comboToastMessage">
+          <span>♡</span> {{ comboToastMessage }}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BULK & WHOLESALE SUPPLY (INTERACTIVE 5, 6 & 7 SUTA CONFIGURATOR) -->
+  <section
+    id="bulk-wholesale"
+    class="products-section bulk-section reveal-section"
+    *ngIf="!loading && !error && bulkProducts.length">
+
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Direct from Origin • Mithilanchal B2B Hub</span>
+        <h2>Bulk &amp; Wholesale Supply (5, 6 &amp; 7 Suta)</h2>
+      </div>
+
+      <p>
+        Direct-from-origin phool makhana harvested across Darbhanga and Madhubani wetlands.
+        Standardized into authentic 5 Suta, 6 Suta and 7 Suta sizes for food manufacturers,
+        caterers, sweet makers, and luxury retail brands. Configure your grade and packaging below.
+      </p>
+    </div>
+
+    <!-- UNIFIED INTERACTIVE BULK CONFIGURATOR CARD (MATCHING MUKEJA INTERACTIVE PATTERN) -->
+    <div class="bulk-master-configurator card-3d">
+      <!-- STEP 1: SUTA GRADE TABS -->
+      <div class="bulk-grade-selector-bar">
+        <span class="step-indicator">Step 1: Choose Suta Grade</span>
+        <div class="bulk-grade-tabs">
+          <button
+            type="button"
+            class="bulk-tab-btn"
+            [class.active]="selectedBulkSuta === '5'"
+            (click)="selectBulkSuta('5')">
+            <div class="tab-badge-pill">High Yield</div>
+            <strong class="tab-title">5 Suta Classic</strong>
+            <span class="tab-dim">13 – 15 mm</span>
+            <span class="tab-sub">Daily Roasting &amp; Namkeen</span>
+          </button>
+
+          <button
+            type="button"
+            class="bulk-tab-btn"
+            [class.active]="selectedBulkSuta === '6'"
+            (click)="selectBulkSuta('6')">
+            <div class="tab-badge-pill best-seller">★ Most Popular</div>
+            <strong class="tab-title">6 Suta Jumbo Export</strong>
+            <span class="tab-dim">16 – 18 mm</span>
+            <span class="tab-sub">D2C Retail &amp; Premium Snacking</span>
+          </button>
+
+          <button
+            type="button"
+            class="bulk-tab-btn"
+            [class.active]="selectedBulkSuta === '7'"
+            (click)="selectBulkSuta('7')">
+            <div class="tab-badge-pill royal">👑 Royal Reserve</div>
+            <strong class="tab-title">7 Suta Royal King</strong>
+            <span class="tab-dim">20 – 24 mm+</span>
+            <span class="tab-sub">Giant King Blossoms • Top 2%</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2: INTERACTIVE DYNAMIC SHOWCASE & SPECS MATRIX -->
+      <div class="bulk-configurator-body">
+        <!-- LEFT: 3D VISUAL SEED SCALE & ORIGIN CREDENTIALS -->
+        <div class="bulk-visual-panel">
+          <div class="suta-scale-visualizer">
+            <div
+              class="suta-3d-blossom"
+              [class]="'circle-suta-' + selectedBulkSuta">
+              <span class="diameter-tag">{{ getActiveSutaGuide().diameter }}</span>
+            </div>
+          </div>
+
+          <div class="visual-grade-meta">
+            <h3 class="active-grade-name">{{ getActiveSutaGuide().name }}</h3>
+            <span class="active-grade-tag">{{ getActiveSutaGuide().tag }}</span>
+            <p class="active-grade-desc">{{ getActiveSutaGuide().desc }}</p>
+          </div>
+
+          <div class="origin-trust-strip">
+            <div class="trust-item">
+              <span class="trust-icon">🌿</span>
+              <span>100% Mithila Origin (GI Tagged)</span>
+            </div>
+            <div class="trust-item">
+              <span class="trust-icon">♡</span>
+              <span>Pure Satvik • 0% Palm Oil</span>
+            </div>
+            <div class="trust-item">
+              <span class="trust-icon">✦</span>
+              <span>Nitrogen-Flushed Barrier Protection</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: PACKAGING SELECTOR, SPECS & LIVE PRICING -->
+        <div class="bulk-details-panel">
+          <!-- PACKAGING SELECTOR -->
+          <div class="bulk-pkg-selection">
+            <span class="step-indicator">Step 2: Choose Packaging Quantity</span>
+            <div class="pkg-toggle-group">
+              <button
+                type="button"
+                class="pkg-toggle-btn"
+                [class.active]="selectedBulkWeightKg === 5"
+                (click)="selectBulkWeight(5)">
+                <span class="pkg-weight">5 KG</span>
+                <span class="pkg-type">Heavy-Duty Caterer Bag</span>
+              </button>
+
+              <button
+                type="button"
+                class="pkg-toggle-btn"
+                [class.active]="selectedBulkWeightKg === 10"
+                (click)="selectBulkWeight(10)">
+                <span class="pkg-weight">10 KG</span>
+                <span class="pkg-type">Master Export Carton</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- LIVE SPECIFICATIONS MATRIX -->
+          <div class="bulk-specs-matrix">
+            <div class="spec-matrix-item">
+              <span class="matrix-label">Grade Diameter</span>
+              <strong class="matrix-value">{{ getActiveSutaGuide().diameter }}</strong>
+            </div>
+
+            <div class="spec-matrix-item">
+              <span class="matrix-label">Blossom Yield</span>
+              <strong class="matrix-value">{{ getActiveSutaGuide().seedsPerKg }}</strong>
+            </div>
+
+            <div class="spec-matrix-item">
+              <span class="matrix-label">Pop Ratio</span>
+              <strong class="matrix-value">{{ getActiveSutaGuide().popRatio }}</strong>
+            </div>
+
+            <div class="spec-matrix-item">
+              <span class="matrix-label">Best Suited For</span>
+              <strong class="matrix-value">{{ getActiveSutaGuide().bestFor }}</strong>
+            </div>
+          </div>
+
+          <!-- LIVE PRICING & SAVINGS ROW -->
+          <div class="bulk-pricing-row">
+            <div class="pricing-headline">
+              <span class="bulk-price-main">₹{{ getActiveBulkPrice() }}</span>
+              <span class="mrp-strike" *ngIf="getActiveBulkMrp() > getActiveBulkPrice()">
+                ₹{{ getActiveBulkMrp() }}
+              </span>
+              <span class="bulk-save-badge" *ngIf="getActiveBulkSavings() > 0">
+                Save ₹{{ getActiveBulkSavings() }}
+              </span>
+            </div>
+
+            <div class="per-kg-rate">
+              Effective rate: <strong>₹{{ getActiveBulkPerKg() }} / kg</strong> (GST Included • Free Dispatch)
+            </div>
+          </div>
+
+          <!-- ACTIONS: ADD TO CART & WHATSAPP B2B QUOTE -->
+          <div class="bulk-cta-actions">
+            <button
+              type="button"
+              class="bulk-add-cart-btn"
+              (click)="addActiveBulkToCart()">
+              <span>Add {{ selectedBulkWeightKg }}kg {{ getActiveSutaGuide().name }} to Cart</span>
+              <span class="btn-arrow">→</span>
+            </button>
+
             <a
-              [href]="getBulkWhatsAppInquiry(product)"
+              [href]="getActiveBulkWhatsAppUrl()"
               target="_blank"
               rel="noopener noreferrer"
-              class="bulk-inquiry-button"
-              aria-label="Inquire wholesale quote on WhatsApp">
-              WhatsApp B2B Quote
+              class="bulk-whatsapp-btn"
+              aria-label="Request wholesale quote on WhatsApp">
+              <span>💬 WhatsApp Wholesale / GST Invoice Quote</span>
             </a>
           </div>
         </div>
-      </article>
+      </div>
+
+      <!-- COLLAPSIBLE SIDE-BY-SIDE GRADE COMPARISON TABLE -->
+      <div class="bulk-comparison-drawer">
+        <button
+          type="button"
+          class="comparison-drawer-btn"
+          (click)="toggleSutaComparisonModal()">
+          <span>📊 Compare All 3 Grades (5, 6 &amp; 7 Suta) Side-by-Side</span>
+          <span class="drawer-arrow">{{ showSutaComparisonModal ? '▲ Hide Table' : '▼ View Comparison Table' }}</span>
+        </button>
+
+        <div class="comparison-table-wrap" *ngIf="showSutaComparisonModal">
+          <table class="suta-table">
+            <thead>
+              <tr>
+                <th>Specification</th>
+                <th>5 Suta Classic</th>
+                <th>6 Suta Jumbo Export ★</th>
+                <th>7 Suta Royal King 👑</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Diameter Size</strong></td>
+                <td>13 – 15 mm</td>
+                <td>16 – 18 mm</td>
+                <td>20 – 24 mm+</td>
+              </tr>
+              <tr>
+                <td><strong>Blossoms per Kilogram</strong></td>
+                <td>~14,000 – 16,000 seeds</td>
+                <td>~10,000 – 12,000 seeds</td>
+                <td>~6,500 – 8,000 seeds</td>
+              </tr>
+              <tr>
+                <td><strong>Pop Ratio &amp; Uniformity</strong></td>
+                <td>95%+ Pop Ratio</td>
+                <td>98%+ Export Grade</td>
+                <td>99% Supreme Giant</td>
+              </tr>
+              <tr>
+                <td><strong>Recommended Use</strong></td>
+                <td>Daily snacks, Kheer, Namkeen &amp; Sweets</td>
+                <td>Gourmet retail, Luxury gifting hampers</td>
+                <td>5-Star hotels, Royal wedding gifts</td>
+              </tr>
+              <tr>
+                <td><strong>5 KG Price</strong></td>
+                <td>₹3,999 (₹800/kg)</td>
+                <td>₹4,899 (₹980/kg)</td>
+                <td>₹5,999 (₹1,200/kg)</td>
+              </tr>
+              <tr>
+                <td><strong>10 KG Price</strong></td>
+                <td>₹7,699 (₹770/kg)</td>
+                <td>₹9,499 (₹950/kg)</td>
+                <td>₹11,799 (₹1,180/kg)</td>
+              </tr>
+              <tr>
+                <td><strong>Select Grade</strong></td>
+                <td>
+                  <button
+                    type="button"
+                    class="table-select-btn"
+                    [class.active]="selectedBulkSuta === '5'"
+                    (click)="selectBulkSuta('5')">
+                    {{ selectedBulkSuta === '5' ? 'Selected ✓' : 'Select 5 Suta' }}
+                  </button>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="table-select-btn"
+                    [class.active]="selectedBulkSuta === '6'"
+                    (click)="selectBulkSuta('6')">
+                    {{ selectedBulkSuta === '6' ? 'Selected ✓' : 'Select 6 Suta' }}
+                  </button>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="table-select-btn"
+                    [class.active]="selectedBulkSuta === '7'"
+                    (click)="selectBulkSuta('7')">
+                    {{ selectedBulkSuta === '7' ? 'Selected ✓' : 'Select 7 Suta' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </section>
 

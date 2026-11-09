@@ -203,10 +203,32 @@ export async function previewCheckout(req, res, next) {
             await calculateShipping(subtotal);
 
         // --------------------------------------------------
-        // Discount
+        // Discount (Festive Combo Milestone Discounts)
+        // 4 to 6 items: 5% OFF | 7 to 9 items: 8% OFF | 10+ items: 10% OFF
         // --------------------------------------------------
 
-        const discountAmount = 0;
+        let flavouredCount = 0;
+        let flavouredSubtotal = 0;
+        for (const item of pricedItems) {
+            const sku = item.sku || '';
+            if (sku.startsWith('TCH-FLV-') || sku.includes('FLV')) {
+                flavouredCount += item.quantity;
+                flavouredSubtotal += item.grossAmount;
+            }
+        }
+
+        let comboDiscountPercent = 0;
+        if (flavouredCount >= 10) {
+            comboDiscountPercent = 10;
+        } else if (flavouredCount >= 7) {
+            comboDiscountPercent = 8;
+        } else if (flavouredCount >= 4) {
+            comboDiscountPercent = 5;
+        }
+
+        const discountAmount = comboDiscountPercent > 0
+            ? Number((flavouredSubtotal * (comboDiscountPercent / 100)).toFixed(2))
+            : 0;
 
         // --------------------------------------------------
         // Final total
