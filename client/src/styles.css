@@ -5463,5 +5463,559 @@ body {
   }
 }
 
+/* =========================================================
+   3D IMMERSIVE UI & INTERACTIVE TILT
+   ========================================================= */
+
+.card-3d {
+  position: relative;
+  transition: transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.35s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.card-3d:hover {
+  transform: translateY(-6px) perspective(1000px) rotateX(1.5deg) scale(1.01);
+  box-shadow: 0 20px 45px rgba(20, 86, 60, 0.12), 0 8px 18px rgba(48, 34, 20, 0.08);
+}
+
+/* 3D Floating Seeds Animation */
+@keyframes float3D1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-12px, -24px, 20px) rotate(15deg);
+  }
+}
+
+@keyframes float3D2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(14px, -18px, 15px) rotate(-12deg);
+  }
+}
+
+@keyframes float3D3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(8px, -22px, 30px) scale(1.1) rotate(8deg);
+  }
+}
+
+.floating-3d-seed {
+  position: absolute;
+  z-index: 2;
+  font-size: 1.6rem;
+  color: rgba(20, 86, 60, 0.25);
+  pointer-events: none;
+  filter: drop-shadow(0 6px 12px rgba(20, 86, 60, 0.15));
+}
+
+.floating-3d-seed.seed-1 {
+  top: 10%;
+  left: -20px;
+  animation: float3D1 6s ease-in-out infinite;
+}
+
+.floating-3d-seed.seed-2 {
+  bottom: 25%;
+  right: -15px;
+  animation: float3D2 7s ease-in-out infinite 1s;
+  color: rgba(212, 175, 55, 0.35);
+}
+
+.floating-3d-seed.seed-3 {
+  top: 65%;
+  left: 15px;
+  animation: float3D3 5.5s ease-in-out infinite 0.5s;
+}
+
+.hero-origin-badge {
+  position: absolute;
+  top: 24px;
+  right: 20px;
+  background: rgba(255, 253, 248, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(20, 86, 60, 0.2);
+  border-radius: 14px;
+  padding: 10px 16px;
+  box-shadow: 0 10px 24px rgba(48, 34, 20, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 3;
+}
+
+.hero-origin-badge span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.hero-origin-badge small {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* =========================================================
+   FLAVOUR MOOD SELECTOR
+   ========================================================= */
+
+.flavour-mood-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 0 auto 36px;
+  max-width: var(--container);
+  padding: 0 20px;
+}
+
+.mood-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mood-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mood-pill {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.mood-pill:hover {
+  border-color: var(--green);
+  color: var(--green-dark);
+  transform: translateY(-2px);
+}
+
+.mood-pill.active {
+  background: var(--green);
+  border-color: var(--green);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(20, 86, 60, 0.25);
+}
+
+/* =========================================================
+   3D SUTA GRADE COMPARISON & BULK WHOLESALE
+   ========================================================= */
+
+.suta-comparison-deck {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 24px;
+  max-width: var(--container);
+  margin: 0 auto 40px;
+  padding: 0 20px;
+}
+
+.suta-grade-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.suta-grade-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--border);
+  transition: background 0.3s ease;
+}
+
+.suta-grade-card:hover {
+  border-color: var(--green);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.suta-grade-card:hover::before,
+.suta-grade-card.selected-grade::before {
+  background: linear-gradient(90deg, #14563c, #d4af37);
+}
+
+.suta-grade-card.selected-grade {
+  border-color: var(--green);
+  background: linear-gradient(180deg, #fffdf8 0%, #f7f2ea 100%);
+  box-shadow: 0 14px 35px rgba(20, 86, 60, 0.15);
+}
+
+.suta-visual-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 120px;
+  margin-bottom: 16px;
+}
+
+.suta-circle-3d {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f1e4d3 60%, #c4aa8a 100%);
+  box-shadow: 0 12px 25px rgba(48, 34, 20, 0.16), inset 0 2px 4px rgba(255, 255, 255, 0.8), inset 0 -4px 8px rgba(117, 68, 38, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.suta-grade-card:hover .suta-circle-3d {
+  transform: scale(1.08) rotate(5deg);
+}
+
+.circle-suta-5 {
+  width: 64px;
+  height: 64px;
+  border: 2px solid #9a6039;
+}
+
+.circle-suta-6 {
+  width: 82px;
+  height: 82px;
+  border: 2.5px solid #d4af37;
+  box-shadow: 0 14px 28px rgba(212, 175, 55, 0.3), inset 0 2px 5px rgba(255, 255, 255, 0.9);
+}
+
+.circle-suta-7 {
+  width: 102px;
+  height: 102px;
+  border: 3px solid #b8860b;
+  box-shadow: 0 16px 36px rgba(184, 134, 11, 0.4), inset 0 2px 6px rgba(255, 255, 255, 0.95);
+}
+
+.suta-diameter-pill {
+  font-size: 0.68rem;
+  font-weight: 800;
+  background: rgba(39, 35, 30, 0.82);
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+.suta-grade-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.suta-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.suta-header-row h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--green-dark);
+  font-weight: 700;
+}
+
+.suta-tag-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--surface-warm);
+  color: var(--brown);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.suta-desc {
+  font-size: 0.86rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.suta-specs-list {
+  background: var(--surface-warm);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 0.82rem;
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.spec-label {
+  font-weight: 700;
+  color: var(--green-dark);
+}
+
+.spec-val {
+  color: var(--text);
+  text-align: right;
+}
+
+.suta-grade-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(44, 34, 23, 0.08);
+}
+
+.suta-rate {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.suta-rate strong {
+  color: var(--green-dark);
+  font-size: 0.98rem;
+}
+
+.suta-filter-btn {
+  background: transparent;
+  border: 1.5px solid var(--green);
+  color: var(--green-dark);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.suta-filter-btn:hover,
+.suta-filter-btn.active {
+  background: var(--green);
+  color: #ffffff;
+}
+
+/* Suta Tab Filter Bar */
+.suta-tab-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 0 auto 32px;
+  max-width: var(--container);
+  padding: 0 20px;
+}
+
+.filter-lead {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.suta-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.suta-pill {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.suta-pill:hover {
+  border-color: var(--green);
+  color: var(--green-dark);
+}
+
+.suta-pill.active {
+  background: var(--green-dark);
+  border-color: var(--green-dark);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(11, 60, 41, 0.3);
+}
+
+.bulk-save-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #128c7e;
+  background: #e5efe9;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+/* =========================================================
+   LOVING GUARANTEE SECTION
+   ========================================================= */
+
+.loving-guarantee-section {
+  max-width: var(--container);
+  margin: 48px auto;
+  padding: 0 20px;
+}
+
+.loving-guarantee-card {
+  background: linear-gradient(135deg, #fffdf8 0%, #fbf3e6 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 40px 36px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  box-shadow: 0 16px 40px rgba(184, 134, 11, 0.09);
+  position: relative;
+  overflow: hidden;
+}
+
+.loving-guarantee-card::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.guarantee-emblem {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff 0%, #faedd9 50%, #d4af37 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px rgba(184, 134, 11, 0.28), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+  border: 3px solid #d4af37;
+}
+
+.guarantee-heart {
+  font-size: 2rem;
+  color: #8c2424;
+  line-height: 1;
+}
+
+.guarantee-seal-text {
+  font-size: 0.55rem;
+  font-weight: 900;
+  color: #754426;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.guarantee-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.guarantee-content h2 {
+  font-size: 1.5rem;
+  color: var(--green-dark);
+  margin: 4px 0 10px;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.guarantee-content p {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin: 0 0 18px;
+}
+
+.guarantee-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.guarantee-pill {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--green-dark);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(48, 34, 20, 0.04);
+}
+
+@media (max-width: 768px) {
+  .loving-guarantee-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 28px 20px;
+  }
+  .guarantee-badges {
+    justify-content: center;
+  }
+}
+
+/* Product Detail WhatsApp Quote Button */
+.whatsapp-quote-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  color: #128c7e;
+  border: 2px solid #25d366;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.22s ease;
+}
+
+.whatsapp-quote-button:hover {
+  background: #25d366;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.3);
+}
+
+
 
 

@@ -109,8 +109,126 @@ export class HomeComponent
     'TCH-GIFT-ALL8': 'assets/festive-box.png',
     'TCH-GIFT-4PACK': 'assets/festive-box.png',
     'TCH-BLK-5KG': 'assets/bulk-makhana.png',
-    'TCH-BLK-10KG': 'assets/bulk-makhana.png'
+    'TCH-BLK-10KG': 'assets/bulk-makhana.png',
+    'TCH-BLK-5S-5KG': 'assets/bulk-makhana.png',
+    'TCH-BLK-5S-10KG': 'assets/bulk-makhana.png',
+    'TCH-BLK-6S-5KG': 'assets/bulk-makhana.png',
+    'TCH-BLK-6S-10KG': 'assets/bulk-makhana.png',
+    'TCH-BLK-7S-5KG': 'assets/bulk-makhana.png',
+    'TCH-BLK-7S-10KG': 'assets/bulk-makhana.png'
   };
+
+  /* =========================================================
+     SUTA GRADE COMPARISON & BULK STATE
+     ========================================================= */
+
+  activeSutaTab: 'all' | '5' | '6' | '7' = 'all';
+
+  readonly sutaGuides = [
+    {
+      grade: '5',
+      name: '5 Suta Classic',
+      diameter: '13 – 15 mm',
+      tag: 'High-Yield Culinary',
+      desc: 'Uniform medium-size popped lotus seeds. Highest blossom count per kilogram, making it exceptionally economical for daily roasting, recipes & sweets.',
+      bestFor: 'Daily snacks, Kheer, Curries, Namkeen & sweet makers',
+      seedsPerKg: '~14,000 – 16,000 seeds',
+      popRatio: '95%+',
+      badge: 'High-Yield Value',
+      accentColor: '#9a6039',
+      startingPrice: '₹769/kg'
+    },
+    {
+      grade: '6',
+      name: '6 Suta Jumbo Export',
+      diameter: '16 – 18 mm',
+      tag: '★ Most Popular B2B & Retail',
+      desc: 'The gold standard of Mithila makhana. Export-grade jumbo diameter, cloud-like airy puff, snow-white appearance, and zero bitter black kernels.',
+      bestFor: 'Gourmet D2C retail, luxury gifting hampers, party snacking',
+      seedsPerKg: '~10,000 – 12,000 seeds',
+      popRatio: '98%+ Export Grade',
+      badge: '★ Best Seller',
+      accentColor: '#d4af37',
+      startingPrice: '₹949/kg'
+    },
+    {
+      grade: '7',
+      name: '7 Suta Royal King',
+      diameter: '20 – 24 mm+',
+      tag: '👑 Royal Reserve • Top 2% Harvest',
+      desc: 'Giant hand-selected king blossoms from deep wetlands of Darbhanga. The largest makhana grade in India with breathtaking visual size and unmatched crispness.',
+      bestFor: '5-Star hospitality, Royal wedding hampers, Bespoke export',
+      seedsPerKg: '~6,500 – 8,000 seeds',
+      popRatio: '99% Supreme Giant',
+      badge: '👑 Royal Reserve',
+      accentColor: '#b8860b',
+      startingPrice: '₹1,179/kg'
+    }
+  ];
+
+  filterSuta(grade: 'all' | '5' | '6' | '7'): void {
+    this.activeSutaTab = grade;
+  }
+
+  getFilteredBulkProducts(): Product[] {
+    if (this.activeSutaTab === 'all') {
+      return this.bulkProducts;
+    }
+    return this.bulkProducts.filter(p => {
+      const sku = p.variant?.sku ?? '';
+      const flavor = p.variant?.flavor ?? '';
+      const name = p.variant?.name ?? '';
+      return (
+        sku.includes(`-${this.activeSutaTab}S-`) ||
+        flavor.includes(`${this.activeSutaTab} Suta`) ||
+        name.includes(`${this.activeSutaTab} Suta`)
+      );
+    });
+  }
+
+  getBulkWhatsAppInquiry(product: Product): string {
+    const name = product.variant?.name || product.name;
+    const price = product.variant?.sellingPrice ? `₹${product.variant.sellingPrice}` : '';
+    const text = encodeURIComponent(
+      `Hello The Crunchy Heart Team! I am interested in wholesale/bulk supply for "${name}" (${price}). Please share your B2B rate card, bulk GST invoice details, and delivery timelines to my location.`
+    );
+    return `https://wa.me/919999999999?text=${text}`;
+  }
+
+  /* =========================================================
+     FLAVOUR MOOD SELECTOR
+     ========================================================= */
+
+  activeFlavourMood: 'all' | 'spicy' | 'creamy' | 'satvik' = 'all';
+
+  filterMood(mood: 'all' | 'spicy' | 'creamy' | 'satvik'): void {
+    this.activeFlavourMood = mood;
+  }
+
+  getFilteredFlavourProducts(): Product[] {
+    if (this.activeFlavourMood === 'all') {
+      return this.flavourProducts;
+    }
+    if (this.activeFlavourMood === 'spicy') {
+      return this.flavourProducts.filter(p => {
+        const f = (p.variant?.flavor || p.variant?.name || '').toLowerCase();
+        return f.includes('peri') || f.includes('chilli') || f.includes('bihari');
+      });
+    }
+    if (this.activeFlavourMood === 'creamy') {
+      return this.flavourProducts.filter(p => {
+        const f = (p.variant?.flavor || p.variant?.name || '').toLowerCase();
+        return f.includes('cheese') || f.includes('cream');
+      });
+    }
+    if (this.activeFlavourMood === 'satvik') {
+      return this.flavourProducts.filter(p => {
+        const f = (p.variant?.flavor || p.variant?.name || '').toLowerCase();
+        return f.includes('salt') || f.includes('pudina') || f.includes('tomato');
+      });
+    }
+    return this.flavourProducts;
+  }
 
   /* =========================================================
      WHATSAPP & SUPPORT
@@ -422,10 +540,17 @@ export class HomeComponent
      ========================================================= */
 
   productImage(product: Product): string {
-    return (
-      this.productImages[product.variant?.sku ?? ''] ||
-      'assets/hero-image.png'
-    );
+    const sku = product.variant?.sku ?? '';
+    if (this.productImages[sku]) {
+      return this.productImages[sku];
+    }
+    if (sku.startsWith('TCH-BLK')) {
+      return 'assets/bulk-makhana.png';
+    }
+    if (sku.startsWith('TCH-GIFT')) {
+      return 'assets/festive-box.png';
+    }
+    return 'assets/hero-image.png';
   }
 
   rawProductImage(product: Product): string {

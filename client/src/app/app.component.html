@@ -46,15 +46,25 @@
       <div class="hero-orbit orbit-one"></div>
       <div class="hero-orbit orbit-two"></div>
 
+      <!-- 3D FLOATING SEEDS -->
+      <div class="floating-3d-seed seed-1" aria-hidden="true">♡</div>
+      <div class="floating-3d-seed seed-2" aria-hidden="true">✦</div>
+      <div class="floating-3d-seed seed-3" aria-hidden="true">♥</div>
+
       <img
         class="hero-image"
         [src]="heroImage"
         alt="The Crunchy Heart premium makhana"
         (error)="handleImageError($event)" />
 
-      <div class="hero-floating-card">
+      <div class="hero-floating-card card-3d">
         <small>THE EVERYDAY CRUNCH</small>
         <strong>Pure. Light.<br>Delicious.</strong>
+      </div>
+
+      <div class="hero-origin-badge card-3d">
+        <span>🌱 Mithila GI-Origin</span>
+        <small>Darbhanga Wetlands</small>
       </div>
     </div>
   </section>
@@ -207,15 +217,50 @@
       </div>
 
       <p>
-        Eight delicious flavours to make your everyday crunch
-        a little more exciting.
+        Eight delicious slow-roasted flavours to make your everyday crunch
+        a little more exciting. 100% roasted with zero palm oil.
       </p>
     </div>
 
-    <div class="product-grid" *ngIf="flavourProducts.length">
+    <!-- FLAVOUR MOOD SELECTOR -->
+    <div class="flavour-mood-bar" *ngIf="flavourProducts.length">
+      <span class="mood-label">Crunch Mood:</span>
+      <div class="mood-pills">
+        <button
+          type="button"
+          class="mood-pill"
+          [class.active]="activeFlavourMood === 'all'"
+          (click)="filterMood('all')">
+          All 8 Flavours
+        </button>
+        <button
+          type="button"
+          class="mood-pill"
+          [class.active]="activeFlavourMood === 'spicy'"
+          (click)="filterMood('spicy')">
+          🌶️ Spicy &amp; Bold
+        </button>
+        <button
+          type="button"
+          class="mood-pill"
+          [class.active]="activeFlavourMood === 'creamy'"
+          (click)="filterMood('creamy')">
+          🧀 Creamy &amp; Cheesy
+        </button>
+        <button
+          type="button"
+          class="mood-pill"
+          [class.active]="activeFlavourMood === 'satvik'"
+          (click)="filterMood('satvik')">
+          🌿 Satvik &amp; Zesty
+        </button>
+      </div>
+    </div>
+
+    <div class="product-grid" *ngIf="getFilteredFlavourProducts().length">
       <article
-        class="product-card flavour-card"
-        *ngFor="let product of flavourProducts; trackBy: trackByProduct">
+        class="product-card flavour-card card-3d"
+        *ngFor="let product of getFilteredFlavourProducts(); trackBy: trackByProduct">
 
         <a
           [routerLink]="['/product', product.slug]"
@@ -352,7 +397,7 @@
     </div>
   </section>
 
-  <!-- BULK & WHOLESALE SUPPLY -->
+  <!-- BULK & WHOLESALE SUPPLY (5, 6 & 7 SUTA GRADES) -->
   <section
     id="bulk-wholesale"
     class="products-section bulk-section reveal-section"
@@ -360,20 +405,109 @@
 
     <div class="section-heading">
       <div>
-        <span class="eyebrow">Direct from Origin</span>
-        <h2>Bulk &amp; Wholesale Supply</h2>
+        <span class="eyebrow">Direct from Origin • Mithilanchal Hub</span>
+        <h2>Bulk &amp; Wholesale Supply (5, 6 &amp; 7 Suta)</h2>
       </div>
 
       <p>
-        Jumbo 6+ Suta raw phool makhana directly from Darbhanga, Bihar wetlands.
-        Scalable supply, competitive wholesale pricing, and food-grade packaging for businesses, caterers &amp; large families.
+        Direct-from-origin phool makhana harvested across Darbhanga and Madhubani wetlands.
+        Graded into authentic 5 Suta, 6 Suta and 7 Suta sizes for food manufacturers,
+        caterers, sweet makers, and retail brands with food-grade bulk packaging.
       </p>
     </div>
 
-    <div class="product-grid bulk-grid">
+    <!-- 3D SUTA GRADE VISUAL COMPARISON DECK -->
+    <div class="suta-comparison-deck">
+      <div
+        class="suta-grade-card card-3d"
+        *ngFor="let guide of sutaGuides"
+        [class.selected-grade]="activeSutaTab === guide.grade"
+        (click)="filterSuta(guide.grade === activeSutaTab ? 'all' : guide.grade)">
+
+        <div class="suta-visual-wrap">
+          <div
+            class="suta-circle-3d"
+            [class]="'circle-suta-' + guide.grade">
+            <span class="suta-diameter-pill">{{ guide.diameter }}</span>
+          </div>
+        </div>
+
+        <div class="suta-grade-info">
+          <div class="suta-header-row">
+            <h3>{{ guide.name }}</h3>
+            <span class="suta-tag-pill">{{ guide.tag }}</span>
+          </div>
+
+          <p class="suta-desc">{{ guide.desc }}</p>
+
+          <div class="suta-specs-list">
+            <div class="spec-row">
+              <span class="spec-label">Ideal For:</span>
+              <span class="spec-val">{{ guide.bestFor }}</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Blossom Yield:</span>
+              <span class="spec-val">{{ guide.seedsPerKg }}</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Pop Ratio:</span>
+              <span class="spec-val">{{ guide.popRatio }}</span>
+            </div>
+          </div>
+
+          <div class="suta-grade-footer">
+            <span class="suta-rate">Starts at <strong>{{ guide.startingPrice }}</strong></span>
+            <button
+              type="button"
+              class="suta-filter-btn"
+              [class.active]="activeSutaTab === guide.grade">
+              {{ activeSutaTab === guide.grade ? 'Showing Packs ✓' : 'View ' + guide.grade + ' Suta Packs →' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUTA FILTER TABS -->
+    <div class="suta-tab-filter-bar">
+      <span class="filter-lead">Filter By Grade:</span>
+      <div class="suta-filter-buttons">
+        <button
+          type="button"
+          class="suta-pill"
+          [class.active]="activeSutaTab === 'all'"
+          (click)="filterSuta('all')">
+          All Grades ({{ bulkProducts.length }} Packs)
+        </button>
+        <button
+          type="button"
+          class="suta-pill"
+          [class.active]="activeSutaTab === '5'"
+          (click)="filterSuta('5')">
+          5 Suta Classic (13–15mm)
+        </button>
+        <button
+          type="button"
+          class="suta-pill"
+          [class.active]="activeSutaTab === '6'"
+          (click)="filterSuta('6')">
+          6 Suta Jumbo Export (16–18mm)
+        </button>
+        <button
+          type="button"
+          class="suta-pill"
+          [class.active]="activeSutaTab === '7'"
+          (click)="filterSuta('7')">
+          7 Suta Royal King (20mm+)
+        </button>
+      </div>
+    </div>
+
+    <!-- BULK PRODUCT GRID -->
+    <div class="product-grid bulk-grid" *ngIf="getFilteredBulkProducts().length">
       <article
-        class="product-card bulk-card"
-        *ngFor="let product of bulkProducts; trackBy: trackByProduct">
+        class="product-card bulk-card card-3d"
+        *ngFor="let product of getFilteredBulkProducts(); trackBy: trackByProduct">
 
         <a
           [routerLink]="['/product', product.slug]"
@@ -402,7 +536,7 @@
           </a>
 
           <span class="product-weight">
-            {{ formatWeight(product) }} • 6+ Suta Jumbo
+            {{ formatWeight(product) }} • {{ product.variant.flavor || 'Mithila Harvest' }}
           </span>
 
           <div class="product-price-row">
@@ -411,6 +545,9 @@
             </strong>
             <span class="mrp-strike" *ngIf="product.variant.mrp && product.variant.mrp > product.variant.sellingPrice">
               ₹{{ product.variant.mrp }}
+            </span>
+            <span class="bulk-save-badge" *ngIf="product.variant.mrp && product.variant.mrp > product.variant.sellingPrice">
+              Save ₹{{ product.variant.mrp - product.variant.sellingPrice }}
             </span>
           </div>
 
@@ -423,12 +560,12 @@
               {{ isAvailable(product) ? 'Add to Cart' : 'Coming Soon' }}
             </button>
             <a
-              [href]="whatsappUrl"
+              [href]="getBulkWhatsAppInquiry(product)"
               target="_blank"
               rel="noopener noreferrer"
               class="bulk-inquiry-button"
               aria-label="Inquire wholesale quote on WhatsApp">
-              WhatsApp Quote
+              WhatsApp B2B Quote
             </a>
           </div>
         </div>
@@ -661,6 +798,29 @@
     </div>
 
     <div class="carousel-hint">Swipe or use the arrows</div>
+  </section>
+
+  <!-- THE CRUNCHY HEART LOVING GUARANTEE -->
+  <section class="loving-guarantee-section reveal-section">
+    <div class="loving-guarantee-card card-3d">
+      <div class="guarantee-emblem" aria-hidden="true">
+        <span class="guarantee-heart">♥</span>
+        <span class="guarantee-seal-text">MITHILA CRAFTED</span>
+      </div>
+      <div class="guarantee-content">
+        <span class="eyebrow">OUR PROMISE TO YOU</span>
+        <h2>The 100% Satvik &amp; Freshness Guarantee</h2>
+        <p>
+          Every single fox nut is hand-sorted at origin in Darbhanga, Bihar, graded by traditional Suta sizing (5, 6 &amp; 7 Suta), and slow roasted with zero palm oil. If it’s not the crunchiest, cleanest makhana you have ever tasted, our family will replace it with love.
+        </p>
+        <div class="guarantee-badges">
+          <span class="guarantee-pill">🌱 100% Satvik &amp; Natural</span>
+          <span class="guarantee-pill">🔥 0% Palm Oil • Slow Roasted</span>
+          <span class="guarantee-pill">✨ Handpicked Suta Sorting</span>
+          <span class="guarantee-pill">⚡ Dispatched Within 24 Hours</span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- CUSTOMER TESTIMONIALS -->

@@ -134,7 +134,11 @@
                             {{
                             product.category.slug === 'raw-makhana'
                             ? 'Choose Pack Size'
-                            : 'Choose Flavour'
+                            : (product.category.slug === 'bulk-wholesale'
+                                ? 'Choose Suta Grade & Packaging'
+                                : (product.category.slug === 'festive-gifting'
+                                    ? 'Choose Gift Box'
+                                    : 'Choose Flavour'))
                             }}
                         </span>
 
@@ -157,9 +161,9 @@
 
                             <span class="variant-name">
                                 {{
-                                variant.weightGrams
-                                ? (variant.weightGrams + 'g')
-                                : variant.flavor
+                                variant.variantName ||
+                                (variant.weightGrams >= 1000 ? ((variant.weightGrams / 1000) + 'kg') : (variant.weightGrams + 'g')) ||
+                                variant.flavor
                                 }}
                             </span>
 
@@ -223,13 +227,23 @@
                             </span>
 
                             <span *ngIf="addedToCart">
-                                ✓ Added to Cart
+                                ✓ Added with ♥
                             </span>
                         </button>
 
                         <button type="button" class="buy-now-button" (click)="buyNow()">
                             Buy It Now
                         </button>
+
+                        <a
+                            *ngIf="product.category.slug === 'bulk-wholesale'"
+                            href="https://wa.me/919999999999?text=Hello%20The%20Crunchy%20Heart!%20I%20am%20interested%20in%20bulk%20wholesale%20supply%20for%205,%206%20and%207%20Suta%20Makhana.%20Please%20share%20your%20B2B%20rate%20card%20and%20GST%20pricing."
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="whatsapp-quote-button"
+                            aria-label="Inquire bulk quote on WhatsApp">
+                            WhatsApp Wholesale Quote ↗
+                        </a>
 
                     </div>
 

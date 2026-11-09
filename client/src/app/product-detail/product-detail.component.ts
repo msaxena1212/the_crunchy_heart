@@ -162,9 +162,30 @@ export class ProductDetailComponent implements OnInit {
       'TCH-FLV-TOMATO': 'assets/tomato-tangy.png',
       'TCH-FLV-CHILLI': 'assets/chilli-garlic.png',
       'TCH-FLV-BIHARI': 'assets/bihari-chat.png',
+      'TCH-FLV-CHEESE': 'assets/cheese-herbs.png',
+      'TCH-GIFT-ALL8': 'assets/festive-box.png',
+      'TCH-GIFT-4PACK': 'assets/festive-box.png',
+      'TCH-BLK-5KG': 'assets/bulk-makhana.png',
+      'TCH-BLK-10KG': 'assets/bulk-makhana.png',
+      'TCH-BLK-5S-5KG': 'assets/bulk-makhana.png',
+      'TCH-BLK-5S-10KG': 'assets/bulk-makhana.png',
+      'TCH-BLK-6S-5KG': 'assets/bulk-makhana.png',
+      'TCH-BLK-6S-10KG': 'assets/bulk-makhana.png',
+      'TCH-BLK-7S-5KG': 'assets/bulk-makhana.png',
+      'TCH-BLK-7S-10KG': 'assets/bulk-makhana.png',
     };
 
-    return imageMap[sku] ?? 'assets/raw-makhana-100g.png';
+    if (imageMap[sku]) {
+      return imageMap[sku];
+    }
+    if (sku.startsWith('TCH-BLK')) {
+      return 'assets/bulk-makhana.png';
+    }
+    if (sku.startsWith('TCH-GIFT')) {
+      return 'assets/festive-box.png';
+    }
+
+    return 'assets/raw-makhana-100g.png';
   }
 
   get variantLabel(): string {
@@ -172,11 +193,22 @@ export class ProductDetailComponent implements OnInit {
       return '';
     }
 
+    if (this.selectedVariant.variantName) {
+      return this.selectedVariant.variantName;
+    }
+
+    if (this.selectedVariant.flavor) {
+      return this.selectedVariant.flavor;
+    }
+
     if (this.selectedVariant.weightGrams) {
+      if (this.selectedVariant.weightGrams >= 1000) {
+        return `${this.selectedVariant.weightGrams / 1000}kg`;
+      }
       return `${this.selectedVariant.weightGrams}g`;
     }
 
-    return this.selectedVariant.flavor ?? this.selectedVariant.name;
+    return this.selectedVariant.name || '';
   }
 
   addToCart(): void {

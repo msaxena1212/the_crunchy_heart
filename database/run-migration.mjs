@@ -6,7 +6,9 @@ const connectionString = process.env.DATABASE_URL || 'postgresql://neondb_owner:
 const pool = new pg.Pool({ connectionString });
 
 async function main() {
-  const sql = fs.readFileSync('database/migrations/add_festive_and_bulk_products.sql', 'utf8');
+  const file = process.argv[2] || 'database/migrations/update_bulk_suta_grades.sql';
+  console.log(`Running migration from ${file}...`);
+  const sql = fs.readFileSync(file, 'utf8');
   await pool.query(sql);
   console.log('MIGRATION_SUCCESS');
   await pool.end();
