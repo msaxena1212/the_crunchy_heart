@@ -193,8 +193,8 @@ export class ProductDetailComponent implements OnInit {
       return '';
     }
 
-    if (this.selectedVariant.variantName) {
-      return this.selectedVariant.variantName;
+    if (this.selectedVariant.name) {
+      return this.selectedVariant.name;
     }
 
     if (this.selectedVariant.flavor) {
@@ -208,7 +208,7 @@ export class ProductDetailComponent implements OnInit {
       return `${this.selectedVariant.weightGrams}g`;
     }
 
-    return this.selectedVariant.name || '';
+    return '';
   }
 
   addToCart(): void {

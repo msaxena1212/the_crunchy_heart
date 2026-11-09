@@ -122,7 +122,7 @@ export class HomeComponent
      SUTA GRADE COMPARISON & BULK STATE
      ========================================================= */
 
-  activeSutaTab: 'all' | '5' | '6' | '7' = 'all';
+  activeSutaTab: string = 'all';
 
   readonly sutaGuides = [
     {
@@ -166,7 +166,7 @@ export class HomeComponent
     }
   ];
 
-  filterSuta(grade: 'all' | '5' | '6' | '7'): void {
+  filterSuta(grade: string): void {
     this.activeSutaTab = grade;
   }
 

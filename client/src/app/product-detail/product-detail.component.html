@@ -161,9 +161,8 @@
 
                             <span class="variant-name">
                                 {{
-                                variant.variantName ||
-                                (variant.weightGrams >= 1000 ? ((variant.weightGrams / 1000) + 'kg') : (variant.weightGrams + 'g')) ||
-                                variant.flavor
+                                variant.name ||
+                                (variant.weightGrams ? (variant.weightGrams >= 1000 ? ((variant.weightGrams / 1000) + 'kg') : (variant.weightGrams + 'g')) : variant.flavor)
                                 }}
                             </span>
 
