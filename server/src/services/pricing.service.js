@@ -2,6 +2,9 @@ import { query } from '../db/pool.js';
 
 import {
     calculateInclusiveTax,
+    calculateGstBreakdown,
+    getProductGstRate,
+    getProductHsnCode,
 } from '../utils/gst.js';
 
 import {
@@ -84,7 +87,8 @@ export async function getVariantsForCheckout(
  */
 export function calculateItemPricing(
     variant,
-    quantity
+    quantity,
+    shippingState = null
 ) {
     const qty = Number(quantity);
 
@@ -107,19 +111,19 @@ export function calculateItemPricing(
         );
     }
 
-    const taxRate = Number(
-        variant.tax_rate ?? 18
-    );
+    const taxRate = getProductGstRate(variant);
+    const hsnCode = getProductHsnCode(variant);
 
     const grossAmount = multiplyMoney(
         unitPrice,
         qty
     );
 
-    const tax = calculateInclusiveTax(
+    const gstBreakdown = calculateGstBreakdown({
         grossAmount,
-        taxRate
-    );
+        taxRate,
+        shippingState,
+    });
 
     return {
         variantId: variant.id,
@@ -136,12 +140,16 @@ export function calculateItemPricing(
 
         unitPrice: roundMoney(unitPrice),
 
-        grossAmount: tax.grossAmount,
+        grossAmount: gstBreakdown.grossAmount,
 
-        taxableAmount: tax.taxableAmount,
+        taxableAmount: gstBreakdown.taxableAmount,
 
-        taxAmount: tax.taxAmount,
+        taxAmount: gstBreakdown.taxAmount,
 
         taxRate,
+
+        hsnCode,
+
+        gstBreakdown,
     };
 }

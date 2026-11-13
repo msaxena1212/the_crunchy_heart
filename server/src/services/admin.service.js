@@ -103,7 +103,8 @@ export async function listOrdersAdmin({
         itemCount: Number(row.item_count),
         createdAt: row.created_at,
         updatedAt: row.updated_at,
-        canDispatch: row.payment_method === 'COD' && row.status === 'confirmed',
+        canDispatch: (row.payment_method === 'COD' && row.status === 'confirmed') ||
+                     (row.payment_method === 'ONLINE' && row.payment_status === 'paid' && (row.status === 'confirmed' || row.status === 'paid')),
     }));
 
     return {
@@ -305,23 +306,34 @@ export async function getOrderDetailsAdmin(orderNumber) {
             note: row.note,
             createdAt: row.created_at,
         })),
-        canDispatch: order.payment_method === 'COD' && order.status === 'confirmed',
+        canDispatch: (order.payment_method === 'COD' && order.status === 'confirmed') ||
+                     (order.payment_method === 'ONLINE' && order.payment_status === 'paid' && (order.status === 'confirmed' || order.status === 'paid')),
     };
 }
 
 /**
- * Atomically dispatch a Cash on Delivery (COD) order.
+ * Atomically dispatch an order (both Cash on Delivery and Prepaid ONLINE orders).
  *
  * Invariants:
  * 1. Lock parent order FIRST with SELECT ... FOR UPDATE.
- * 2. Validate payment_method === 'COD'. (Reject ONLINE orders).
- * 3. Validate status === 'confirmed'. (Reject already 'dispatched' with 409; reject 'cancelled' with 400).
- * 4. Deduct inventory atomically using deductOrderInventory (deadlock-free sorted locks, atomic rollback on stock shortage).
- * 5. Update order status to 'dispatched'.
- * 6. Record order_status_history audit row.
- * 7. Record admin_audit_logs audit row.
+ * 2. Validate payment eligibility:
+ *    - COD orders must be in 'confirmed' status.
+ *    - ONLINE orders must be in 'paid' payment_status and 'confirmed'/'paid' status. Unpaid ONLINE orders are rejected with 400.
+ * 3. Validate status: reject already 'dispatched' with 409; reject 'cancelled' with 400.
+ * 4. Deduct inventory atomically using deductOrderInventory (deadlock-free sorted locks, atomic rollback on stock shortage; idempotent for already-settled online orders).
+ * 5. Record courier details (courierName, trackingNumber, trackingUrl) if provided.
+ * 6. Update order status to 'dispatched'.
+ * 7. Record order_status_history audit row with courier details.
+ * 8. Record admin_audit_logs audit row.
  */
-export async function dispatchCodOrderAdmin({ orderNumber, adminUserId = null }) {
+export async function dispatchOrderAdminService({
+    orderNumber,
+    adminUserId = null,
+    courierName = null,
+    trackingNumber = null,
+    trackingUrl = null,
+    notes = null,
+}) {
     if (!orderNumber || typeof orderNumber !== 'string') {
         const error = new Error('Valid order number is required for dispatch.');
         error.statusCode = 400;
@@ -339,7 +351,8 @@ export async function dispatchCodOrderAdmin({ orderNumber, adminUserId = null })
                 payment_status,
                 payment_method,
                 customer_name,
-                total_amount
+                total_amount,
+                notes
             FROM orders
             WHERE order_number = $1
             FOR UPDATE
@@ -356,35 +369,56 @@ export async function dispatchCodOrderAdmin({ orderNumber, adminUserId = null })
 
         const order = orderResult.rows[0];
 
-        // 2. Validate COD eligibility
-        if (order.payment_method !== 'COD') {
+        // 2. Validate dispatch eligibility based on payment method
+        if (order.payment_method === 'COD') {
+            if (order.status === 'dispatched') {
+                const error = new Error(`Order ${orderNumber} has already been dispatched.`);
+                error.statusCode = 409;
+                error.code = 'ALREADY_DISPATCHED';
+                throw error;
+            }
+            if (order.status !== 'confirmed') {
+                const error = new Error(
+                    `Order ${orderNumber} cannot be dispatched because its status is '${order.status}' (expected 'confirmed').`
+                );
+                error.statusCode = 400;
+                error.code = 'ORDER_NOT_ELIGIBLE_FOR_DISPATCH';
+                throw error;
+            }
+        } else if (order.payment_method === 'ONLINE') {
+            if (order.status === 'dispatched') {
+                const error = new Error(`Order ${orderNumber} has already been dispatched.`);
+                error.statusCode = 409;
+                error.code = 'ALREADY_DISPATCHED';
+                throw error;
+            }
+            // Online orders MUST have payment_status === 'paid' to be dispatched
+            if (order.payment_status !== 'paid') {
+                const error = new Error(
+                    `Only Cash on Delivery (COD) orders can be dispatched via this operation. Order ${orderNumber} has payment method: ${order.payment_method}.`
+                );
+                error.statusCode = 400;
+                error.code = 'INVALID_PAYMENT_METHOD_FOR_COD_DISPATCH';
+                throw error;
+            }
+            if (order.status !== 'confirmed' && order.status !== 'paid') {
+                const error = new Error(
+                    `Order ${orderNumber} cannot be dispatched because its status is '${order.status}' (expected 'confirmed' or 'paid').`
+                );
+                error.statusCode = 400;
+                error.code = 'ORDER_NOT_ELIGIBLE_FOR_DISPATCH';
+                throw error;
+            }
+        } else {
             const error = new Error(
-                `Only Cash on Delivery (COD) orders can be dispatched via this operation. Order ${orderNumber} has payment method: ${order.payment_method}.`
+                `Unsupported payment method for dispatch: ${order.payment_method}.`
             );
             error.statusCode = 400;
             error.code = 'INVALID_PAYMENT_METHOD_FOR_COD_DISPATCH';
             throw error;
         }
 
-        // 3. Idempotency / duplicate dispatch protection
-        if (order.status === 'dispatched') {
-            const error = new Error(`Order ${orderNumber} has already been dispatched.`);
-            error.statusCode = 409;
-            error.code = 'ALREADY_DISPATCHED';
-            throw error;
-        }
-
-        // 4. Status eligibility check
-        if (order.status !== 'confirmed') {
-            const error = new Error(
-                `Order ${orderNumber} cannot be dispatched because its status is '${order.status}' (expected 'confirmed').`
-            );
-            error.statusCode = 400;
-            error.code = 'ORDER_NOT_ELIGIBLE_FOR_DISPATCH';
-            throw error;
-        }
-
-        // 5. Fetch line items
+        // 3. Fetch line items
         const itemsResult = await client.query(
             `
             SELECT variant_id, quantity
@@ -406,28 +440,46 @@ export async function dispatchCodOrderAdmin({ orderNumber, adminUserId = null })
             throw error;
         }
 
-        // 6. Deduct inventory atomically (acquires sorted variant locks, validates all stock, records inventory_transactions)
+        // 4. Deduct inventory atomically (acquires sorted variant locks, validates all stock, records inventory_transactions)
+        // Idempotent: if already deducted (e.g. during online payment success), returns existing records safely without double deduction
         const deductions = await deductOrderInventory(client, {
             orderId: order.id,
             items,
         });
 
-        // 7. Update order status to 'dispatched'
+        // 5. Courier and dispatch note formatting
+        const courierDetails = [];
+        if (courierName) courierDetails.push(`courier: ${courierName}`);
+        if (trackingNumber) courierDetails.push(`tracking: ${trackingNumber}`);
+        if (trackingUrl) courierDetails.push(`trackingUrl: ${trackingUrl}`);
+        const courierSummary = courierDetails.length ? ` (${courierDetails.join(', ')})` : '';
+
+        let updatedNotes = order.notes || '';
+        if (courierDetails.length) {
+            updatedNotes = updatedNotes ? `${updatedNotes}\n[DISPATCH] Dispatched with ${courierDetails.join(', ')}` : `[DISPATCH] Dispatched with ${courierDetails.join(', ')}`;
+        }
+        if (notes) {
+            updatedNotes = updatedNotes ? `${updatedNotes}\n[NOTE] ${notes}` : `[NOTE] ${notes}`;
+        }
+
+        // 6. Update order status to 'dispatched'
         const updatedOrderResult = await client.query(
             `
             UPDATE orders
             SET
                 status = 'dispatched',
+                notes = $2,
                 updated_at = NOW()
             WHERE id = $1
-            RETURNING id, order_number, status, payment_method, updated_at
+            RETURNING id, order_number, status, payment_method, payment_status, updated_at
             `,
-            [order.id]
+            [order.id, updatedNotes || null]
         );
 
         const updatedOrder = updatedOrderResult.rows[0];
 
-        // 8. Record in order_status_history
+        // 7. Record in order_status_history
+        const historyNote = `${order.payment_method} order dispatched by owner${adminUserId ? ` (admin: ${adminUserId})` : ''}${courierSummary}`;
         await client.query(
             `
             INSERT INTO order_status_history (
@@ -440,11 +492,11 @@ export async function dispatchCodOrderAdmin({ orderNumber, adminUserId = null })
             `,
             [
                 order.id,
-                `COD order dispatched by owner${adminUserId ? ` (admin: ${adminUserId})` : ''}`,
+                historyNote,
             ]
         );
 
-        // 9. Record in admin_audit_logs
+        // 8. Record in admin_audit_logs
         await client.query(
             `
             INSERT INTO admin_audit_logs (
@@ -463,8 +515,12 @@ export async function dispatchCodOrderAdmin({ orderNumber, adminUserId = null })
                 JSON.stringify({
                     orderId: order.id,
                     orderNumber: order.order_number,
+                    paymentMethod: order.payment_method,
                     itemCount: items.length,
                     deductionsCount: deductions.length,
+                    courierName: courierName || null,
+                    trackingNumber: trackingNumber || null,
+                    trackingUrl: trackingUrl || null,
                     dispatchedAt: updatedOrder.updated_at,
                 }),
             ]
@@ -474,12 +530,19 @@ export async function dispatchCodOrderAdmin({ orderNumber, adminUserId = null })
             success: true,
             orderNumber: updatedOrder.order_number,
             status: updatedOrder.status,
-            previousStatus: 'confirmed',
+            previousStatus: order.status,
+            paymentMethod: updatedOrder.payment_method,
+            courierName: courierName || null,
+            trackingNumber: trackingNumber || null,
             dispatchedAt: updatedOrder.updated_at,
             deductionsCount: deductions.length,
         };
     });
 }
+
+// Preserve backward-compatible alias and primary export
+export const dispatchCodOrderAdmin = dispatchOrderAdminService;
+export const dispatchOrderAdmin = dispatchOrderAdminService;
 
 /**
  * List unresolved payment exceptions and pending refund reviews (read-only).

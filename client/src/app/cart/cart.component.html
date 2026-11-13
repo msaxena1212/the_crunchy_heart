@@ -106,8 +106,8 @@
                         <p class="item-variant">
                             {{ item.variantName }}
 
-                            <span *ngIf="item.weightGrams">
-                                · {{ item.weightGrams }}g
+                            <span *ngIf="item.weightGrams && !variantHasWeight(item)">
+                                · {{ weightLabel(item) }}
                             </span>
 
                             <span *ngIf="item.flavor && !item.weightGrams">

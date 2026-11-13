@@ -323,16 +323,21 @@ export async function getOrderAdmin(req, res, next) {
 }
 
 /**
- * Atomic COD dispatch controller
+ * Atomic order dispatch controller (supports both COD and prepaid ONLINE orders with courier details)
  */
 export async function dispatchOrderAdmin(req, res, next) {
     try {
         const { orderNumber } = req.params;
         const adminUserId = req.admin?.id || null;
+        const { courierName, trackingNumber, trackingUrl, notes } = req.body || {};
 
         const result = await dispatchCodOrderAdmin({
             orderNumber,
             adminUserId,
+            courierName,
+            trackingNumber,
+            trackingUrl,
+            notes,
         });
 
         return res.json({

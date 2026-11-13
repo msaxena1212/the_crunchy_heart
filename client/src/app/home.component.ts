@@ -17,6 +17,7 @@ import {
 
 import { Product } from './product.model';
 import { ProductService } from './product.service';
+import { SUTA_GUIDES } from './bulk/bulk.data';
 
 import { Subject, takeUntil } from 'rxjs';
 
@@ -83,50 +84,58 @@ export class HomeComponent
      IMAGES
      ========================================================= */
 
-  readonly heroImage = 'assets/hero-image.png';
-  readonly everydayImage = 'assets/everyday-crunch.png';
-  readonly storyImage = 'assets/our-story.png';
+  readonly heroImage = 'assets/hero-image.webp';
+  readonly everydayImage = 'assets/everyday-crunch.webp';
+  readonly storyImage = 'assets/our-story.webp';
 
   /* =========================================================
      PRODUCT IMAGES
      ========================================================= */
 
   readonly productImages: Record<string, string> = {
-    'TCH-RAW-100': 'assets/raw-makhana-100g.png',
-    'TCH-RAW-200': 'assets/raw-makhana-200g.png',
-    'TCH-RAW-500': 'assets/raw-makhana-500g.png',
-    'TCH-RAW-1KG': 'assets/raw-makhana-1kg.png',
+    'TCH-RAW-100': 'assets/raw-makhana-100g.webp',
+    'TCH-RAW-200': 'assets/raw-makhana-200g.webp',
+    'TCH-RAW-500': 'assets/raw-makhana-500g.webp',
+    'TCH-RAW-1KG': 'assets/raw-makhana-1kg.webp',
 
-    'TCH-FLV-HIMALAYAN': 'assets/himalayan-salt.png',
-    'TCH-FLV-PERI': 'assets/peri-peri.png',
-    'TCH-FLV-ONION': 'assets/cream-onion.png',
-    'TCH-FLV-TOMATO': 'assets/tomato-tangy.png',
-    'TCH-FLV-CHILLI': 'assets/chilli-garlic.png',
-    'TCH-FLV-PUDINA': 'assets/pudina.png',
-    'TCH-FLV-BIHARI': 'assets/bihari-chat.png',
-    'TCH-FLV-CHEESE': 'assets/cheese-herbs.png',
+    'TCH-FLV-HIMALAYAN': 'assets/himalayan-salt.webp',
+    'TCH-FLV-PERI': 'assets/peri-peri.webp',
+    'TCH-FLV-ONION': 'assets/cream-onion.webp',
+    'TCH-FLV-TOMATO': 'assets/tomato-tangy.webp',
+    'TCH-FLV-CHILLI': 'assets/chilli-garlic.webp',
+    'TCH-FLV-PUDINA': 'assets/pudina.webp',
+    'TCH-FLV-BIHARI': 'assets/bihari-chat.webp',
+    'TCH-FLV-CHEESE': 'assets/cheese-herbs.webp',
 
-    'TCH-GIFT-ALL8': 'assets/festive-box.png',
-    'TCH-GIFT-4PACK': 'assets/festive-box.png',
-    'TCH-BLK-5KG': 'assets/bulk-makhana.png',
-    'TCH-BLK-10KG': 'assets/bulk-makhana.png',
-    'TCH-BLK-5S-5KG': 'assets/bulk-makhana.png',
-    'TCH-BLK-5S-10KG': 'assets/bulk-makhana.png',
-    'TCH-BLK-6S-5KG': 'assets/bulk-makhana.png',
-    'TCH-BLK-6S-10KG': 'assets/bulk-makhana.png',
-    'TCH-BLK-7S-5KG': 'assets/bulk-makhana.png',
-    'TCH-BLK-7S-10KG': 'assets/bulk-makhana.png'
+    'TCH-GIFT-ALL8': 'assets/festive-box.webp',
+    'TCH-GIFT-4PACK': 'assets/festive-box.webp',
+    'TCH-BLK-5KG': 'assets/bulk-makhana.webp',
+    'TCH-BLK-10KG': 'assets/bulk-makhana.webp',
+    'TCH-BLK-5S-5KG': 'assets/bulk-makhana.webp',
+    'TCH-BLK-5S-10KG': 'assets/bulk-makhana.webp',
+    'TCH-BLK-6S-5KG': 'assets/bulk-makhana.webp',
+    'TCH-BLK-6S-10KG': 'assets/bulk-makhana.webp',
+    'TCH-BLK-7S-5KG': 'assets/bulk-makhana.webp',
+    'TCH-BLK-7S-10KG': 'assets/bulk-makhana.webp'
   };
 
   /* =========================================================
-     FESTIVE CUSTOM COMBO BUILDER (3x3 FORMAT, MAX 10 ITEMS)
-     Milestones:
+     FESTIVE CUSTOM COMBO BUILDER (MAX 10 PACKS)
+     Milestones (must match the server-side pricing in
+     checkout.controller.js / order.service.js):
      - 4 to 6 items: 5% OFF
      - 7 to 9 items: 8% OFF
-     - 10 items: 10% OFF (Max limit: 10 items)
+     - 10 or more items: 10% OFF
+     The complimentary festive box unlocks at 4 packs.
      ========================================================= */
 
   readonly maxComboLimit = 10;
+  readonly comboGiftThreshold = 4;
+  readonly comboMilestones = [
+    { count: 4, percent: 5 },
+    { count: 7, percent: 8 },
+    { count: 10, percent: 10 }
+  ];
   comboCounts: Record<string, number> = {};
   comboToastMessage = '';
   private comboToastTimer: any = null;
@@ -185,7 +194,44 @@ export class HomeComponent
       const remaining = 10 - count;
       return `🌟 8% OFF unlocked! Add ${remaining} more to unlock the Grand 10% OFF!`;
     }
-    return `👑 Grand 10% Festive Discount Unlocked! Hamper Box is at full capacity (10/10).`;
+    if (count < this.maxComboLimit) {
+      const room = this.maxComboLimit - count;
+      return `👑 Grand 10% Festive Discount unlocked! Room for ${room} more pack${room > 1 ? 's' : ''}.`;
+    }
+    return `👑 Grand 10% Festive Discount unlocked! Your box is full (${this.maxComboLimit}/${this.maxComboLimit}).`;
+  }
+
+  /** Positions (0-100) of the milestone pins along the progress bar. */
+  comboPinPosition(count: number): number {
+    return (count / this.maxComboLimit) * 100;
+  }
+
+  get comboGiftUnlocked(): boolean {
+    return this.totalComboCount >= this.comboGiftThreshold;
+  }
+
+  get comboGiftRemaining(): number {
+    return Math.max(0, this.comboGiftThreshold - this.totalComboCount);
+  }
+
+  /** The slots of the box (one per pack, maxComboLimit in total): a product per filled slot, null for an empty one. */
+  get comboSlots(): Array<Product | null> {
+    const slots: Array<Product | null> = [];
+
+    for (const product of this.flavourProducts) {
+      const sku = product.variant?.sku ?? '';
+      const count = this.comboCounts[sku] || 0;
+
+      for (let i = 0; i < count && slots.length < this.maxComboLimit; i++) {
+        slots.push(product);
+      }
+    }
+
+    while (slots.length < this.maxComboLimit) {
+      slots.push(null);
+    }
+
+    return slots;
   }
 
   getComboItemCount(sku: string): number {
@@ -200,7 +246,7 @@ export class HomeComponent
     const sku = product.variant?.sku;
     if (!sku) return;
     if (this.totalComboCount >= this.maxComboLimit) {
-      this.showComboToast('Maximum 10 items allowed in your custom festive gift box!');
+      this.showComboToast(`Your festive box holds up to ${this.maxComboLimit} packs.`);
       return;
     }
     this.comboCounts[sku] = (this.comboCounts[sku] || 0) + 1;
@@ -254,180 +300,16 @@ export class HomeComponent
   }
 
   /* =========================================================
-     BULK & WHOLESALE SUPPLY CONFIGURATOR
-     - Bifurcated by Quality Category: Normal & Handpicked
-     - Nut Size (Suta): 4, 5, 6, and 7 Suta
-       * 4 Suta : Normal - ₹720/kg ; Handpicked - ₹770/kg
-       * 5 Suta : Normal - ₹880/kg ; Handpicked - ₹930/kg
-       * 6 Suta : Normal - ₹1070/kg ; Handpicked - ₹1120/kg
-       * 7 Suta : Normal - ₹1280/kg ; Handpicked - ₹1330/kg
-     - Minimum Order Quantity (MOQ): 100 kg
-     - No Add to Cart CTA; dedicated "Get Quote" CTA redirecting
-       to WhatsApp for formal B2B invoice inquiries.
+     BULK & WHOLESALE TEASER
+     The full configurator lives on the dedicated /bulk page.
      ========================================================= */
 
-  selectedBulkSuta: '4' | '5' | '6' | '7' = '6';
-  selectedBulkQuality: 'normal' | 'handpicked' = 'normal';
-  selectedBulkQtyKg: number = 100;
-  readonly bulkMoqKg: number = 100;
-  showSutaComparisonModal: boolean = false;
-  activeSutaTab: string = 'all';
-
-  readonly bulkPricing: Record<'4' | '5' | '6' | '7', { normal: number; handpicked: number }> = {
-    '4': { normal: 720, handpicked: 770 },
-    '5': { normal: 880, handpicked: 930 },
-    '6': { normal: 1070, handpicked: 1120 },
-    '7': { normal: 1280, handpicked: 1330 }
-  };
-
-  readonly sutaGuides = [
-    {
-      grade: '4',
-      name: '4 Suta Micro Popped',
-      diameter: '10 – 12 mm',
-      tag: 'Namkeen & Food Processing',
-      desc: 'Uniform crisp micro blossoms. Highest kernel count per kilogram, engineered specifically for industrial namkeen, snack mixtures, premixes and extruded bars.',
-      bestFor: 'Commercial namkeen, chivda mixtures, snack premixes & sweet makers',
-      seedsPerKg: '~18,000 – 22,000 seeds',
-      popRatio: '92%+ Uniform Micro',
-      badge: 'High-Yield Commercial',
-      accentColor: '#8a624a',
-      normalPrice: '₹720/kg',
-      handpickedPrice: '₹770/kg'
-    },
-    {
-      grade: '5',
-      name: '5 Suta Classic',
-      diameter: '13 – 15 mm',
-      tag: 'High-Yield Culinary',
-      desc: 'Uniform medium-size popped lotus seeds. Highest blossom count per kilogram, making it exceptionally economical for daily roasting, recipes & sweets.',
-      bestFor: 'Daily snacks, Kheer, Curries, Namkeen & sweet makers',
-      seedsPerKg: '~14,000 – 16,000 seeds',
-      popRatio: '95%+',
-      badge: 'High-Yield Value',
-      accentColor: '#9a6039',
-      normalPrice: '₹880/kg',
-      handpickedPrice: '₹930/kg'
-    },
-    {
-      grade: '6',
-      name: '6 Suta Jumbo Export',
-      diameter: '16 – 18 mm',
-      tag: '★ Most Popular B2B & Retail',
-      desc: 'The gold standard of Mithila makhana. Export-grade jumbo diameter, cloud-like airy puff, snow-white appearance, and zero bitter black kernels.',
-      bestFor: 'Gourmet D2C retail, luxury gifting hampers, party snacking',
-      seedsPerKg: '~10,000 – 12,000 seeds',
-      popRatio: '98%+ Export Grade',
-      badge: '★ Best Seller',
-      accentColor: '#d4af37',
-      normalPrice: '₹1,070/kg',
-      handpickedPrice: '₹1,120/kg'
-    },
-    {
-      grade: '7',
-      name: '7 Suta Royal King',
-      diameter: '20 – 24 mm+',
-      tag: '👑 Royal Reserve • Top 2% Harvest',
-      desc: 'Giant hand-selected king blossoms from deep wetlands of Darbhanga. The largest makhana grade in India with breathtaking visual size and unmatched crispness.',
-      bestFor: '5-Star hospitality, Royal wedding hampers, Bespoke export',
-      seedsPerKg: '~6,500 – 8,000 seeds',
-      popRatio: '99% Supreme Giant',
-      badge: '👑 Royal Reserve',
-      accentColor: '#b8860b',
-      normalPrice: '₹1,280/kg',
-      handpickedPrice: '₹1,330/kg'
-    }
-  ];
-
-  selectBulkSuta(grade: '4' | '5' | '6' | '7'): void {
-    this.selectedBulkSuta = grade;
-  }
-
-  selectBulkQuality(quality: 'normal' | 'handpicked'): void {
-    this.selectedBulkQuality = quality;
-  }
-
-  setBulkQty(qty: number): void {
-    this.selectedBulkQtyKg = Math.max(this.bulkMoqKg, Math.round(qty));
-  }
-
-  increaseBulkQty(step = 50): void {
-    this.selectedBulkQtyKg += step;
-  }
-
-  decreaseBulkQty(step = 50): void {
-    this.selectedBulkQtyKg = Math.max(this.bulkMoqKg, this.selectedBulkQtyKg - step);
-  }
-
-  toggleSutaComparisonModal(): void {
-    this.showSutaComparisonModal = !this.showSutaComparisonModal;
-  }
-
-  getActiveSutaGuide() {
-    return this.sutaGuides.find(g => g.grade === this.selectedBulkSuta) || this.sutaGuides[2];
-  }
-
-  get bulkRatePerKg(): number {
-    const sutaRates = this.bulkPricing[this.selectedBulkSuta] || this.bulkPricing['6'];
-    return sutaRates[this.selectedBulkQuality] || 1070;
-  }
-
-  get bulkEstimatedTotal(): number {
-    return this.bulkRatePerKg * this.selectedBulkQtyKg;
-  }
-
-  get bulkWhatsAppQuoteUrl(): string {
-    const guide = this.getActiveSutaGuide();
-    const qualityLabel = this.selectedBulkQuality === 'handpicked'
-      ? 'Handpicked (Double-Sorted, Zero Black Spots)'
-      : 'Normal (Standard Machine-Graded)';
-    const rate = this.bulkRatePerKg;
-    const qty = this.selectedBulkQtyKg;
-    const total = this.bulkEstimatedTotal.toLocaleString('en-IN');
-
-    const message =
-      `Hello The Crunchy Heart B2B Desk!\n\n` +
-      `I would like to request an official wholesale/bulk quote for:\n` +
-      `• Nut Size: ${guide.name} (${guide.diameter})\n` +
-      `• Quality Category: ${qualityLabel}\n` +
-      `• Order Quantity: ${qty} kg (MOQ: 100 kg)\n` +
-      `• Indicated Price: ₹${rate}/kg\n` +
-      `• Estimated Order Value: ₹${total}\n\n` +
-      `Please provide formal GST proforma invoice, laboratory COA report, dispatch lead time, and freight charges to my delivery pincode.`;
-
-    return `https://wa.me/919999999999?text=${encodeURIComponent(message)}`;
-  }
-
-
-
-  filterSuta(grade: string): void {
-    this.activeSutaTab = grade;
-  }
-
-  getFilteredBulkProducts(): Product[] {
-    if (this.activeSutaTab === 'all') {
-      return this.bulkProducts;
-    }
-    return this.bulkProducts.filter(p => {
-      const sku = p.variant?.sku ?? '';
-      const flavor = p.variant?.flavor ?? '';
-      const name = p.variant?.name ?? '';
-      return (
-        sku.includes(`-${this.activeSutaTab}S-`) ||
-        flavor.includes(`${this.activeSutaTab} Suta`) ||
-        name.includes(`${this.activeSutaTab} Suta`)
-      );
-    });
-  }
-
-  getBulkWhatsAppInquiry(product: Product): string {
-    const name = product.variant?.name || product.name;
-    const price = product.variant?.sellingPrice ? `₹${product.variant.sellingPrice}` : '';
-    const text = encodeURIComponent(
-      `Hello The Crunchy Heart Team! I am interested in wholesale/bulk supply for "${name}" (${price}). Please share your B2B rate card, bulk GST invoice details, and delivery timelines to my location.`
-    );
-    return `https://wa.me/919999999999?text=${text}`;
-  }
+  readonly bulkTeaserSizes = SUTA_GUIDES.map(guide => ({
+    label: guide.shortName,
+    diameter: guide.diameter,
+    from: guide.rates.normal,
+    grade: guide.grade
+  }));
 
   /* =========================================================
      FLAVOUR MOOD SELECTOR
@@ -558,32 +440,32 @@ export class HomeComponent
 
   readonly socialImages: SocialItem[] = [
     {
-      image: 'assets/social-weekend-morning.png',
+      image: 'assets/social-weekend-morning.webp',
       alt: 'The Crunchy Heart weekend morning',
       title: 'Weekend crunch'
     },
     {
-      image: 'assets/social-evening-chai.png',
+      image: 'assets/social-evening-chai.webp',
       alt: 'The Crunchy Heart evening chai',
       title: 'That perfect crunch'
     },
     {
-      image: 'assets/social-reading.png',
+      image: 'assets/social-reading.webp',
       alt: 'The Crunchy Heart reading snack',
       title: 'Snack smarter'
     },
     {
-      image: 'assets/social-movie-night.png',
+      image: 'assets/social-movie-night.webp',
       alt: 'The Crunchy Heart movie night',
       title: 'Movie night crunch'
     },
     {
-      image: 'assets/social-friends-sharing.png',
+      image: 'assets/social-friends-sharing.webp',
       alt: 'Friends sharing The Crunchy Heart makhana',
       title: 'Better together'
     },
     {
-      image: 'assets/social-work-break.png',
+      image: 'assets/social-work-break.webp',
       alt: 'The Crunchy Heart work break',
       title: 'Crunch on the go'
     }
@@ -595,27 +477,27 @@ export class HomeComponent
 
   readonly instagramImages: InstagramItem[] = [
     {
-      image: 'assets/instagram-product.png',
+      image: 'assets/instagram-product.webp',
       alt: 'The Crunchy Heart product'
     },
     {
-      image: 'assets/instagram-macro.png',
+      image: 'assets/instagram-macro.webp',
       alt: 'The Crunchy Heart makhana close-up'
     },
     {
-      image: 'assets/instagram-ingredient.png',
+      image: 'assets/instagram-ingredient.webp',
       alt: 'The Crunchy Heart ingredients'
     },
     {
-      image: 'assets/instagram-flavours.png',
+      image: 'assets/instagram-flavours.webp',
       alt: 'The Crunchy Heart flavours'
     },
     {
-      image: 'assets/instagram-packaging.png',
+      image: 'assets/instagram-packaging.webp',
       alt: 'The Crunchy Heart packaging'
     },
     {
-      image: 'assets/instagram-brand-mood.png',
+      image: 'assets/instagram-brand-mood.webp',
       alt: 'The Crunchy Heart brand mood'
     }
   ];
@@ -779,12 +661,12 @@ export class HomeComponent
       return this.productImages[sku];
     }
     if (sku.startsWith('TCH-BLK')) {
-      return 'assets/bulk-makhana.png';
+      return 'assets/bulk-makhana.webp';
     }
     if (sku.startsWith('TCH-GIFT')) {
-      return 'assets/festive-box.png';
+      return 'assets/festive-box.webp';
     }
-    return 'assets/hero-image.png';
+    return 'assets/hero-image.webp';
   }
 
   rawProductImage(product: Product): string {
@@ -830,6 +712,100 @@ export class HomeComponent
 
     return price > 0 ? price : null;
   }
+
+  /* =========================================================
+     MRP / SAVINGS
+     ========================================================= */
+
+  /** MRP, only when it is genuinely higher than the selling price. */
+  getMrp(product: Product): number | null {
+    const mrp = Number(product.variant?.mrp ?? 0);
+    const price = Number(product.variant?.sellingPrice ?? 0);
+
+    return mrp > price && price > 0 ? mrp : null;
+  }
+
+  getDiscountPercent(product: Product): number {
+    const mrp = this.getMrp(product);
+    const price = this.getPrice(product);
+
+    if (!mrp || !price) {
+      return 0;
+    }
+
+    return Math.round(((mrp - price) / mrp) * 100);
+  }
+
+  /** Urgency hint for low stock; empty when stock is comfortable or out. */
+  getStockNote(product: Product): string {
+    const available = Number(
+      product.variant?.inventory?.availableQuantity ?? 0
+    );
+
+    return available > 0 && available <= 10
+      ? `Only ${available} left`
+      : '';
+  }
+
+  /* =========================================================
+     CATEGORY SHOWCASE
+     ========================================================= */
+
+  /** Tiles for the "Shop by category" row. Live categories are the ones that have products. */
+  get categoryShowcase(): Array<{
+    key: string;
+    name: string;
+    blurb: string;
+    icon: string;
+    target: string;
+    route: string | null;
+    available: boolean;
+    image: string;
+    count: number;
+  }> {
+    const count = (slug: string): number =>
+      new Set(this.products.filter(p => p.category?.slug === slug).map(p => p.id)).size;
+
+    const dry = count('dry-fruits');
+    const spices = count('spices');
+
+    return [
+      {
+        key: 'makhana',
+        name: 'Makhana',
+        blurb: 'Raw & slow-roasted flavoured fox nuts from Mithila.',
+        icon: '🌾',
+        target: 'raw-makhana',
+        route: null,
+        available: true,
+        image: 'assets/everyday-crunch.webp',
+        count: count('raw-makhana') + count('flavoured-makhana')
+      },
+      {
+        key: 'dry-fruits',
+        name: 'Dry Fruits',
+        blurb: 'Almonds, cashews, walnuts, raisins and more, sorted by grade.',
+        icon: '🥜',
+        target: '',
+        route: '/category/dry-fruits',
+        available: dry > 0,
+        image: 'assets/categories/dry-fruits.webp',
+        count: dry
+      },
+      {
+        key: 'spices',
+        name: 'Spices',
+        blurb: 'Whole and ground spices, freshly packed.',
+        icon: '🌶️',
+        target: '',
+        route: '/category/spices',
+        available: spices > 0,
+        image: 'assets/categories/spices.webp',
+        count: spices
+      }
+    ];
+  }
+
 
   /* =========================================================
      AVAILABILITY
@@ -926,7 +902,7 @@ export class HomeComponent
     }
 
     image.dataset['fallbackApplied'] = 'true';
-    image.src = 'assets/hero-image.png';
+    image.src = 'assets/hero-image.webp';
   }
 
   /* =========================================================
@@ -1024,5 +1000,13 @@ export class HomeComponent
     sections.forEach(section => {
       this.sectionObserver?.observe(section);
     });
+
+    // Safety net: if the observer never fires (background tab, print, odd
+    // embeds), do not leave content permanently hidden.
+    window.setTimeout(() => {
+      sections.forEach(section => {
+        section.classList.add('is-visible');
+      });
+    }, 3000);
   }
 }

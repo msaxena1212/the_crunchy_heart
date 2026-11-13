@@ -903,7 +903,8 @@ export async function createOrder({
                 const pricing =
                     calculateItemPricing(
                         variant,
-                        item.quantity
+                        item.quantity,
+                        normalizedShippingAddress.state
                     );
 
 
@@ -1168,7 +1169,11 @@ export async function createOrder({
 
                         normalizedPaymentMethod,
 
-                        18,
+                        // Order-level rate: highest item rate (per-item rates are authoritative).
+                        pricedItems.reduce(
+                            (max, it) => Math.max(max, Number(it.taxRate) || 0),
+                            0
+                        ),
 
                         normalizedIdempotencyKey,
                         requestFingerprint,

@@ -2,6 +2,10 @@ import { Router } from 'express';
 import {
     getDashboard,
     getProducts,
+    getProduct,
+    putProduct,
+    putProductRatePerKg,
+    putVariant,
     getInventory,
     getCoupons,
     getCustomers,
@@ -27,6 +31,10 @@ router.use((req, res, next) => {
 
 router.get('/dashboard', getDashboard);
 router.get('/catalogue/products', getProducts);
+router.get('/catalogue/products/:productId', getProduct);
+router.put('/catalogue/products/:productId', putProduct);
+router.put('/catalogue/products/:productId/rate-per-kg', putProductRatePerKg);
+router.put('/catalogue/variants/:variantId', putVariant);
 router.get('/catalogue/inventory', getInventory);
 router.get('/catalogue/coupons', getCoupons);
 router.get('/customers', getCustomers);

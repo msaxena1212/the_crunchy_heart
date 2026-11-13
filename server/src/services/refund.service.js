@@ -1,6 +1,7 @@
 import { pool, query } from '../db/pool.js';
 import { withTransaction } from '../db/transaction.js';
 import { computeBackoffMs, LEASE_MS } from './payment-reconciliation-retry.service.js';
+import { createCashfreeRefundAdapter } from './cashfree-refund.adapter.js';
 
 /*
 |--------------------------------------------------------------------------
@@ -86,20 +87,41 @@ function sanitiseMessage(message) {
  *   getRefund({ providerOrderId, refundKey })
  *     -> { found: false } | { found: true, status, providerRefundId }
  *
- * No real Cashfree refund endpoint is implemented. The default adapter fails
- * closed with a definitive error, so nothing is submitted. Tests inject mocks.
+ * Provider selection:
+ *   - Default (tests, unconfigured environments): fails closed with a definitive
+ *     PROVIDER_NOT_IMPLEMENTED error, so nothing is submitted.
+ *   - The Cashfree adapter (cashfree-refund.adapter.js) is used when
+ *     ENABLE_CASHFREE_REFUND === 'true', or when Cashfree credentials are
+ *     configured and NODE_ENV is not 'test'. The adapter uses the same
+ *     CASHFREE_ENVIRONMENT (sandbox/production) and credentials as payments.
+ *     Tests inject mocks.
  */
+export const cashfreeRefundAdapter = createCashfreeRefundAdapter();
+
+function isCashfreeRefundEnabled() {
+    if (process.env.ENABLE_CASHFREE_REFUND === 'true') return true;
+    if (process.env.ENABLE_CASHFREE_REFUND === 'false') return false;
+    if (process.env.NODE_ENV === 'test') return false;
+    return Boolean(process.env.CASHFREE_CLIENT_ID && process.env.CASHFREE_CLIENT_SECRET);
+}
+
 export const refundProvider = {
-    async createRefund() {
+    async createRefund(args) {
+        if (isCashfreeRefundEnabled()) {
+            return cashfreeRefundAdapter.createRefund(args);
+        }
         throw Object.assign(
-            new Error('Cashfree refund submission is not implemented; refund not submitted.'),
+            new Error('Cashfree refund submission is not enabled; refund not submitted.'),
             { code: 'PROVIDER_NOT_IMPLEMENTED', definitive: true }
         );
     },
 
-    async getRefund() {
+    async getRefund(args) {
+        if (isCashfreeRefundEnabled()) {
+            return cashfreeRefundAdapter.getRefund(args);
+        }
         throw Object.assign(
-            new Error('Cashfree refund lookup is not implemented; outcome cannot be verified.'),
+            new Error('Cashfree refund lookup is not enabled; outcome cannot be verified.'),
             { code: 'PROVIDER_NOT_IMPLEMENTED', definitive: true }
         );
     },

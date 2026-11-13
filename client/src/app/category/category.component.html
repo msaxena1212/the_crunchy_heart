@@ -1,0 +1,146 @@
+<main class="cat-page">
+
+  <!-- HERO -->
+  <section class="cat-hero" [class.has-banner]="!!info.banner">
+    <img *ngIf="info.banner" class="cat-hero-image" [src]="info.banner" alt="" aria-hidden="true" />
+    <div class="cat-hero-shade" aria-hidden="true"></div>
+
+    <div class="cat-hero-inner">
+      <nav class="cat-crumbs" aria-label="Breadcrumb">
+        <a routerLink="/">Home</a><span>/</span><span aria-current="page">{{ info.name }}</span>
+      </nav>
+
+      <span class="cat-kicker">{{ info.tagline || 'Shop by category' }}</span>
+      <h1>{{ info.name }}</h1>
+      <p *ngIf="info.blurb">{{ info.blurb }}</p>
+
+      <ul class="cat-facts" *ngIf="!loading && items.length">
+        <li><strong>{{ items.length }}</strong> products</li>
+        <li *ngIf="info.perKg">Priced per kg</li>
+        <li>Packed fresh to order</li>
+        <li>Free shipping above ₹499</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="cat-body">
+
+    <!-- LOADING -->
+    <div class="cat-state" *ngIf="loading" role="status">
+      <span class="cat-spinner" aria-hidden="true"></span>
+      <p>Loading {{ info.name.toLowerCase() }}…</p>
+    </div>
+
+    <!-- ERROR -->
+    <div class="cat-state cat-state-error" *ngIf="!loading && error" role="alert">
+      <h2>Something went wrong</h2>
+      <p>{{ error }}</p>
+      <a routerLink="/" class="cat-btn">Back to home</a>
+    </div>
+
+    <!-- COMING SOON (category exists but nothing is published yet) -->
+    <div class="cat-state cat-soon" *ngIf="!loading && !error && !items.length">
+      <span class="cat-soon-icon" aria-hidden="true">{{ info.icon }}</span>
+      <h2>{{ info.name }} are coming soon</h2>
+      <p>We are getting this range ready. Meanwhile, explore our makhana.</p>
+      <a routerLink="/" fragment="raw-makhana" class="cat-btn">Shop makhana</a>
+    </div>
+
+    <ng-container *ngIf="!loading && !error && items.length">
+
+      <!-- TOOLBAR -->
+      <div class="cat-toolbar">
+        <div class="cat-chips" role="tablist" aria-label="Product families" *ngIf="families.length > 1">
+          <button type="button" role="tab" class="cat-chip" [class.is-active]="activeFamily === 'all'"
+                  [attr.aria-selected]="activeFamily === 'all'" (click)="activeFamily = 'all'">
+            All <span>{{ items.length }}</span>
+          </button>
+          <button *ngFor="let f of families" type="button" role="tab" class="cat-chip"
+                  [class.is-active]="activeFamily === f.slug" [attr.aria-selected]="activeFamily === f.slug"
+                  (click)="activeFamily = f.slug">
+            {{ f.name }} <span>{{ f.count }}</span>
+          </button>
+        </div>
+
+        <div class="cat-tools">
+          <label class="cat-search">
+            <span class="sr-only">Search {{ info.name }}</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>
+            </svg>
+            <input type="search" placeholder="Search {{ info.name.toLowerCase() }}" [(ngModel)]="search" />
+          </label>
+
+          <label class="cat-sort">
+            <span class="sr-only">Sort by</span>
+            <select [(ngModel)]="sort">
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="name">Name: A to Z</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <p class="cat-count" aria-live="polite">
+        Showing {{ visibleItems.length }} of {{ items.length }} products
+      </p>
+
+      <!-- NO RESULTS -->
+      <div class="cat-state cat-noresults" *ngIf="!visibleItems.length">
+        <h2>No matches</h2>
+        <p>Try a different word or clear the filters.</p>
+        <button type="button" class="cat-btn" (click)="clearFilters()">Clear filters</button>
+      </div>
+
+      <!-- GRID -->
+      <div class="cat-grid" *ngIf="visibleItems.length">
+        <article class="cat-card" *ngFor="let item of visibleItems; trackBy: trackItem">
+
+          <a class="cat-card-media" [routerLink]="['/product', item.product.slug]" [attr.aria-label]="'View ' + item.product.name">
+            <img [src]="imageFor(item)" [alt]="item.product.name" loading="lazy" />
+            <span class="cat-badge" *ngIf="item.selected.badge">{{ item.selected.badge }}</span>
+          </a>
+
+          <div class="cat-card-body">
+            <span class="cat-family" *ngIf="item.product.subcategory">{{ item.product.subcategory.name }}</span>
+
+            <h3><a [routerLink]="['/product', item.product.slug]">{{ item.product.name }}</a></h3>
+
+            <p class="cat-desc" *ngIf="item.product.shortDescription">{{ item.product.shortDescription }}</p>
+
+            <div class="cat-sizes" role="radiogroup" [attr.aria-label]="'Pack size for ' + item.product.name">
+              <button *ngFor="let v of item.variants" type="button" role="radio" class="cat-size"
+                      [class.is-selected]="item.selected.id === v.id" [class.is-out]="!inStock(v)"
+                      [attr.aria-checked]="item.selected.id === v.id"
+                      (click)="select(item, v)">
+                {{ weightLabel(v) }}
+              </button>
+            </div>
+
+            <div class="cat-price-row">
+              <strong class="cat-price">₹{{ item.selected.sellingPrice | number:'1.0-0' }}</strong>
+              <s class="cat-mrp" *ngIf="item.selected.mrp > item.selected.sellingPrice">₹{{ item.selected.mrp | number:'1.0-0' }}</s>
+              <span class="cat-rate" *ngIf="ratePerKg(item.selected) !== null">₹{{ ratePerKg(item.selected) | number:'1.0-0' }}/kg</span>
+            </div>
+
+            <span class="cat-stock" *ngIf="stockNote(item.selected)">{{ stockNote(item.selected) }}</span>
+
+            <button type="button" class="cat-add" [class.is-added]="added[item.product.id]"
+                    [disabled]="!inStock(item.selected)" (click)="add(item)">
+              <ng-container *ngIf="inStock(item.selected); else soldOut">
+                {{ added[item.product.id] ? '✓ Added to cart' : 'Add to cart' }}
+              </ng-container>
+              <ng-template #soldOut>Sold out</ng-template>
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <p class="cat-note" *ngIf="info.perKg">
+        Rates shown are per kg and pack prices are rounded to the nearest rupee. Prices include GST.
+      </p>
+    </ng-container>
+  </section>
+</main>

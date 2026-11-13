@@ -1,0 +1,29 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /recover-order
+Disallow: /orders/
+Disallow: /payment/
+
+# AI Search Engines & LLM Crawlers
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /cart
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /cart
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /cart
+
+Sitemap: https://thecrunchyheart.com/sitemap.xml

@@ -81,25 +81,36 @@ export async function dashboardSummary({ actor }) {
     };
 }
 
-export async function listProducts({ actor, search = '', limit = 100 }) {
+export async function listProducts({ actor, search = '', limit = 100, category = '' }) {
     await assertActiveAdmin(actor);
     const cappedLimit = Math.min(Math.max(Number(limit) || 100, 1), 200);
     const term = `%${String(search || '').trim()}%`;
+    const categorySlug = String(category || '').trim() || null;
 
     const result = await query(
         `SELECT p.id, p.name, p.slug, p.brand, p.is_active, p.is_featured, p.updated_at,
-                c.name AS category_name,
+                c.name AS category_name, c.slug AS category_slug,
+                sc.name AS subcategory_name,
+                img.image_url,
                 COUNT(v.id)::int AS variant_count,
+                MIN(v.selling_price) FILTER (WHERE v.is_active) AS min_price,
                 COALESCE(SUM(i.quantity_on_hand - i.quantity_reserved), 0)::int AS available_units
          FROM products p
          LEFT JOIN categories c ON c.id = p.category_id
+         LEFT JOIN subcategories sc ON sc.id = p.subcategory_id
+         LEFT JOIN LATERAL (
+             SELECT pi.image_url FROM product_images pi
+             WHERE pi.product_id = p.id AND pi.variant_id IS NULL
+             ORDER BY pi.is_primary DESC, pi.sort_order ASC LIMIT 1
+         ) img ON TRUE
          LEFT JOIN product_variants v ON v.product_id = p.id
          LEFT JOIN inventory i ON i.variant_id = v.id
          WHERE ($1 = '%%' OR p.name ILIKE $1 OR p.slug ILIKE $1)
-         GROUP BY p.id, c.name
-         ORDER BY p.sort_order ASC, p.name ASC
+           AND ($3::text IS NULL OR c.slug = $3)
+         GROUP BY p.id, c.name, c.slug, c.sort_order, sc.name, img.image_url
+         ORDER BY c.sort_order ASC NULLS LAST, p.sort_order ASC, p.name ASC
          LIMIT $2`,
-        [term, cappedLimit]
+        [term, cappedLimit, categorySlug]
     );
 
     return {
@@ -109,9 +120,13 @@ export async function listProducts({ actor, search = '', limit = 100 }) {
             slug: row.slug,
             brand: row.brand,
             category: row.category_name,
+            categorySlug: row.category_slug,
+            subcategory: row.subcategory_name,
+            imageUrl: row.image_url,
             isActive: row.is_active,
             isFeatured: row.is_featured,
             variantCount: row.variant_count,
+            fromPrice: row.min_price === null ? null : toNumber(row.min_price),
             availableUnits: row.available_units,
             updatedAt: row.updated_at,
         })),

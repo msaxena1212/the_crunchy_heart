@@ -542,3 +542,13 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+
+/* ---- Embedded in the owner console shell: the shell supplies page chrome and padding ---- */
+.admin-dashboard-layout { min-height: 0; background: transparent; }
+.dashboard-main { padding: 0 0 24px; }
+.content-container { max-width: none; padding: 0; }
+.page-title { font-family: "Playfair Display", Georgia, serif; color: #0f3d2a; }
+@media (max-width: 720px) {
+  .dashboard-main { padding-bottom: 8px; }
+}

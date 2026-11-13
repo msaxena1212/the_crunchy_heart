@@ -10,3 +10,4 @@ dist/
 # Sandbox monitor reports (local, never committed)
 server/reports/
 reports/
+.claude/

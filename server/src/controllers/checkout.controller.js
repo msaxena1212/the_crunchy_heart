@@ -11,9 +11,14 @@ import {
     calculateShipping,
 } from '../services/shipping.service.js';
 
+import {
+    isInterStateSupply,
+} from '../utils/gst.js';
+
 export async function previewCheckout(req, res, next) {
     try {
-        const { items } = req.body;
+        const { items, shippingAddress, state } = req.body;
+        const shippingState = shippingAddress?.state || state || null;
 
         if (!Array.isArray(items) || items.length === 0) {
             return res.status(400).json({
@@ -163,7 +168,8 @@ export async function previewCheckout(req, res, next) {
             const pricing =
                 calculateItemPricing(
                     variant,
-                    quantity
+                    quantity,
+                    shippingState
                 );
 
             subtotal += pricing.grossAmount;
@@ -184,6 +190,8 @@ export async function previewCheckout(req, res, next) {
                 taxableAmount: pricing.taxableAmount,
                 taxRate: pricing.taxRate,
                 taxAmount: pricing.taxAmount,
+                hsnCode: pricing.hsnCode,
+                gstBreakdown: pricing.gstBreakdown,
                 availableQuantity:
                     inventory.availableQuantity,
             });
@@ -242,6 +250,21 @@ export async function previewCheckout(req, res, next) {
             ).toFixed(2)
         );
 
+        let totalCgst = 0;
+        let totalSgst = 0;
+        let totalIgst = 0;
+        for (const item of pricedItems) {
+            if (item.gstBreakdown) {
+                totalCgst += item.gstBreakdown.cgstAmount;
+                totalSgst += item.gstBreakdown.sgstAmount;
+                totalIgst += item.gstBreakdown.igstAmount;
+            }
+        }
+        totalCgst = Number(totalCgst.toFixed(2));
+        totalSgst = Number(totalSgst.toFixed(2));
+        totalIgst = Number(totalIgst.toFixed(2));
+        const interState = isInterStateSupply(shippingState);
+
         return res.json({
             success: true,
 
@@ -259,9 +282,17 @@ export async function previewCheckout(req, res, next) {
 
             taxAmount,
 
-            taxRate: 18,
+            taxRate: pricedItems.length > 0 ? pricedItems[0].taxRate : 5,
 
             priceIncludesTax: true,
+
+            gstBreakdown: {
+                placeOfSupply: shippingState || 'Inter-State',
+                isInterState: interState,
+                cgstAmount: totalCgst,
+                sgstAmount: totalSgst,
+                igstAmount: totalIgst,
+            },
 
             totalAmount,
 

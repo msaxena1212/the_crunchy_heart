@@ -1,0 +1,61 @@
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.products-table tr.clickable {
+  cursor: pointer;
+}
+
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
+}
+
+.thumb {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #f4e6d1;
+}
+
+.thumb-empty {
+  display: grid;
+  place-items: center;
+  color: #9a9285;
+}
+
+.product-link {
+  display: block;
+  color: #0f3d2a;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.product-link:hover {
+  text-decoration: underline;
+}
+
+.sub {
+  display: block;
+  color: #7a6f63;
+  font-size: 0.78rem;
+}
+
+.edit-cell {
+  text-align: right;
+}
+
+.edit-cell .btn {
+  display: inline-block;
+  padding: 7px 14px;
+  text-decoration: none;
+}

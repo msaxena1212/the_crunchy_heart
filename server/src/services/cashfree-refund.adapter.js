@@ -26,8 +26,9 @@ import { getBaseUrl, buildHeaders } from './cashfree.service.js';
 |     refund_id plus GET reconciliation.
 |   - HTTP status meanings for retries and duplicate creation.
 |
-| This module is NOT wired into the worker. The refund provider stays
-| fail-closed until deployment explicitly enables it.
+| Wired into refund.service.js via refundProvider. It is enabled when
+| ENABLE_CASHFREE_REFUND=true, or when Cashfree credentials are configured and
+| NODE_ENV is not 'test'; otherwise the provider stays fail-closed.
 |--------------------------------------------------------------------------
 */
 

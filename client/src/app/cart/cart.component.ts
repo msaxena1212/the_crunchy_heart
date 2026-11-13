@@ -49,4 +49,22 @@ export class CartComponent {
     restorePreviousCart(): void {
         this.cartService.restoreCartSnapshot(this.items.length === 0 ? 'replace' : 'merge');
     }
+
+  /** "500g" / "1kg" for a cart line. */
+  weightLabel(item: CartItem): string {
+    const grams = Number(item.weightGrams ?? 0);
+
+    if (!grams) {
+      return '';
+    }
+
+    return grams >= 1000 ? `${grams / 1000}kg` : `${grams}g`;
+  }
+
+  /** True when the variant name already states the weight, so it is not repeated. */
+  variantHasWeight(item: CartItem): boolean {
+    const label = this.weightLabel(item).toLowerCase();
+
+    return !!label && (item.variantName || '').toLowerCase().includes(label);
+  }
 }

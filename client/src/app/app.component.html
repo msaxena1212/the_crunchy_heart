@@ -104,6 +104,72 @@
     </div>
   </section>
 
+  <!-- SHOP BY CATEGORY -->
+  <section id="categories" class="category-section reveal-section">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Shop by category</span>
+        <h2>Our pantry, <em>growing.</em></h2>
+      </div>
+
+      <p>
+        We start with the finest makhana from Mithila. Dry fruits and spices
+        are on their way, packed with the same care.
+      </p>
+    </div>
+
+    <div class="category-grid">
+      <ng-container *ngFor="let category of categoryShowcase">
+
+        <!-- live category on this page (makhana) -->
+        <button
+          *ngIf="category.available && !category.route"
+          type="button"
+          class="category-card is-live"
+          (click)="scrollTo(category.target)">
+          <img class="category-card-image" [src]="category.image" [alt]="category.name" loading="lazy"
+               (error)="handleImageError($event)" />
+          <span class="category-card-shade" aria-hidden="true"></span>
+          <span class="category-card-body">
+            <span class="category-card-icon" aria-hidden="true">{{ category.icon }}</span>
+            <strong>{{ category.name }}</strong>
+            <small>{{ category.blurb }}</small>
+            <span class="category-card-cta">Shop now <span aria-hidden="true">→</span></span>
+          </span>
+        </button>
+
+        <!-- live category with its own page -->
+        <a
+          *ngIf="category.available && category.route"
+          [routerLink]="category.route"
+          class="category-card is-live">
+          <img class="category-card-image" [src]="category.image" [alt]="category.name" loading="lazy"
+               (error)="handleImageError($event)" />
+          <span class="category-card-shade" aria-hidden="true"></span>
+          <span class="category-card-body">
+            <span class="category-card-icon" aria-hidden="true">{{ category.icon }}</span>
+            <strong>{{ category.name }}</strong>
+            <small>{{ category.blurb }}</small>
+            <span class="category-card-cta">Shop {{ category.count }} products <span aria-hidden="true">→</span></span>
+          </span>
+        </a>
+
+        <!-- not published yet -->
+        <div
+          *ngIf="!category.available"
+          class="category-card is-soon"
+          [attr.aria-label]="category.name + ' coming soon'">
+          <span class="category-card-body">
+            <span class="category-card-icon" aria-hidden="true">{{ category.icon }}</span>
+            <strong>{{ category.name }}</strong>
+            <small>{{ category.blurb }}</small>
+            <span class="category-card-soon">Coming soon</span>
+          </span>
+        </div>
+      </ng-container>
+    </div>
+  </section>
+
   <!-- LOADING STATE -->
   <section class="catalog-state reveal-section" *ngIf="loading">
     <div class="loading-spinner"></div>
@@ -180,6 +246,14 @@
               ₹{{ getPrice(product) }}
             </strong>
 
+            <s class="product-mrp" *ngIf="getMrp(product) !== null">
+              ₹{{ getMrp(product) }}
+            </s>
+
+            <span class="product-save" *ngIf="getDiscountPercent(product) > 0">
+              {{ getDiscountPercent(product) }}% off
+            </span>
+
             <strong
               class="price-coming-soon"
               *ngIf="getPrice(product) === null">
@@ -187,12 +261,16 @@
             </strong>
           </div>
 
+          <span class="product-stock-note" *ngIf="getStockNote(product)">
+            {{ getStockNote(product) }}
+          </span>
+
           <button
             class="add"
             type="button"
             [disabled]="!isAvailable(product)"
             (click)="addToCart(product)">
-            {{ isAvailable(product) ? 'Add to Cart' : 'Coming Soon' }}
+            {{ isAvailable(product) ? 'Add to Cart' : 'Sold Out' }}
           </button>
         </div>
       </article>
@@ -298,6 +376,14 @@
               ₹{{ getPrice(product) }}
             </strong>
 
+            <s class="product-mrp" *ngIf="getMrp(product) !== null">
+              ₹{{ getMrp(product) }}
+            </s>
+
+            <span class="product-save" *ngIf="getDiscountPercent(product) > 0">
+              {{ getDiscountPercent(product) }}% off
+            </span>
+
             <strong
               class="price-coming-soon"
               *ngIf="getPrice(product) === null">
@@ -305,12 +391,16 @@
             </strong>
           </div>
 
+          <span class="product-stock-note" *ngIf="getStockNote(product)">
+            {{ getStockNote(product) }}
+          </span>
+
           <button
             class="add"
             type="button"
             [disabled]="!isAvailable(product)"
             (click)="addToCart(product)">
-            {{ isAvailable(product) ? 'Add to Cart' : 'Coming Soon' }}
+            {{ isAvailable(product) ? 'Add to Cart' : 'Sold Out' }}
           </button>
         </div>
       </article>
@@ -322,7 +412,7 @@
     </div>
   </section>
 
-  <!-- FESTIVE & GIFT BOXES (WITH 3X3 CUSTOM COMBO BUILDER) -->
+  <!-- FESTIVE & GIFT BOXES (WITH CUSTOM COMBO BUILDER) -->
   <section
     id="festive-gifting"
     class="products-section festive-section reveal-section"
@@ -337,7 +427,7 @@
       <p>
         The thoughtful, healthier gifting alternative. Handcrafted luxury hampers
         packed with our signature slow-roasted flavours for weddings, festivals &amp; corporate celebrations.
-        Choose our master-curated gift boxes or craft your bespoke 10-pack hamper below!
+        Choose our master-curated gift boxes or build your own custom festive box below!
       </p>
     </div>
 
@@ -395,33 +485,70 @@
             type="button"
             [disabled]="!isAvailable(product)"
             (click)="addToCart(product)">
-            {{ isAvailable(product) ? 'Add to Cart' : 'Coming Soon' }}
+            {{ isAvailable(product) ? 'Add to Cart' : 'Sold Out' }}
           </button>
         </div>
       </article>
     </div>
 
-    <!-- 3X3 CUSTOM COMBO BUILDER (UP TO 10 ITEMS) -->
+    <!-- CUSTOM COMBO BUILDER (4x4 BOX, UP TO 16 PACKS) -->
     <div class="festive-combo-builder-wrap card-3d">
       <div class="builder-header">
         <div class="builder-title-group">
           <span class="builder-badge">✦ Bespoke Hamper Studio</span>
-          <h3>Build Your Custom Festive Box (3×3 Format)</h3>
+          <h3>Build Your Custom Festive Box</h3>
           <p class="builder-subtitle">
-            Curate your dream hamper from our 8 gourmet 70g flavours (maximum 10 packs per box).
-            Unlock progressive milestone discounts: <strong>4 packs = 5% OFF</strong> • <strong>7 packs = 8% OFF</strong> • <strong>10 packs = 10% OFF!</strong>
+            Curate your dream hamper from our 8 gourmet 70g flavours, up to {{ maxComboLimit }} packs per box.
+            Unlock progressive discounts: <strong>4 packs = 5% OFF</strong> • <strong>7 packs = 8% OFF</strong> • <strong>10+ packs = 10% OFF!</strong>
           </p>
         </div>
 
         <div class="builder-counter-badge" [class.full]="totalComboCount === maxComboLimit">
           <span class="counter-num">{{ totalComboCount }} / {{ maxComboLimit }}</span>
-          <span class="counter-label">Items Selected</span>
+          <span class="counter-label">Packs Selected</span>
         </div>
       </div>
 
-      <!-- 3X3 SELECTION GRID: 8 FLAVOURS + 1 LUXURY HAMPER PACKAGING TILE -->
-      <div class="combo-3x3-grid">
-        <!-- 8 FLAVOUR TILES -->
+      <!-- FREE GIFT BANNER -->
+      <div class="gift-banner" [class.is-unlocked]="comboGiftUnlocked">
+        <div class="gift-banner-art" aria-hidden="true">
+          <span class="gift-spark spark-a">✦</span>
+          <span class="gift-spark spark-b">✦</span>
+          <span class="gift-spark spark-c">✧</span>
+          <span class="gift-box">🎁</span>
+        </div>
+
+        <div class="gift-banner-copy">
+          <span class="gift-banner-tag">Free gift with every custom box</span>
+          <h4>
+            Festive Rigid Box &amp; Ribbon
+            <s>₹299 value</s>
+            <span class="gift-free-pill">FREE</span>
+          </h4>
+          <p>
+            A golden-embossed keepsake box, satin bow and a personalised greeting card,
+            packed with your hamper at no extra cost.
+          </p>
+        </div>
+
+        <div class="gift-banner-status" role="status">
+          <ng-container *ngIf="!comboGiftUnlocked">
+            <strong>Add {{ comboGiftRemaining }} more pack{{ comboGiftRemaining > 1 ? 's' : '' }}</strong>
+            <span>to unlock your free gift</span>
+            <div class="gift-meter" aria-hidden="true">
+              <span [style.width.%]="(totalComboCount / comboGiftThreshold) * 100"></span>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="comboGiftUnlocked">
+            <strong>✓ Gift unlocked</strong>
+            <span>Included free with your box</span>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- FLAVOUR PICKER -->
+      <div class="combo-flavour-grid">
         <div
           class="combo-tile"
           *ngFor="let flavour of flavourProducts; trackBy: trackByProduct"
@@ -445,7 +572,6 @@
           </div>
 
           <div class="combo-tile-actions">
-            <!-- Quantity Stepper -->
             <div class="combo-stepper" *ngIf="getComboItemCount(flavour.variant.sku) > 0">
               <button
                 type="button"
@@ -465,7 +591,6 @@
               </button>
             </div>
 
-            <!-- Quick Add Button -->
             <button
               type="button"
               class="combo-quick-add"
@@ -476,532 +601,144 @@
             </button>
           </div>
         </div>
-
-        <!-- 9TH TILE: LUXURY GIFT HAMPER PACKAGING (COMPLIMENTARY) -->
-        <div class="combo-tile combo-packaging-tile">
-          <div class="packaging-icon-wrap">
-            <span class="packaging-emblem">🎁</span>
-            <span class="packaging-ribbon-tag">✦ FREE GIFT</span>
-          </div>
-
-          <div class="combo-tile-details">
-            <h4 class="combo-tile-title">Festive Rigid Box &amp; Ribbon</h4>
-            <p class="packaging-desc">
-              Rigid golden-embossed keepsake box, satin bow &amp; personalized greeting card.
-            </p>
-            <div class="packaging-value">
-              <span class="free-text">FREE</span>
-              <span class="mrp-strike">₹299 Value</span>
-            </div>
-          </div>
-
-          <div class="packaging-status">
-            <span class="status-pill" *ngIf="totalComboCount >= 4">✓ Included Free</span>
-            <span class="status-pill pending" *ngIf="totalComboCount < 4">Select 4+ items to unlock</span>
-          </div>
-        </div>
       </div>
 
-      <!-- PROGRESSIVE MILESTONE PROGRESS TRACKER -->
-      <div class="combo-milestone-dock">
-        <div class="milestone-track-header">
-          <span class="milestone-status-text">
-            {{ comboNextMilestoneText }}
-          </span>
-          <span class="milestone-capacity">
-            {{ totalComboCount }} / {{ maxComboLimit }} Packs
-          </span>
-        </div>
+      <!-- YOUR BOX + CHECKOUT -->
+      <div class="combo-box-layout">
 
-        <!-- Visual Progress Bar with Pins -->
-        <div class="milestone-progress-bar">
-          <div
-            class="milestone-progress-fill"
-            [style.width.%]="comboProgressPercent">
+        <!-- 4x4 BOX PREVIEW -->
+        <div class="combo-box-preview">
+          <div class="box-preview-head">
+            <strong>Your festive box</strong>
+            <span>{{ totalComboCount }} of {{ maxComboLimit }} packed</span>
           </div>
 
-          <!-- Pin 1: 4 Items -> 5% OFF -->
-          <div
-            class="milestone-pin pin-4"
-            [class.unlocked]="totalComboCount >= 4">
-            <span class="pin-marker">{{ totalComboCount >= 4 ? '✓' : '4' }}</span>
-            <span class="pin-label">4 items • 5% OFF</span>
-          </div>
-
-          <!-- Pin 2: 7 Items -> 8% OFF -->
-          <div
-            class="milestone-pin pin-7"
-            [class.unlocked]="totalComboCount >= 7">
-            <span class="pin-marker">{{ totalComboCount >= 7 ? '✓' : '7' }}</span>
-            <span class="pin-label">7 items • 8% OFF</span>
-          </div>
-
-          <!-- Pin 3: 10 Items -> 10% OFF -->
-          <div
-            class="milestone-pin pin-10"
-            [class.unlocked]="totalComboCount >= 10">
-            <span class="pin-marker">{{ totalComboCount >= 10 ? '👑' : '10' }}</span>
-            <span class="pin-label">10 items • 10% OFF</span>
+          <div class="box-grid" aria-label="Preview of your festive box">
+            <div
+              class="box-slot"
+              *ngFor="let slot of comboSlots; let i = index"
+              [class.is-filled]="!!slot">
+              <img
+                *ngIf="slot"
+                [src]="productImage(slot)"
+                [alt]="getFlavorName(slot)" />
+              <span *ngIf="!slot" aria-hidden="true">{{ i + 1 }}</span>
+            </div>
           </div>
         </div>
 
-        <!-- Live Price Calculation & Cart Actions -->
-        <div class="combo-checkout-bar">
-          <div class="combo-price-summary">
-            <div class="price-line">
-              <span class="summary-label">Box Subtotal:</span>
-              <span class="summary-val">₹{{ comboSubtotal }}</span>
+        <!-- MILESTONES, PRICE & CART -->
+        <div class="combo-milestone-dock">
+          <div class="milestone-track-header">
+            <span class="milestone-status-text">
+              {{ comboNextMilestoneText }}
+            </span>
+            <span class="milestone-capacity">
+              {{ totalComboCount }} / {{ maxComboLimit }} Packs
+            </span>
+          </div>
+
+          <div class="milestone-progress-bar">
+            <div
+              class="milestone-progress-fill"
+              [style.width.%]="comboProgressPercent">
             </div>
 
-            <div class="price-line discount-line" *ngIf="comboDiscountPercent > 0">
-              <span class="summary-label">Milestone Savings ({{ comboDiscountPercent }}% OFF):</span>
-              <span class="summary-discount">−₹{{ comboDiscountAmount }}</span>
-            </div>
-
-            <div class="price-line final-line">
-              <span class="final-label">Custom Hamper Total:</span>
-              <span class="final-price">₹{{ comboFinalPrice }}</span>
-              <span class="unlocked-badge" *ngIf="comboDiscountPercent > 0">
-                ✦ {{ comboDiscountPercent }}% OFF UNLOCKED
-              </span>
+            <div
+              class="milestone-pin"
+              *ngFor="let m of comboMilestones"
+              [class.pin-10]="m.count === 10"
+              [class.unlocked]="totalComboCount >= m.count"
+              [style.left.%]="comboPinPosition(m.count)">
+              <span class="pin-marker">{{ totalComboCount >= m.count ? (m.count === 10 ? '👑' : '✓') : m.count }}</span>
+              <span class="pin-label">{{ m.percent }}% OFF</span>
             </div>
           </div>
 
-          <div class="combo-action-group">
-            <button
-              type="button"
-              class="combo-add-cart-btn"
-              [disabled]="totalComboCount === 0"
-              (click)="addCustomComboToCart()">
-              <span class="btn-icon">🎁</span>
-              <span>Add Custom Hamper to Cart ({{ totalComboCount }} Items • ₹{{ comboFinalPrice }})</span>
-            </button>
+          <div class="combo-checkout-bar">
+            <div class="combo-price-summary">
+              <div class="price-line">
+                <span class="summary-label">Box Subtotal:</span>
+                <span class="summary-val">₹{{ comboSubtotal }}</span>
+              </div>
 
-            <button
-              type="button"
-              class="combo-reset-btn"
-              *ngIf="totalComboCount > 0"
-              (click)="resetCombo()"
-              title="Reset combo selections">
-              Clear Box
-            </button>
+              <div class="price-line discount-line" *ngIf="comboDiscountPercent > 0">
+                <span class="summary-label">Milestone Savings ({{ comboDiscountPercent }}% OFF):</span>
+                <span class="summary-discount">−₹{{ comboDiscountAmount }}</span>
+              </div>
+
+              <div class="price-line gift-line" *ngIf="comboGiftUnlocked">
+                <span class="summary-label">Festive Rigid Box &amp; Ribbon:</span>
+                <span class="summary-discount">FREE</span>
+              </div>
+
+              <div class="price-line final-line">
+                <span class="final-label">Custom Hamper Total:</span>
+                <span class="final-price">₹{{ comboFinalPrice }}</span>
+                <span class="unlocked-badge" *ngIf="comboDiscountPercent > 0">
+                  ✦ {{ comboDiscountPercent }}% OFF UNLOCKED
+                </span>
+              </div>
+            </div>
+
+            <div class="combo-action-group">
+              <button
+                type="button"
+                class="combo-add-cart-btn"
+                [disabled]="totalComboCount === 0"
+                (click)="addCustomComboToCart()">
+                <span class="btn-icon">🎁</span>
+                <span>Add Custom Hamper to Cart ({{ totalComboCount }} Items • ₹{{ comboFinalPrice }})</span>
+              </button>
+
+              <button
+                type="button"
+                class="combo-reset-btn"
+                *ngIf="totalComboCount > 0"
+                (click)="resetCombo()"
+                title="Reset combo selections">
+                Clear Box
+              </button>
+            </div>
           </div>
-        </div>
 
-        <!-- Toast Feedback -->
-        <div class="combo-toast-banner" *ngIf="comboToastMessage">
-          <span>♡</span> {{ comboToastMessage }}
+          <div class="combo-toast-banner" *ngIf="comboToastMessage">
+            <span>♡</span> {{ comboToastMessage }}
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- BULK & WHOLESALE SUPPLY (BIFURCATED BY QUALITY & 4, 5, 6, 7 SUTA) -->
+  <!-- BULK & WHOLESALE TEASER (full experience lives on /bulk) -->
   <section
     id="bulk-wholesale"
-    class="products-section bulk-section reveal-section"
+    class="bulk-teaser reveal-section"
     *ngIf="!loading && !error">
 
-    <div class="section-heading">
-      <div>
-        <span class="eyebrow">Direct from Origin • Mithilanchal B2B Hub</span>
-        <h2>Bulk &amp; Wholesale Supply (4, 5, 6 &amp; 7 Suta)</h2>
+    <div class="bulk-teaser-card">
+      <div class="bulk-teaser-copy">
+        <span class="bulk-teaser-eyebrow">Bulk &amp; Wholesale · From 100 kg</span>
+        <h2>Makhana by the tonne, <em>straight from Mithila.</em></h2>
+        <p>
+          Namkeen makers, sweet shops, retailers and hotels: choose your nut size
+          (4, 5, 6 or 7 Suta), then your quality, and get a formal quote on WhatsApp.
+        </p>
+
+        <a routerLink="/bulk" class="bulk-teaser-cta">
+          Explore bulk supply <span aria-hidden="true">→</span>
+        </a>
       </div>
 
-      <p>
-        Direct-from-origin phool makhana harvested across Darbhanga and Madhubani wetlands.
-        Bifurcated by Quality Category (<strong>Normal</strong> and <strong>Handpicked</strong>) and standardized into
-        <strong>4 Suta</strong>, <strong>5 Suta</strong>, <strong>6 Suta</strong>, and <strong>7 Suta</strong> nut sizes.
-        Minimum Order Quantity is 100 kg with custom B2B quotes via WhatsApp.
-      </p>
-    </div>
-
-    <!-- UNIFIED INTERACTIVE BULK CONFIGURATOR CARD -->
-    <div class="bulk-master-configurator card-3d">
-
-      <!-- STEP 1: QUALITY CATEGORY BIFURCATION (NORMAL VS HANDPICKED) -->
-      <div class="bulk-step-block">
-        <span class="step-indicator">Step 1: Choose Quality Category</span>
-        <div class="quality-selector-group">
-          <button
-            type="button"
-            class="quality-toggle-btn"
-            [class.active]="selectedBulkQuality === 'normal'"
-            (click)="selectBulkQuality('normal')">
-            <div class="quality-header">
-              <strong class="quality-name">Normal Quality</strong>
-              <span class="quality-pill">Standard Machine Graded</span>
-            </div>
-            <p class="quality-desc">
-              Clean, sieved Mithila wetland harvest with certified moisture levels and uniform crisp puffing. Ideal for commercial namkeen, daily roasting &amp; food processing.
-            </p>
-            <div class="quality-rate-hint">
-              Starts at <strong>₹720 / kg</strong>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            class="quality-toggle-btn"
-            [class.active]="selectedBulkQuality === 'handpicked'"
-            (click)="selectBulkQuality('handpicked')">
-            <div class="quality-header">
-              <strong class="quality-name">Handpicked Quality</strong>
-              <span class="quality-pill luxury">★ Double Hand-Sorted</span>
-            </div>
-            <p class="quality-desc">
-              Purest snow-white blossoms individually hand-inspected. Guaranteed zero bitter black kernels, zero hard unpopped shells, and maximum visual blossom diameter.
-            </p>
-            <div class="quality-rate-hint">
-              Starts at <strong>₹770 / kg</strong>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- STEP 2: NUT SIZE (SUTA) TABS -->
-      <div class="bulk-step-block">
-        <div class="step-header-row">
-          <span class="step-indicator">Step 2: Choose Nut Size (Suta)</span>
-          <span class="active-quality-indicator">
-            Active Quality: <strong>{{ selectedBulkQuality === 'handpicked' ? 'Handpicked Grade' : 'Normal Grade' }}</strong>
-          </span>
-        </div>
-
-        <div class="bulk-grade-tabs-4">
-          <!-- 4 SUTA -->
-          <button
-            type="button"
-            class="bulk-tab-btn"
-            [class.active]="selectedBulkSuta === '4'"
-            (click)="selectBulkSuta('4')">
-            <div class="tab-badge-pill">Commercial Value</div>
-            <strong class="tab-title">4 Suta</strong>
-            <span class="tab-dim">10 – 12 mm</span>
-            <span class="tab-sub">Namkeen &amp; Mixtures</span>
-            <div class="tab-price-tag">
-              ₹{{ bulkPricing['4'][selectedBulkQuality] }} / kg
-            </div>
-          </button>
-
-          <!-- 5 SUTA -->
-          <button
-            type="button"
-            class="bulk-tab-btn"
-            [class.active]="selectedBulkSuta === '5'"
-            (click)="selectBulkSuta('5')">
-            <div class="tab-badge-pill">High Yield</div>
-            <strong class="tab-title">5 Suta</strong>
-            <span class="tab-dim">13 – 15 mm</span>
-            <span class="tab-sub">Roasting &amp; Sweets</span>
-            <div class="tab-price-tag">
-              ₹{{ bulkPricing['5'][selectedBulkQuality] }} / kg
-            </div>
-          </button>
-
-          <!-- 6 SUTA -->
-          <button
-            type="button"
-            class="bulk-tab-btn"
-            [class.active]="selectedBulkSuta === '6'"
-            (click)="selectBulkSuta('6')">
-            <div class="tab-badge-pill best-seller">★ Most Popular</div>
-            <strong class="tab-title">6 Suta Jumbo</strong>
-            <span class="tab-dim">16 – 18 mm</span>
-            <span class="tab-sub">Export &amp; Retail Packs</span>
-            <div class="tab-price-tag">
-              ₹{{ bulkPricing['6'][selectedBulkQuality] }} / kg
-            </div>
-          </button>
-
-          <!-- 7 SUTA -->
-          <button
-            type="button"
-            class="bulk-tab-btn"
-            [class.active]="selectedBulkSuta === '7'"
-            (click)="selectBulkSuta('7')">
-            <div class="tab-badge-pill royal">👑 Royal Reserve</div>
-            <strong class="tab-title">7 Suta King</strong>
-            <span class="tab-dim">20 – 24 mm+</span>
-            <span class="tab-sub">Giant King Blossoms</span>
-            <div class="tab-price-tag">
-              ₹{{ bulkPricing['7'][selectedBulkQuality] }} / kg
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- STEP 3: INTERACTIVE SHOWCASE, MOQ SELECTOR & LIVE QUOTE -->
-      <div class="bulk-configurator-body">
-        <!-- LEFT: 3D VISUAL SCALE & NUT SPECS -->
-        <div class="bulk-visual-panel">
-          <div class="suta-scale-visualizer">
-            <div
-              class="suta-3d-blossom"
-              [class]="'circle-suta-' + selectedBulkSuta">
-              <span class="diameter-tag">{{ getActiveSutaGuide().diameter }}</span>
-            </div>
-          </div>
-
-          <div class="visual-grade-meta">
-            <h3 class="active-grade-name">{{ getActiveSutaGuide().name }}</h3>
-            <span class="active-grade-tag">
-              {{ selectedBulkQuality === 'handpicked' ? 'Handpicked (Double Sorted)' : 'Normal (Machine Graded)' }}
-            </span>
-            <p class="active-grade-desc">{{ getActiveSutaGuide().desc }}</p>
-          </div>
-
-          <div class="origin-trust-strip">
-            <div class="trust-item">
-              <span class="trust-icon">🌿</span>
-              <span>100% Mithila Origin (GI Tagged)</span>
-            </div>
-            <div class="trust-item">
-              <span class="trust-icon">♡</span>
-              <span>100% Satvik • Zero Palm Oil</span>
-            </div>
-            <div class="trust-item">
-              <span class="trust-icon">✦</span>
-              <span>Food-Grade Nitrogen-Flushed Barrier Pack</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT: QUANTITY SELECTOR (MOQ 100KG) & GET QUOTE CTA -->
-        <div class="bulk-details-panel">
-          <!-- QUANTITY (MOQ 100 KG) -->
-          <div class="bulk-qty-selection">
-            <div class="qty-label-row">
-              <span class="step-indicator">Step 3: Choose Order Quantity</span>
-              <span class="moq-badge">⚠️ Minimum Quantity: 100 kg</span>
-            </div>
-
-            <div class="bulk-qty-stepper-wrap">
-              <div class="bulk-stepper">
-                <button
-                  type="button"
-                  class="bulk-step-btn"
-                  [disabled]="selectedBulkQtyKg <= bulkMoqKg"
-                  (click)="decreaseBulkQty(50)"
-                  aria-label="Decrease quantity by 50kg">
-                  −
-                </button>
-                <div class="bulk-qty-display">
-                  <span class="qty-number">{{ selectedBulkQtyKg }}</span>
-                  <span class="qty-unit">KG</span>
-                </div>
-                <button
-                  type="button"
-                  class="bulk-step-btn"
-                  (click)="increaseBulkQty(50)"
-                  aria-label="Increase quantity by 50kg">
-                  +
-                </button>
-              </div>
-
-              <!-- PRESET QUANTITY BUTTONS -->
-              <div class="bulk-preset-pills">
-                <button
-                  type="button"
-                  class="preset-pill"
-                  [class.active]="selectedBulkQtyKg === 100"
-                  (click)="setBulkQty(100)">
-                  100 kg (MOQ)
-                </button>
-                <button
-                  type="button"
-                  class="preset-pill"
-                  [class.active]="selectedBulkQtyKg === 250"
-                  (click)="setBulkQty(250)">
-                  250 kg
-                </button>
-                <button
-                  type="button"
-                  class="preset-pill"
-                  [class.active]="selectedBulkQtyKg === 500"
-                  (click)="setBulkQty(500)">
-                  500 kg
-                </button>
-                <button
-                  type="button"
-                  class="preset-pill"
-                  [class.active]="selectedBulkQtyKg === 1000"
-                  (click)="setBulkQty(1000)">
-                  1,000 kg (1 Ton)
-                </button>
-                <button
-                  type="button"
-                  class="preset-pill"
-                  [class.active]="selectedBulkQtyKg === 2500"
-                  (click)="setBulkQty(2500)">
-                  2,500 kg
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- SPECS MATRIX -->
-          <div class="bulk-specs-matrix">
-            <div class="spec-matrix-item">
-              <span class="matrix-label">Nut Size (Suta)</span>
-              <strong class="matrix-value">{{ selectedBulkSuta }} Suta ({{ getActiveSutaGuide().diameter }})</strong>
-            </div>
-
-            <div class="spec-matrix-item">
-              <span class="matrix-label">Quality Category</span>
-              <strong class="matrix-value">{{ selectedBulkQuality === 'handpicked' ? 'Handpicked (Double Sorted)' : 'Normal (Standard)' }}</strong>
-            </div>
-
-            <div class="spec-matrix-item">
-              <span class="matrix-label">Blossom Yield</span>
-              <strong class="matrix-value">{{ getActiveSutaGuide().seedsPerKg }}</strong>
-            </div>
-
-            <div class="spec-matrix-item">
-              <span class="matrix-label">Pop Ratio</span>
-              <strong class="matrix-value">{{ getActiveSutaGuide().popRatio }}</strong>
-            </div>
-          </div>
-
-          <!-- LIVE PRICING & ESTIMATED TOTAL ROW -->
-          <div class="bulk-pricing-row">
-            <div class="pricing-headline">
-              <span class="bulk-price-main">₹{{ bulkRatePerKg }}</span>
-              <span class="bulk-price-per-kg">/ kg</span>
-              <span class="bulk-quality-pill">{{ selectedBulkQuality === 'handpicked' ? 'Handpicked' : 'Normal' }}</span>
-            </div>
-
-            <div class="bulk-order-estimate">
-              Estimated Total for <strong>{{ selectedBulkQtyKg }} kg</strong>:
-              <span class="estimate-total-amount">₹{{ bulkEstimatedTotal.toLocaleString('en-IN') }}</span>
-              <small>(Excl. GST &amp; Freight • Final Invoice on WhatsApp)</small>
-            </div>
-          </div>
-
-          <!-- ONLY GET QUOTE CTA (REDIRECTING TO WHATSAPP) - NO ADD TO CART -->
-          <div class="bulk-cta-actions">
-            <a
-              [href]="bulkWhatsAppQuoteUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="bulk-get-quote-btn"
-              aria-label="Get formal wholesale quote on WhatsApp">
-              <span class="wa-icon">💬</span>
-              <span class="quote-text">
-                <strong>Get Quote on WhatsApp</strong>
-                <small>{{ selectedBulkSuta }} Suta • {{ selectedBulkQuality === 'handpicked' ? 'Handpicked' : 'Normal' }} • {{ selectedBulkQtyKg }} kg @ ₹{{ bulkRatePerKg }}/kg</small>
-              </span>
-              <span class="quote-arrow">→</span>
-            </a>
-
-            <div class="bulk-support-note">
-              <span>✦ Instant GST Proforma Invoice</span>
-              <span>✦ Laboratory COA Report</span>
-              <span>✦ PAN-India Transport Logistics</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- COLLAPSIBLE COMPLETE PRICE & SPEC MATRIX (4, 5, 6 & 7 SUTA) -->
-      <div class="bulk-comparison-drawer">
-        <button
-          type="button"
-          class="comparison-drawer-btn"
-          (click)="toggleSutaComparisonModal()">
-          <span>📊 View All Grades &amp; Pricing Rate Card (4, 5, 6 &amp; 7 Suta)</span>
-          <span class="drawer-arrow">{{ showSutaComparisonModal ? '▲ Hide Rate Card' : '▼ View Rate Card' }}</span>
-        </button>
-
-        <div class="comparison-table-wrap" *ngIf="showSutaComparisonModal">
-          <table class="suta-table">
-            <thead>
-              <tr>
-                <th>Nut Size (Suta)</th>
-                <th>Diameter (mm)</th>
-                <th>Normal Rate</th>
-                <th>Handpicked Rate</th>
-                <th>Blossom Yield/kg</th>
-                <th>Best For</th>
-                <th>Configure</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr [class.highlighted-row]="selectedBulkSuta === '4'">
-                <td><strong>4 Suta</strong></td>
-                <td>10 – 12 mm</td>
-                <td><strong class="rate-green">₹720 / kg</strong></td>
-                <td><strong class="rate-gold">₹770 / kg</strong></td>
-                <td>~18,000 – 22,000</td>
-                <td>Commercial namkeen &amp; snack mixtures</td>
-                <td>
-                  <button
-                    type="button"
-                    class="table-select-btn"
-                    [class.active]="selectedBulkSuta === '4'"
-                    (click)="selectBulkSuta('4')">
-                    {{ selectedBulkSuta === '4' ? 'Selected ✓' : 'Select 4 Suta' }}
-                  </button>
-                </td>
-              </tr>
-              <tr [class.highlighted-row]="selectedBulkSuta === '5'">
-                <td><strong>5 Suta</strong></td>
-                <td>13 – 15 mm</td>
-                <td><strong class="rate-green">₹880 / kg</strong></td>
-                <td><strong class="rate-gold">₹930 / kg</strong></td>
-                <td>~14,000 – 16,000</td>
-                <td>Daily roasting, kheer, namkeen &amp; sweets</td>
-                <td>
-                  <button
-                    type="button"
-                    class="table-select-btn"
-                    [class.active]="selectedBulkSuta === '5'"
-                    (click)="selectBulkSuta('5')">
-                    {{ selectedBulkSuta === '5' ? 'Selected ✓' : 'Select 5 Suta' }}
-                  </button>
-                </td>
-              </tr>
-              <tr [class.highlighted-row]="selectedBulkSuta === '6'">
-                <td><strong>6 Suta Jumbo ★</strong></td>
-                <td>16 – 18 mm</td>
-                <td><strong class="rate-green">₹1,070 / kg</strong></td>
-                <td><strong class="rate-gold">₹1,120 / kg</strong></td>
-                <td>~10,000 – 12,000</td>
-                <td>Gourmet retail packs &amp; luxury gifting</td>
-                <td>
-                  <button
-                    type="button"
-                    class="table-select-btn"
-                    [class.active]="selectedBulkSuta === '6'"
-                    (click)="selectBulkSuta('6')">
-                    {{ selectedBulkSuta === '6' ? 'Selected ✓' : 'Select 6 Suta' }}
-                  </button>
-                </td>
-              </tr>
-              <tr [class.highlighted-row]="selectedBulkSuta === '7'">
-                <td><strong>7 Suta Royal 👑</strong></td>
-                <td>20 – 24 mm+</td>
-                <td><strong class="rate-green">₹1,280 / kg</strong></td>
-                <td><strong class="rate-gold">₹1,330 / kg</strong></td>
-                <td>~6,500 – 8,000</td>
-                <td>5-Star hotels, royal weddings &amp; bespoke export</td>
-                <td>
-                  <button
-                    type="button"
-                    class="table-select-btn"
-                    [class.active]="selectedBulkSuta === '7'"
-                    (click)="selectBulkSuta('7')">
-                    {{ selectedBulkSuta === '7' ? 'Selected ✓' : 'Select 7 Suta' }}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="table-moq-footer">
-            * Minimum Order Quantity (MOQ) across all grades is <strong>100 kg</strong>. Standard packaging in food-grade moisture barrier poly bags in master export cartons.
-          </div>
-        </div>
-      </div>
+      <ul class="bulk-teaser-sizes">
+        <li *ngFor="let size of bulkTeaserSizes">
+          <a routerLink="/bulk">
+            <strong>{{ size.label }}</strong>
+            <span>{{ size.diameter }}</span>
+            <em>from ₹{{ size.from }}/kg</em>
+          </a>
+        </li>
+      </ul>
     </div>
   </section>
 

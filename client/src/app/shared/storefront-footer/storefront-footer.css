@@ -128,8 +128,8 @@
    ========================================================= */
 .footer-main {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1.3fr;
-  gap: 40px;
+  grid-template-columns: 1.4fr 1fr 1fr 1.2fr 1.1fr;
+  gap: 32px;
   margin-bottom: 48px;
 }
 
@@ -373,4 +373,25 @@
     align-items: flex-start;
     gap: 10px;
   }
+}
+
+.footer-soon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 249, 236, 0.5);
+  font-size: 14px;
+  cursor: default;
+}
+
+.footer-soon em {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(214, 181, 110, 0.18);
+  color: #d6b56e;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

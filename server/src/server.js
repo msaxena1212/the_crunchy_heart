@@ -239,6 +239,9 @@ app.get('/api/products', async (req, res, next) => {
           c.id AS category_id,
           c.name AS category_name,
           c.slug AS category_slug,
+          sc.name AS subcategory_name,
+          sc.slug AS subcategory_slug,
+          img.image_url AS image_url,
 
           v.id AS variant_id,
           v.sku,
@@ -264,6 +267,18 @@ app.get('/api/products', async (req, res, next) => {
 
       INNER JOIN categories c
           ON c.id = p.category_id
+
+      LEFT JOIN subcategories sc
+          ON sc.id = p.subcategory_id
+
+      LEFT JOIN LATERAL (
+          SELECT pi.image_url
+          FROM product_images pi
+          WHERE pi.product_id = p.id
+            AND pi.variant_id IS NULL
+          ORDER BY pi.is_primary DESC, pi.sort_order ASC
+          LIMIT 1
+      ) img ON TRUE
 
       INNER JOIN product_variants v
           ON v.product_id = p.id
@@ -303,12 +318,17 @@ app.get('/api/products', async (req, res, next) => {
       shortDescription: row.short_description,
       brand: row.brand,
       featured: row.is_featured,
+      imageUrl: row.image_url ?? null,
 
       category: {
         id: row.category_id,
         name: row.category_name,
         slug: row.category_slug,
       },
+
+      subcategory: row.subcategory_slug
+        ? { name: row.subcategory_name, slug: row.subcategory_slug }
+        : null,
 
       variant: {
         id: row.variant_id,
@@ -365,6 +385,9 @@ app.get('/api/products/:slug', async (req, res, next) => {
           c.id AS category_id,
           c.name AS category_name,
           c.slug AS category_slug,
+          sc.name AS subcategory_name,
+          sc.slug AS subcategory_slug,
+          img.image_url AS image_url,
 
           v.id AS variant_id,
           v.sku,
@@ -390,6 +413,18 @@ app.get('/api/products/:slug', async (req, res, next) => {
 
       INNER JOIN categories c
           ON c.id = p.category_id
+
+      LEFT JOIN subcategories sc
+          ON sc.id = p.subcategory_id
+
+      LEFT JOIN LATERAL (
+          SELECT pi.image_url
+          FROM product_images pi
+          WHERE pi.product_id = p.id
+            AND pi.variant_id IS NULL
+          ORDER BY pi.is_primary DESC, pi.sort_order ASC
+          LIMIT 1
+      ) img ON TRUE
 
       INNER JOIN product_variants v
           ON v.product_id = p.id
@@ -427,12 +462,17 @@ app.get('/api/products/:slug', async (req, res, next) => {
       shortDescription: first.short_description,
       brand: first.brand,
       featured: first.is_featured,
+      imageUrl: first.image_url ?? null,
 
       category: {
         id: first.category_id,
         name: first.category_name,
         slug: first.category_slug,
       },
+
+      subcategory: first.subcategory_slug
+        ? { name: first.subcategory_name, slug: first.subcategory_slug }
+        : null,
 
       variants: rows.map((row) => ({
         id: row.variant_id,

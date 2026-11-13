@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CartService } from '../../cart.service';
 
@@ -15,18 +15,29 @@ export class StorefrontHeader {
   private readonly cartService = inject(CartService);
 
   mobileMenuOpen = false;
+  shopMenuOpen = false;
 
   get cartCount(): number {
     return this.cartService.count;
   }
 
   goHome(): void {
-    this.mobileMenuOpen = false;
+    this.closeMenus();
     void this.router.navigate(['/']);
   }
 
+  goToCategory(slug: string): void {
+    this.closeMenus();
+    void this.router.navigate(['/category', slug]);
+  }
+
+  goToBulk(): void {
+    this.closeMenus();
+    void this.router.navigate(['/bulk']);
+  }
+
   navigateToSection(section: string): void {
-    this.mobileMenuOpen = false;
+    this.closeMenus();
 
     if (this.router.url === '/') {
       document.getElementById(section)?.scrollIntoView({
@@ -43,5 +54,35 @@ export class StorefrontHeader {
 
   toggleMobileMenu(): void {
     this.mobileMenuOpen = !this.mobileMenuOpen;
+    this.shopMenuOpen = false;
+  }
+
+  toggleShopMenu(event: Event): void {
+    // Hover already opens the menu on desktop, so a click must not toggle it shut again.
+    event.stopPropagation();
+    this.shopMenuOpen = true;
+  }
+
+  openShopMenu(): void {
+    this.shopMenuOpen = true;
+  }
+
+  closeShopMenu(): void {
+    this.shopMenuOpen = false;
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.shopMenuOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeMenus();
+  }
+
+  private closeMenus(): void {
+    this.mobileMenuOpen = false;
+    this.shopMenuOpen = false;
   }
 }

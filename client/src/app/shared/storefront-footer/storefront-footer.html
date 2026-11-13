@@ -43,13 +43,13 @@
 
         <span class="footer-brand-copy">
           <strong>The Crunchy Heart</strong>
-          <small>PREMIUM MAKHANA</small>
+          <small>PREMIUM PANTRY</small>
         </span>
       </a>
 
       <p class="footer-brand-description">
         A little crunch, a little happiness, and a whole lot of heart.
-        Discover raw and flavoured makhana for your everyday snacking moments.
+        Premium makhana today, with dry fruits and spices on the way, for your everyday pantry.
       </p>
 
       <a
@@ -67,11 +67,13 @@
     <nav class="footer-column" aria-label="Shop">
       <h2>Find Your Crunch</h2>
 
-      <a routerLink="/">Shop All Makhana</a>
+      <a routerLink="/" fragment="categories">Shop by Category</a>
       <a routerLink="/" fragment="raw-makhana">Raw Makhana</a>
       <a routerLink="/" fragment="flavoured-makhana">Flavoured Makhana</a>
+      <a routerLink="/category/dry-fruits">Dry Fruits</a>
+      <a routerLink="/category/spices">Spices</a>
       <a routerLink="/" fragment="festive-gifting">Gifting &amp; Hampers</a>
-      <a routerLink="/" fragment="bulk-wholesale">Bulk &amp; Wholesale</a>
+      <a routerLink="/bulk">Bulk &amp; Wholesale</a>
       <a routerLink="/cart">Your Shopping Cart</a>
     </nav>
 
@@ -122,10 +124,26 @@
       </p>
     </div>
 
+    <!-- POLICIES & COMPLIANCE -->
+    <nav class="footer-column" aria-label="Policies and compliance">
+      <h2>Policies &amp; Legal</h2>
+
+      <a routerLink="/" fragment="faqs">Privacy Policy</a>
+      <a routerLink="/" fragment="faqs">Terms of Service</a>
+      <a routerLink="/" fragment="faqs">Shipping &amp; Delivery</a>
+      <a routerLink="/" fragment="faqs">Returns &amp; Refund Policy</a>
+      <a routerLink="/" fragment="faqs">FSSAI License: 10424000000001</a>
+    </nav>
+
   </div>
 
   <!-- BRAND COMMITMENTS -->
   <div class="footer-trust-strip" aria-label="Our commitments">
+    <div>
+      <span aria-hidden="true">🌱</span>
+      <span>Mithila GI Origin · Darbhanga, Bihar</span>
+    </div>
+
     <div>
       <span aria-hidden="true">♡</span>
       <span>Thoughtfully Packed</span>
@@ -133,23 +151,23 @@
 
     <div>
       <span aria-hidden="true">✦</span>
-      <span>Everyday Crunch</span>
+      <span>100% Satvik · Zero Palm Oil</span>
     </div>
 
     <div>
       <span aria-hidden="true">♥</span>
-      <span>Made With Care</span>
+      <span>FSSAI Lic. 10424000000001</span>
     </div>
   </div>
 
   <!-- COPYRIGHT AND BACK TO TOP -->
   <div class="footer-bottom">
     <p>
-      © {{ currentYear }} The Crunchy Heart. All rights reserved.
+      © {{ currentYear }} The Crunchy Heart. All rights reserved. · FSSAI Lic. No. 10424000000001
     </p>
 
     <p class="footer-bottom-love">
-      Made with <span aria-label="love">♥</span> for your everyday crunch.
+      Authentically harvested in Mithila. Made with <span aria-label="love">♥</span> for your everyday crunch.
     </p>
 
     <a class="footer-back-to-top" href="#home">

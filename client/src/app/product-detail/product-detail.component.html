@@ -123,6 +123,14 @@
                         ₹{{ selectedVariant.mrp | number:'1.0-0' }}
                     </span>
 
+                    <span class="product-save" *ngIf="discountPercent > 0">
+                        Save {{ discountPercent }}%
+                    </span>
+
+                    <span class="product-per-kg" *ngIf="pricePerKg !== null">₹{{ pricePerKg | number:'1.0-0' }} / kg</span>
+
+                    <span class="product-tax-note">Inclusive of all taxes</span>
+
                 </div>
 
                 <!-- Variant Selection -->
@@ -132,7 +140,7 @@
 
                         <span class="variant-title">
                             {{
-                            product.category.slug === 'raw-makhana'
+                            product.category.slug === 'raw-makhana' || product.category.slug === 'dry-fruits' || product.category.slug === 'spices'
                             ? 'Choose Pack Size'
                             : (product.category.slug === 'bulk-wholesale'
                                 ? 'Choose Suta Grade & Packaging'
@@ -188,7 +196,7 @@
                     <span class="availability-dot"></span>
 
                     <span *ngIf="isAvailable">
-                        In stock
+                        {{ lowStockNote || 'In stock' }}
                     </span>
 
                     <span *ngIf="!isAvailable">
@@ -247,6 +255,13 @@
                     </div>
 
                 </div>
+
+                <!-- Delivery assurances -->
+                <ul class="product-assurances">
+                    <li><span aria-hidden="true">🚚</span> Free shipping above ₹499</li>
+                    <li><span aria-hidden="true">📦</span> Dispatched within 24 hours</li>
+                    <li><span aria-hidden="true">🔒</span> Secure online payments</li>
+                </ul>
 
                 <!-- Out of Stock CTA -->
                 <div class="out-of-stock-section" *ngIf="!isAvailable">

@@ -10,6 +10,12 @@ import {
     updateSocialDraft,
     publishSocialDraft,
 } from '../services/admin-modules.service.js';
+import {
+    getAdminProduct,
+    updateAdminProduct,
+    updateAdminVariant,
+    setAdminProductRatePerKg,
+} from '../services/admin-catalogue.service.js';
 
 // Identity comes from the authenticated session (req.admin), never from the request body.
 const actorOf = req => req.admin;
@@ -23,7 +29,11 @@ const handler = fn => async (req, res, next) => {
 };
 
 export const getDashboard = handler(req => dashboardSummary({ actor: actorOf(req) }));
-export const getProducts = handler(req => listProducts({ actor: actorOf(req), search: req.query?.search, limit: req.query?.limit }));
+export const getProducts = handler(req => listProducts({ actor: actorOf(req), search: req.query?.search, limit: req.query?.limit, category: req.query?.category }));
+export const getProduct = handler(req => getAdminProduct({ actor: actorOf(req), productId: req.params.productId }));
+export const putProduct = handler(req => updateAdminProduct({ actor: actorOf(req), productId: req.params.productId, input: req.body || {} }));
+export const putProductRatePerKg = handler(req => setAdminProductRatePerKg({ actor: actorOf(req), productId: req.params.productId, ratePerKg: req.body?.ratePerKg }));
+export const putVariant = handler(req => updateAdminVariant({ actor: actorOf(req), variantId: req.params.variantId, input: req.body || {} }));
 export const getInventory = handler(req => listInventory({ actor: actorOf(req), lowStockOnly: req.query?.lowStock === 'true', limit: req.query?.limit }));
 export const getCoupons = handler(req => listCoupons({ actor: actorOf(req), limit: req.query?.limit }));
 export const getCustomers = handler(req => listCustomers({ actor: actorOf(req), search: req.query?.search, limit: req.query?.limit }));

@@ -1,13 +1,22 @@
-.console { display: flex; min-height: 100vh; background: #f7f5f1; }
+:host { display: block; }
 
+.console {
+  display: flex;
+  min-height: 100vh;
+  background: #f6f3ec;
+  color: #27231e;
+  font-family: "DM Sans", Arial, sans-serif;
+}
+
+/* ---------- Sidebar ---------- */
 .sidebar {
-  width: 240px;
+  width: 248px;
   flex-shrink: 0;
-  background: #0f3d2a;
+  background: linear-gradient(180deg, #0f3d2a 0%, #0b2f21 100%);
   color: #e9f1ec;
   display: flex;
   flex-direction: column;
-  padding: 18px 12px;
+  padding: 18px 14px;
   position: sticky;
   top: 0;
   height: 100vh;
@@ -15,47 +24,145 @@
   box-sizing: border-box;
 }
 
-.brand { padding: 4px 10px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.12); margin-bottom: 12px; }
-.brand-title { display: block; font-weight: 700; font-size: 1.05rem; }
-.brand-tag { display: block; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; margin-top: 2px; }
+.console-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 18px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  text-decoration: none;
+  color: #fff;
+}
+.console-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  background: #ead3ad;
+  color: #0f3d2a;
+  font-size: 20px;
+  line-height: 1;
+}
+.console-brand-copy { display: flex; flex-direction: column; min-width: 0; }
+.console-brand-title { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: 1.05rem; color: #fff; line-height: 1.2; }
+.console-brand-tag { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: #ead3ad; margin-top: 3px; }
 
-.group-title { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; padding: 12px 10px 4px; }
+.console-nav { flex: 1; }
+.group-title {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(233, 241, 236, 0.55);
+  padding: 16px 10px 6px;
+  font-weight: 600;
+}
 
 .nav-link {
   display: block;
-  color: #e9f1ec;
+  color: #dbe9e1;
   text-decoration: none;
-  padding: 8px 10px;
-  border-radius: 6px;
-  font-size: 0.95rem;
+  padding: 9px 12px;
+  margin: 1px 0;
+  border-radius: 8px;
+  font-size: 0.93rem;
+  border-left: 3px solid transparent;
+  transition: background 160ms ease, color 160ms ease;
 }
-.nav-link:hover { background: rgba(255, 255, 255, 0.08); }
-.nav-link.active { background: rgba(255, 255, 255, 0.16); font-weight: 600; }
+.nav-link:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.nav-link.active {
+  background: rgba(234, 211, 173, 0.16);
+  color: #fff;
+  font-weight: 600;
+  border-left-color: #ead3ad;
+}
+.nav-link:focus-visible { outline: 2px solid #ead3ad; outline-offset: 2px; }
 
-.sidebar-foot { margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 10px; }
+.sidebar-foot { margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 10px; }
 
+/* ---------- Main ---------- */
 .console-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 12px;
-  padding: 12px 24px;
-  background: #fff;
-  border-bottom: 1px solid #e6e1d8;
+  gap: 14px;
+  padding: 10px 28px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #e8e1d4;
 }
-.user-email { color: #5a5248; font-size: 0.9rem; }
-.logout-button { background: none; border: 1px solid #cfc7bb; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.topbar-user { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.user-avatar {
+  display: grid; place-items: center; flex: none;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #14563c; color: #fff; font-weight: 700; font-size: 0.85rem;
+}
+.user-email { color: #5a5248; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.logout-button {
+  background: #fff;
+  border: 1px solid #d8cfbf;
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #27231e;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+.logout-button:hover { background: #f6f3ec; border-color: #b8ad98; }
 
-.console-content { padding: 24px; box-sizing: border-box; }
+.console-content { padding: 28px; box-sizing: border-box; width: 100%; max-width: 1480px; }
 
-@media (max-width: 800px) {
+/* ---------- Tablet / mobile: sidebar becomes a sticky top strip ---------- */
+@media (max-width: 900px) {
   .console { flex-direction: column; }
-  .sidebar { width: auto; height: auto; position: static; flex-direction: row; flex-wrap: wrap; gap: 4px; padding: 10px; }
-  .brand { border: none; margin: 0; padding: 4px 8px; }
+
+  .sidebar {
+    width: auto;
+    height: auto;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    flex-direction: column;
+    padding: 10px 12px 0;
+    overflow: visible;
+  }
+  .console-brand { padding: 2px 4px 10px; margin: 0; border-bottom: 0; }
+  .console-brand-mark { width: 32px; height: 32px; font-size: 17px; }
+
+  .console-nav {
+    display: flex;
+    flex: none;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 0 0 10px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .console-nav::-webkit-scrollbar { display: none; }
+  .nav-group { display: contents; }
   .group-title { display: none; }
-  .nav-group { display: flex; flex-wrap: wrap; gap: 4px; }
+  .nav-link {
+    flex: none;
+    white-space: nowrap;
+    margin: 0;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border-left: 0;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.88rem;
+  }
+  .nav-link.active { background: #ead3ad; color: #0f3d2a; }
   .sidebar-foot { display: none; }
-  .console-content { padding: 16px; }
+
+  .topbar { position: static; padding: 10px 16px; justify-content: space-between; }
+  .console-content { padding: 18px 16px 40px; }
 }

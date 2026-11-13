@@ -1,8 +1,16 @@
 <div class="page-header">
   <div>
     <h1 class="page-title">Products</h1>
-    <p class="page-subtitle">The catalogue, with variant counts and units available. Editing products is not in this build yet.</p>
+    <p class="page-subtitle">
+      Edit prices, stock, images and visibility for every product. Changes go live on the storefront immediately.
+    </p>
   </div>
+</div>
+
+<div class="tabs" role="tablist" aria-label="Category" *ngIf="categories.length > 1">
+  <button type="button" role="tab" class="tab" [class.active]="category === ''" [attr.aria-selected]="category === ''" (click)="pickCategory('')">All</button>
+  <button *ngFor="let c of categories" type="button" role="tab" class="tab" [class.active]="category === c.slug"
+          [attr.aria-selected]="category === c.slug" (click)="pickCategory(c.slug)">{{ c.name }}</button>
 </div>
 
 <div class="filter-row">
@@ -20,35 +28,46 @@
 
 <div *ngIf="!isLoading && products.length === 0" class="card empty-state">
   <h3>No products match</h3>
-  <p>Try a different search.</p>
+  <p>Try a different search or category.</p>
 </div>
 
 <div *ngIf="!isLoading && products.length" class="card table-card">
-  <table class="data-table">
+  <table class="data-table products-table">
     <thead>
       <tr>
         <th>Product</th>
         <th>Category</th>
-        <th>Variants</th>
+        <th>From</th>
+        <th>Packs</th>
         <th>Units available</th>
         <th>Status</th>
-        <th>Updated</th>
+        <th><span class="sr-only">Edit</span></th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let p of products">
+      <tr *ngFor="let p of products" class="clickable" (click)="edit(p)">
         <td>
-          <div>{{ p.name }}</div>
-          <code>{{ p.slug }}</code>
+          <div class="product-cell">
+            <img *ngIf="p.imageUrl" class="thumb" [src]="p.imageUrl" alt="" loading="lazy" />
+            <span *ngIf="!p.imageUrl" class="thumb thumb-empty" aria-hidden="true">–</span>
+            <div>
+              <a [routerLink]="['/admin/products', p.id]" class="product-link" (click)="$event.stopPropagation()">{{ p.name }}</a>
+              <code>{{ p.slug }}</code>
+            </div>
+          </div>
         </td>
-        <td>{{ p.category || '—' }}</td>
+        <td>
+          {{ p.category || '—' }}
+          <small class="sub" *ngIf="p.subcategory">{{ p.subcategory }}</small>
+        </td>
+        <td>{{ p.fromPrice !== null ? ('₹' + (p.fromPrice | number:'1.0-0')) : '—' }}</td>
         <td>{{ p.variantCount }}</td>
         <td>{{ p.availableUnits }}</td>
         <td>
           <span class="badge" [class.badge-ok]="p.isActive" [class.badge-off]="!p.isActive">{{ p.isActive ? 'Active' : 'Hidden' }}</span>
           <span class="badge badge-ok" *ngIf="p.isFeatured">Featured</span>
         </td>
-        <td>{{ p.updatedAt | date:'dd MMM yyyy' }}</td>
+        <td class="edit-cell"><a [routerLink]="['/admin/products', p.id]" class="btn" (click)="$event.stopPropagation()">Edit</a></td>
       </tr>
     </tbody>
   </table>

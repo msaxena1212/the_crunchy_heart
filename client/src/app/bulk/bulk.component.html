@@ -1,0 +1,367 @@
+<main class="bulk-page">
+
+  <!-- HERO -->
+  <section class="bulk-hero">
+    <div class="bulk-hero-inner">
+      <div class="bulk-hero-copy">
+        <nav class="bulk-crumbs" aria-label="Breadcrumb">
+          <a routerLink="/">Home</a><span>/</span><span aria-current="page">Bulk &amp; Wholesale</span>
+        </nav>
+
+        <span class="bulk-eyebrow">Direct from origin · Mithilanchal B2B hub</span>
+        <h1>Makhana by the tonne, <em>straight from Mithila.</em></h1>
+        <p class="bulk-hero-text">
+          Phool makhana harvested across the Darbhanga and Madhubani wetlands, graded into
+          <strong>4, 5, 6 and 7 Suta</strong> and sorted to your quality. Minimum order
+          {{ moqKg }} kg, with a formal quote on WhatsApp.
+        </p>
+
+        <div class="bulk-hero-actions">
+          <button type="button" class="bulk-btn bulk-btn-gold" (click)="scrollTo('bulk-configurator')">
+            Configure your order <span aria-hidden="true">→</span>
+          </button>
+          <a class="bulk-btn bulk-btn-ghost" [href]="generalEnquiryUrl" target="_blank" rel="noopener noreferrer">
+            Talk to our B2B desk
+          </a>
+        </div>
+      </div>
+
+      <div class="bulk-hero-visual" [class.has-3d]="heroReady">
+        <div class="bulk-hero-stage">
+          <img class="bulk-hero-fallback" src="assets/bulk-makhana.webp" alt="Sacks and bowls of premium phool makhana" />
+          <canvas #heroCanvas class="bulk-hero-canvas" role="img"
+                  aria-label="3D lineup of 4, 5, 6 and 7 Suta makhana blossoms at their real relative sizes"></canvas>
+        </div>
+
+        <p class="bulk-hero-caption" *ngIf="heroReady">
+          <span>4 · 5 · 6 · 7 Suta, shown at real relative size</span>
+          <em>Drag to spin</em>
+        </p>
+
+        <div class="bulk-float bulk-float-a">
+          <strong>GI-tagged</strong>
+          <span>Mithila origin</span>
+        </div>
+        <div class="bulk-float bulk-float-b">
+          <strong>98%+</strong>
+          <span>Export-grade pop ratio</span>
+        </div>
+      </div>
+    </div>
+
+    <ul class="bulk-stats">
+      <li *ngFor="let s of stats">
+        <strong>{{ s.value }}</strong>
+        <span>{{ s.label }}</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- CONFIGURATOR -->
+  <section id="bulk-configurator" class="bulk-section bulk-configurator">
+    <header class="bulk-section-head">
+      <span class="bulk-kicker">Build your order</span>
+      <h2>Choose size first, then quality</h2>
+      <p>
+        The nut size decides what you can make and what it costs. Pick it first, and we will show
+        you exactly what each quality means for that size.
+      </p>
+    </header>
+
+    <div class="bulk-config-grid">
+      <div class="bulk-config-steps">
+
+        <!-- On small screens the 3D viewer is moved here and stays in view while you choose. -->
+        <div #hostSteps class="viewer-host viewer-host-steps"></div>
+
+        <!-- STEP 1: SIZE -->
+        <section class="bulk-step" aria-labelledby="step-size">
+          <div class="bulk-step-title">
+            <span class="bulk-step-num">1</span>
+            <h3 id="step-size">Choose nut size (Suta)</h3>
+          </div>
+
+          <div class="size-grid" role="radiogroup" aria-label="Nut size">
+            <button
+              *ngFor="let g of guides"
+              type="button"
+              role="radio"
+              class="size-card"
+              [class.is-selected]="selectedGrade === g.grade"
+              [attr.aria-checked]="selectedGrade === g.grade"
+              (click)="selectGrade(g.grade)">
+
+              <span class="size-badge">{{ g.badge }}</span>
+
+              <span class="size-visual" aria-hidden="true">
+                <span class="size-blossom" [style.width.px]="g.visualPx" [style.height.px]="g.visualPx"></span>
+              </span>
+
+              <strong class="size-name">{{ g.shortName }}</strong>
+              <span class="size-dim">{{ g.diameter }}</span>
+              <span class="size-best">{{ g.bestFor }}</span>
+              <span class="size-rate">from ₹{{ g.rates.normal }}<small>/kg</small></span>
+            </button>
+          </div>
+
+          <p class="size-note">
+            <strong>{{ guide.name }}</strong>: {{ guide.desc }}
+          </p>
+        </section>
+
+        <!-- STEP 2: QUALITY -->
+        <section class="bulk-step" aria-labelledby="step-quality">
+          <div class="bulk-step-title">
+            <span class="bulk-step-num">2</span>
+            <h3 id="step-quality">Choose quality for {{ guide.shortName }}</h3>
+          </div>
+
+          <div class="quality-grid" role="radiogroup" aria-label="Quality">
+            <button
+              *ngFor="let q of qualities"
+              type="button"
+              role="radio"
+              class="quality-card"
+              [class.is-selected]="selectedQuality === q.key"
+              [class.is-premium]="q.key === 'handpicked'"
+              [attr.aria-checked]="selectedQuality === q.key"
+              (click)="selectQuality(q.key)">
+
+              <span class="quality-top">
+                <strong>{{ q.name }}</strong>
+                <span class="quality-chip">{{ q.label }}</span>
+              </span>
+              <span class="quality-text">{{ q.desc }}</span>
+              <ul class="quality-points">
+                <li *ngFor="let p of q.points">{{ p }}</li>
+              </ul>
+              <span class="quality-price">
+                ₹{{ rateFor(guide, q.key) }}<small>/kg for {{ guide.shortName }}</small>
+                <em *ngIf="q.key === 'handpicked'">+₹{{ premium }}/kg over Normal</em>
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <!-- STEP 3: QUANTITY -->
+        <section class="bulk-step" aria-labelledby="step-qty">
+          <div class="bulk-step-title">
+            <span class="bulk-step-num">3</span>
+            <h3 id="step-qty">Choose quantity</h3>
+            <span class="bulk-moq">Minimum {{ moqKg }} kg</span>
+          </div>
+
+          <div class="qty-row">
+            <div class="qty-stepper">
+              <button type="button" (click)="step(-50)" [disabled]="quantityKg <= moqKg" aria-label="Decrease by 50 kg">−</button>
+              <label class="qty-field">
+                <span class="sr-only">Quantity in kilograms</span>
+                <input
+                  type="number"
+                  inputmode="numeric"
+                  [min]="moqKg"
+                  step="50"
+                  [ngModel]="quantityKg"
+                  (ngModelChange)="setQuantity($event)" />
+                <span aria-hidden="true">kg</span>
+              </label>
+              <button type="button" (click)="step(50)" aria-label="Increase by 50 kg">+</button>
+            </div>
+
+            <div class="qty-presets">
+              <button
+                *ngFor="let p of quantityPresets"
+                type="button"
+                [class.is-active]="quantityKg === p"
+                (click)="setQuantity(p)">
+                {{ p >= 1000 ? (p / 1000) + ' tonne' + (p > 1000 ? 's' : '') : p + ' kg' }}
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- SUMMARY -->
+      <aside class="bulk-summary" aria-label="Your bulk order summary">
+        <div #hostAside class="viewer-host viewer-host-aside">
+          <div #viewerEl class="bulk-viewer" [class.is-ready]="viewerReady" [class.is-failed]="viewerFailed"
+               role="img" [attr.aria-label]="'3D preview of ' + guide.name + ', ' + qualityLabel + ' quality'">
+            <div class="bulk-viewer-stage">
+              <canvas #viewerCanvas aria-hidden="true"></canvas>
+            </div>
+            <img class="bulk-viewer-fallback" src="assets/bulk-makhana.webp" alt="" aria-hidden="true" />
+            <div class="bulk-viewer-loading" *ngIf="!viewerReady && !viewerFailed">Loading 3D preview…</div>
+            <div class="bulk-viewer-chip">
+              <strong>{{ guide.shortName }}</strong>
+              <span>{{ guide.diameter }} · {{ qualityLabel }}</span>
+            </div>
+            <div class="bulk-viewer-hint" *ngIf="viewerReady">Drag to rotate</div>
+          </div>
+        </div>
+
+        <div class="summary-head">
+          <span class="summary-kicker">Your order</span>
+          <strong>{{ guide.name }}</strong>
+          <span class="summary-sub">{{ qualityLabel }} quality · {{ guide.diameter }}</span>
+        </div>
+
+        <dl class="summary-specs">
+          <div><dt>Blossom yield</dt><dd>{{ guide.seedsPerKg }}</dd></div>
+          <div><dt>Pop ratio</dt><dd>{{ guide.popRatio }}</dd></div>
+          <div><dt>Best for</dt><dd>{{ guide.bestFor }}</dd></div>
+        </dl>
+
+        <div class="summary-price">
+          <div class="summary-rate">₹{{ ratePerKg }}<small>/kg</small></div>
+          <div class="summary-line"><span>Quantity</span><strong>{{ quantityKg | number }} kg</strong></div>
+          <div class="summary-total">
+            <span>Estimated total</span>
+            <strong>₹{{ estimatedTotal | number }}</strong>
+          </div>
+          <small>Excludes GST and freight. Final invoice on WhatsApp.</small>
+        </div>
+
+        <a class="bulk-btn bulk-btn-wa" [href]="whatsAppQuoteUrl" target="_blank" rel="noopener noreferrer">
+          <span class="wa-dot" aria-hidden="true">💬</span>
+          <span class="wa-text">
+            <strong>Get quote on WhatsApp</strong>
+            <small>{{ guide.shortName }} · {{ qualityLabel }} · {{ quantityKg }} kg</small>
+          </span>
+          <span aria-hidden="true">→</span>
+        </a>
+
+        <ul class="summary-trust">
+          <li>GST proforma invoice</li>
+          <li>Laboratory COA report</li>
+          <li>PAN-India freight</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <!-- WHO BUYS -->
+  <section class="bulk-section bulk-audience bulk-reveal">
+    <header class="bulk-section-head">
+      <span class="bulk-kicker">Who it is for</span>
+      <h2>The right size for what you make</h2>
+    </header>
+
+    <div class="audience-grid">
+      <article class="audience-card" *ngFor="let a of audiences">
+        <span class="audience-icon" aria-hidden="true">{{ a.icon }}</span>
+        <h3>{{ a.title }}</h3>
+        <p>{{ a.text }}</p>
+        <button type="button" class="audience-link" (click)="selectGrade(a.grade, true)">
+          Start with {{ a.grade }} Suta <span aria-hidden="true">→</span>
+        </button>
+      </article>
+    </div>
+  </section>
+
+  <!-- RATE CARD -->
+  <section class="bulk-section bulk-rates bulk-reveal">
+    <header class="bulk-section-head">
+      <span class="bulk-kicker">Rate card</span>
+      <h2>All sizes and qualities at a glance</h2>
+      <p>Indicative rates per kg, excluding GST and freight. Minimum order {{ moqKg }} kg.</p>
+    </header>
+
+    <div class="rate-table-wrap">
+      <table class="rate-table">
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th class="rate-hide-sm">Diameter</th>
+            <th>Normal</th>
+            <th>Handpicked</th>
+            <th class="rate-hide-sm">Blossoms / kg</th>
+            <th><span class="sr-only">Select</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let g of guides" [class.is-selected]="selectedGrade === g.grade">
+            <td><strong>{{ g.shortName }}</strong><small>{{ g.tag }}</small></td>
+            <td class="rate-hide-sm">{{ g.diameter }}</td>
+            <td class="rate-normal">₹{{ g.rates.normal }}</td>
+            <td class="rate-hand">₹{{ g.rates.handpicked }}</td>
+            <td class="rate-hide-sm">{{ g.seedsPerKg }}</td>
+            <td>
+              <button type="button" class="rate-select" (click)="selectGrade(g.grade, true)">
+                {{ selectedGrade === g.grade ? 'Selected' : 'Select' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="bulk-section bulk-process bulk-reveal">
+    <header class="bulk-section-head">
+      <span class="bulk-kicker">How it works</span>
+      <h2>From enquiry to dispatch</h2>
+    </header>
+
+    <ol class="process-grid">
+      <li *ngFor="let s of steps; let i = index">
+        <span class="process-num">{{ i + 1 }}</span>
+        <h3>{{ s.title }}</h3>
+        <p>{{ s.text }}</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- FAQ -->
+  <section class="bulk-section bulk-faq bulk-reveal">
+    <header class="bulk-section-head">
+      <span class="bulk-kicker">Good to know</span>
+      <h2>Bulk questions, answered</h2>
+    </header>
+
+    <div class="faq-list">
+      <div class="bfaq-item" *ngFor="let f of faqs; let i = index" [class.is-open]="openFaq === i">
+        <button
+          type="button"
+          class="faq-q"
+          [attr.aria-expanded]="openFaq === i"
+          [attr.aria-controls]="'bulk-faq-' + i"
+          (click)="toggleFaq(i)">
+          <span>{{ f.q }}</span>
+          <span class="faq-icon" aria-hidden="true">{{ openFaq === i ? '−' : '+' }}</span>
+        </button>
+        <div class="faq-a" [id]="'bulk-faq-' + i" *ngIf="openFaq === i">
+          <p>{{ f.a }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="bulk-cta">
+    <div class="bulk-cta-inner">
+      <h2>Ready for your first lot?</h2>
+      <p>Tell us what you are making and we will recommend the right size and a fair quote.</p>
+      <div class="bulk-hero-actions">
+        <a class="bulk-btn bulk-btn-gold" [href]="whatsAppQuoteUrl" target="_blank" rel="noopener noreferrer">
+          Get my quote on WhatsApp
+        </a>
+        <button type="button" class="bulk-btn bulk-btn-ghost" (click)="scrollTo('bulk-configurator')">
+          Adjust my order
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOBILE QUOTE BAR -->
+  <div class="bulk-mobile-bar" aria-hidden="false">
+    <div>
+      <strong>₹{{ estimatedTotal | number }}</strong>
+      <small>{{ guide.shortName }} · {{ qualityLabel }} · {{ quantityKg }} kg</small>
+    </div>
+    <a class="bulk-btn bulk-btn-wa" [href]="whatsAppQuoteUrl" target="_blank" rel="noopener noreferrer">
+      Get quote
+    </a>
+  </div>
+
+</main>

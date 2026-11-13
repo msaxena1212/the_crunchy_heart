@@ -204,11 +204,74 @@ export interface AdminProduct {
   slug: string;
   brand: string;
   category: string | null;
+  categorySlug: string | null;
+  subcategory: string | null;
+  imageUrl: string | null;
   isActive: boolean;
   isFeatured: boolean;
   variantCount: number;
+  /** Lowest active pack price, or null when there is none. */
+  fromPrice: number | null;
   availableUnits: number;
   updatedAt: string;
+}
+
+export interface AdminVariant {
+  id: string;
+  sku: string;
+  name: string;
+  weightGrams: number | null;
+  mrp: number;
+  sellingPrice: number;
+  taxRate: number;
+  badge: string | null;
+  isActive: boolean;
+  onHand: number;
+  reserved: number;
+  available: number;
+  reorderLevel: number;
+  /** Price per kg implied by this pack, for weight-based packs. */
+  pricePerKg: number | null;
+}
+
+export interface AdminProductDetail {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  shortDescription: string | null;
+  brand: string;
+  category: string | null;
+  categorySlug: string | null;
+  subcategory: string | null;
+  imageUrl: string | null;
+  isActive: boolean;
+  isFeatured: boolean;
+  updatedAt: string;
+}
+
+export interface AdminProductDetailResponse {
+  success: boolean;
+  product: AdminProductDetail;
+  variants: AdminVariant[];
+}
+
+export interface AdminProductInput {
+  name: string;
+  shortDescription: string;
+  description: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  imageUrl: string | null;
+}
+
+export interface AdminVariantInput {
+  sellingPrice: number;
+  mrp: number;
+  isActive: boolean;
+  badge: string;
+  quantityOnHand: number;
+  reorderLevel: number;
 }
 
 export interface AdminProductsResponse { success: boolean; products: AdminProduct[]; }
@@ -454,10 +517,44 @@ export class AdminService {
     return this.http.get<AdminDashboardResponse>(`${this.api}/dashboard`, { withCredentials: true });
   }
 
-  getAdminProducts(params: { search?: string; limit?: number } = {}): Observable<AdminProductsResponse> {
+  getAdminProducts(params: { search?: string; limit?: number; category?: string } = {}): Observable<AdminProductsResponse> {
     let httpParams = new HttpParams().set('limit', String(params.limit ?? 100));
     if (params.search) httpParams = httpParams.set('search', params.search);
+    if (params.category) httpParams = httpParams.set('category', params.category);
     return this.http.get<AdminProductsResponse>(`${this.api}/catalogue/products`, { withCredentials: true, params: httpParams });
+  }
+
+  /* ---------- Catalogue editing ---------- */
+
+  getAdminProduct(productId: string): Observable<AdminProductDetailResponse> {
+    return this.http.get<AdminProductDetailResponse>(
+      `${this.api}/catalogue/products/${encodeURIComponent(productId)}`,
+      { withCredentials: true }
+    );
+  }
+
+  updateAdminProduct(productId: string, input: AdminProductInput): Observable<AdminProductDetailResponse> {
+    return this.http.put<AdminProductDetailResponse>(
+      `${this.api}/catalogue/products/${encodeURIComponent(productId)}`,
+      input,
+      { withCredentials: true, headers: this.getCsrfHeaders() }
+    );
+  }
+
+  setProductRatePerKg(productId: string, ratePerKg: number): Observable<AdminProductDetailResponse> {
+    return this.http.put<AdminProductDetailResponse>(
+      `${this.api}/catalogue/products/${encodeURIComponent(productId)}/rate-per-kg`,
+      { ratePerKg },
+      { withCredentials: true, headers: this.getCsrfHeaders() }
+    );
+  }
+
+  updateAdminVariant(variantId: string, input: AdminVariantInput): Observable<AdminProductDetailResponse> {
+    return this.http.put<AdminProductDetailResponse>(
+      `${this.api}/catalogue/variants/${encodeURIComponent(variantId)}`,
+      input,
+      { withCredentials: true, headers: this.getCsrfHeaders() }
+    );
   }
 
   getAdminInventory(params: { lowStock?: boolean } = {}): Observable<AdminInventoryResponse> {

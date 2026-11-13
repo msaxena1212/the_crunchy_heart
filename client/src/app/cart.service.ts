@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
 
 import {
@@ -67,6 +68,8 @@ export interface AddToCartRequest {
   providedIn: 'root'
 })
 export class CartService {
+
+  private readonly platformId = inject(PLATFORM_ID);
 
   private readonly storageKey =
     'the-crunchy-heart-cart';
@@ -320,6 +323,7 @@ export class CartService {
           variant.weightGrams,
 
         image:
+          product.imageUrl ??
           this.getVariantImage(
             variant
           ),
@@ -513,7 +517,7 @@ export class CartService {
    * Expires after 24 hours. Does not automatically recreate an order.
    */
   saveCartSnapshot(orderNumber?: string): void {
-    if (!this.items.length) {
+    if (!isPlatformBrowser(this.platformId) || !this.items.length) {
       return;
     }
 
@@ -538,6 +542,10 @@ export class CartService {
    * Retrieve active cart recovery snapshot, enforcing 24-hour expiration.
    */
   getCartSnapshot(): { orderNumber: string | null; items: CartItem[]; savedAt: number } | null {
+    if (!isPlatformBrowser(this.platformId)) {
+      return null;
+    }
+
     try {
       const stored = localStorage.getItem(this.recoveryStorageKey);
       if (!stored) {
@@ -612,6 +620,10 @@ export class CartService {
    * Clear the recovery snapshot once an order is confirmed or customer dismisses it.
    */
   clearCartSnapshot(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     try {
       localStorage.removeItem(this.recoveryStorageKey);
     } catch {}
@@ -649,24 +661,19 @@ export class CartService {
     items: CartItem[]
   ): void {
 
-    try {
-
-      localStorage.setItem(
-        this.storageKey,
-        JSON.stringify(items)
-      );
-
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem(
+          this.storageKey,
+          JSON.stringify(items)
+        );
+      } catch (error) {
+        console.error(
+          'Unable to save cart:',
+          error
+        );
+      }
     }
-
-    catch (error) {
-
-      console.error(
-        'Unable to save cart:',
-        error
-      );
-
-    }
-
 
     this.cartSubject.next(
       items
@@ -680,6 +687,10 @@ export class CartService {
      ======================================================= */
 
   private loadCart(): CartItem[] {
+
+    if (!isPlatformBrowser(this.platformId)) {
+      return [];
+    }
 
     try {
 
@@ -776,16 +787,16 @@ export class CartService {
          --------------------------------------------------- */
 
       'TCH-RAW-100':
-        'assets/raw-makhana-100g.png',
+        'assets/raw-makhana-100g.webp',
 
       'TCH-RAW-200':
-        'assets/raw-makhana-200g.png',
+        'assets/raw-makhana-200g.webp',
 
       'TCH-RAW-500':
-        'assets/raw-makhana-500g.png',
+        'assets/raw-makhana-500g.webp',
 
       'TCH-RAW-1KG':
-        'assets/raw-makhana-1kg.png',
+        'assets/raw-makhana-1kg.webp',
 
 
       /* ---------------------------------------------------
@@ -793,25 +804,25 @@ export class CartService {
          --------------------------------------------------- */
 
       'TCH-FLV-HIMALAYAN':
-        'assets/himalayan-salt.png',
+        'assets/himalayan-salt.webp',
 
       'TCH-FLV-PERI':
-        'assets/peri-peri.png',
+        'assets/peri-peri.webp',
 
       'TCH-FLV-ONION':
-        'assets/cream-onion.png',
+        'assets/cream-onion.webp',
 
       'TCH-FLV-TOMATO':
-        'assets/tomato-tangy.png',
+        'assets/tomato-tangy.webp',
 
       'TCH-FLV-CHILLI':
-        'assets/chilli-garlic.png',
+        'assets/chilli-garlic.webp',
 
       'TCH-FLV-PUDINA':
-        'assets/pudina.png',
+        'assets/pudina.webp',
 
       'TCH-FLV-BIHARI':
-        'assets/bihari-chat.png'
+        'assets/bihari-chat.webp'
 
     };
 

@@ -1,0 +1,290 @@
+.back-link {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: #14563c;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.edit-card {
+  padding: 20px;
+}
+
+.edit-card .section-title {
+  margin-top: 0;
+}
+
+.edit-grid {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+}
+
+.image-frame {
+  position: sticky;
+  top: 80px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: 1px solid #e8e1d4;
+  border-radius: 14px;
+  background: #f4e6d1;
+}
+
+.image-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-empty {
+  display: grid;
+  height: 100%;
+  place-content: center;
+  gap: 4px;
+  padding: 16px;
+  color: #7a6f63;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.edit-fields {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.field small {
+  color: #7a6f63;
+  font-weight: 400;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  accent-color: #14563c;
+}
+
+/* rate per kg */
+.rate-help {
+  margin: -4px 0 12px;
+  max-width: 70ch;
+}
+
+.rate-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.rate-field {
+  width: 200px;
+}
+
+.rate-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rate-preview li {
+  display: grid;
+  min-width: 96px;
+  padding: 10px 14px;
+  border: 1px solid #e8e1d4;
+  border-radius: 12px;
+  background: #fbf8f1;
+}
+
+.rate-preview li.is-changed {
+  border-color: #14563c;
+  background: #e5efe9;
+}
+
+.rate-preview span {
+  color: #6d675e;
+  font-size: 0.8rem;
+}
+
+.rate-preview strong {
+  font-size: 1.15rem;
+  color: #0f3d2a;
+}
+
+.rate-preview small {
+  color: #8a5a00;
+  font-size: 0.75rem;
+}
+
+/* pack table */
+.packs-title {
+  padding: 20px 20px 0;
+}
+
+.packs-table td {
+  vertical-align: top;
+}
+
+.packs-table td strong,
+.packs-table td code,
+.packs-table td small {
+  display: block;
+}
+
+.packs-table td small {
+  margin-top: 2px;
+  color: #7a6f63;
+  font-size: 0.76rem;
+}
+
+.packs-table tr.is-dirty {
+  background: #fffaf0;
+}
+
+.packs-table tr.is-hidden td:first-child strong {
+  color: #8a8275;
+  text-decoration: line-through;
+}
+
+.num {
+  width: 96px;
+  box-sizing: border-box;
+  text-align: right;
+}
+
+.badge-input {
+  width: 130px;
+  box-sizing: border-box;
+}
+
+.row-actions {
+  min-width: 150px;
+}
+
+.row-actions .btn {
+  padding: 7px 12px;
+  margin: 0 6px 6px 0;
+}
+
+.row-ok {
+  display: block;
+  color: #1f6b35;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.row-error {
+  display: block;
+  max-width: 220px;
+  color: #a1281f;
+  font-size: 0.8rem;
+}
+
+.packs-note {
+  margin: 0;
+  padding: 14px 20px 18px;
+}
+
+@media (max-width: 900px) {
+  .edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .image-frame {
+    position: static;
+    max-width: 240px;
+  }
+
+  /* stack each pack into a card on small screens */
+  .packs-table thead {
+    display: none;
+  }
+
+  .packs-table,
+  .packs-table tbody,
+  .packs-table tr,
+  .packs-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .packs-table tr {
+    padding: 14px 16px;
+    border-bottom: 1px solid #efebe4;
+  }
+
+  .packs-table td {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border: 0;
+  }
+
+  .packs-table td::before {
+    content: attr(data-label);
+    color: #6d675e;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .packs-table td.row-actions::before {
+    content: "";
+  }
+
+  .num,
+  .badge-input {
+    width: 100%;
+    max-width: 220px;
+    text-align: left;
+  }
+}

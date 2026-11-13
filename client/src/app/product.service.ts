@@ -20,6 +20,8 @@ export interface ProductDetail {
   shortDescription: string | null;
   brand: string;
   featured: boolean;
+  imageUrl?: string | null;
+  subcategory?: { name: string; slug: string } | null;
 
   category: {
     name: string;
@@ -172,6 +174,12 @@ export class ProductService {
 
             featured:
               detail.featured,
+
+            imageUrl:
+              detail.imageUrl ?? null,
+
+            subcategory:
+              detail.subcategory ?? null,
 
             category:
               detail.category,

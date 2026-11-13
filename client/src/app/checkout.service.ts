@@ -1,4 +1,5 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { getApiBaseUrl } from './product.service';
@@ -204,6 +205,7 @@ export interface PaymentStatusResponse {
 })
 export class CheckoutService {
   private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly api = getApiBaseUrl();
 
   private sdkLoadPromise: Promise<any> | null = null;
@@ -228,7 +230,7 @@ export class CheckoutService {
    * It is never exposed in URLs, history, or logs.
    */
   saveGuestToken(orderNumber: string, token: string): void {
-    if (typeof window === 'undefined') return;
+    if (!isPlatformBrowser(this.platformId) || typeof window === 'undefined') return;
 
     const trimmedOrder = String(orderNumber || '').trim();
     const trimmedToken = String(token || '').trim();
@@ -260,7 +262,7 @@ export class CheckoutService {
    * Retrieve guest access token for an order, enforcing expiration on every lookup.
    */
   getGuestToken(orderNumber: string): string | null {
-    if (typeof window === 'undefined') return null;
+    if (!isPlatformBrowser(this.platformId) || typeof window === 'undefined') return null;
 
     const trimmedOrder = String(orderNumber || '').trim();
     if (!trimmedOrder) return null;
@@ -310,7 +312,7 @@ export class CheckoutService {
    * Clear guest token from both session and recovery storage.
    */
   clearGuestToken(orderNumber: string): void {
-    if (typeof window === 'undefined') return;
+    if (!isPlatformBrowser(this.platformId) || typeof window === 'undefined') return;
     const trimmedOrder = String(orderNumber || '').trim();
     if (!trimmedOrder) return;
 
@@ -419,7 +421,7 @@ export class CheckoutService {
     }
 
     this.sdkLoadPromise = new Promise((resolve, reject) => {
-      if (typeof window === 'undefined') {
+      if (!isPlatformBrowser(this.platformId) || typeof window === 'undefined') {
         return reject(new Error('Window is not defined.'));
       }
 
@@ -427,11 +429,18 @@ export class CheckoutService {
         return resolve((window as any).Cashfree);
       }
 
-      const existingScript = document.querySelector('script[src*="cashfree.com/js/v3/cashfree.js"]');
+      const existingScript = typeof document !== 'undefined'
+        ? document.querySelector('script[src*="cashfree.com/js/v3/cashfree.js"]')
+        : null;
+
       if (existingScript) {
         existingScript.addEventListener('load', () => resolve((window as any).Cashfree));
         existingScript.addEventListener('error', () => reject(new Error('Failed to load Cashfree SDK script.')));
         return;
+      }
+
+      if (typeof document === 'undefined') {
+        return reject(new Error('Document is not defined.'));
       }
 
       const script = document.createElement('script');
@@ -446,6 +455,10 @@ export class CheckoutService {
   }
 
   async launchCashfreePayment(paymentSessionId: string): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) {
+      throw new Error('Cashfree payment cannot be launched outside the browser.');
+    }
+
     const CashfreeFactory = await this.loadCashfreeSdk();
     if (!CashfreeFactory) {
       throw new Error('Cashfree SDK is not available.');

@@ -18,6 +18,20 @@ export const routes: Routes = [
     },
 
     {
+        path: 'category/:slug',
+        loadComponent: () =>
+            import('./category/category.component')
+                .then(m => m.CategoryComponent)
+    },
+
+    {
+        path: 'bulk',
+        loadComponent: () =>
+            import('./bulk/bulk.component')
+                .then(m => m.BulkComponent)
+    },
+
+    {
         path: 'cart',
         loadComponent: () =>
             import('./cart/cart.component')
@@ -97,6 +111,10 @@ export const routes: Routes = [
             {
                 path: 'products',
                 loadComponent: () => import('./admin/products/admin-products.component').then(m => m.AdminProductsComponent)
+            },
+            {
+                path: 'products/:productId',
+                loadComponent: () => import('./admin/products/admin-product-edit.component').then(m => m.AdminProductEditComponent)
             },
             {
                 path: 'inventory',

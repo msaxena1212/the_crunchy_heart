@@ -1,11 +1,10 @@
 
-import { DOCUMENT, isPlatformBrowser, CommonModule } from '@angular/common';
+import { DOCUMENT, CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   Component,
   DestroyRef,
   OnInit,
-  PLATFORM_ID,
   inject,
 } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
@@ -32,7 +31,6 @@ export class ProductDetailComponent implements OnInit {
   private readonly metaService = inject(Meta);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly platformId = inject(PLATFORM_ID);
 
   product: Product | null = null;
   selectedVariant: ProductVariant | null = null;
@@ -146,46 +144,80 @@ export class ProductDetailComponent implements OnInit {
     return Number(this.selectedVariant?.sellingPrice ?? 0);
   }
 
+  get discountPercent(): number {
+    const mrp = Number(this.selectedVariant?.mrp ?? 0);
+    const price = this.selectedPrice;
+
+    return mrp > price && price > 0
+      ? Math.round(((mrp - price) / mrp) * 100)
+      : 0;
+  }
+
+  get lowStockNote(): string {
+    const available = this.availableQuantity;
+
+    return available > 0 && available <= 10
+      ? `Only ${available} left in stock`
+      : '';
+  }
+
+  /** Rate per kilogram for weight-priced items (dry fruits, spices); null otherwise. */
+  get pricePerKg(): number | null {
+    const grams = Number(this.selectedVariant?.weightGrams ?? 0);
+    const category = this.product?.category?.slug;
+
+    if (!grams || (category !== 'dry-fruits' && category !== 'spices')) {
+      return null;
+    }
+
+    return Math.round((this.selectedPrice * 1000) / grams);
+  }
+
   get selectedImage(): string {
+    // A product image set in the owner console always wins over the built-in SKU mapping.
+    if (this.product?.imageUrl) {
+      return this.product.imageUrl;
+    }
+
     const sku = this.selectedVariant?.sku ?? '';
 
     const imageMap: Record<string, string> = {
-      'TCH-RAW-100': 'assets/raw-makhana-100g.png',
-      'TCH-RAW-200': 'assets/raw-makhana-200g.png',
-      'TCH-RAW-500': 'assets/raw-makhana-500g.png',
-      'TCH-RAW-1KG': 'assets/raw-makhana-1kg.png',
+      'TCH-RAW-100': 'assets/raw-makhana-100g.webp',
+      'TCH-RAW-200': 'assets/raw-makhana-200g.webp',
+      'TCH-RAW-500': 'assets/raw-makhana-500g.webp',
+      'TCH-RAW-1KG': 'assets/raw-makhana-1kg.webp',
 
-      'TCH-FLV-HIMALAYAN': 'assets/himalayan-salt.png',
-      'TCH-FLV-PERI': 'assets/peri-peri.png',
-      'TCH-FLV-PUDINA': 'assets/pudina.png',
-      'TCH-FLV-ONION': 'assets/cream-onion.png',
-      'TCH-FLV-TOMATO': 'assets/tomato-tangy.png',
-      'TCH-FLV-CHILLI': 'assets/chilli-garlic.png',
-      'TCH-FLV-BIHARI': 'assets/bihari-chat.png',
-      'TCH-FLV-CHEESE': 'assets/cheese-herbs.png',
-      'TCH-GIFT-ALL8': 'assets/festive-box.png',
-      'TCH-GIFT-4PACK': 'assets/festive-box.png',
-      'TCH-BLK-5KG': 'assets/bulk-makhana.png',
-      'TCH-BLK-10KG': 'assets/bulk-makhana.png',
-      'TCH-BLK-5S-5KG': 'assets/bulk-makhana.png',
-      'TCH-BLK-5S-10KG': 'assets/bulk-makhana.png',
-      'TCH-BLK-6S-5KG': 'assets/bulk-makhana.png',
-      'TCH-BLK-6S-10KG': 'assets/bulk-makhana.png',
-      'TCH-BLK-7S-5KG': 'assets/bulk-makhana.png',
-      'TCH-BLK-7S-10KG': 'assets/bulk-makhana.png',
+      'TCH-FLV-HIMALAYAN': 'assets/himalayan-salt.webp',
+      'TCH-FLV-PERI': 'assets/peri-peri.webp',
+      'TCH-FLV-PUDINA': 'assets/pudina.webp',
+      'TCH-FLV-ONION': 'assets/cream-onion.webp',
+      'TCH-FLV-TOMATO': 'assets/tomato-tangy.webp',
+      'TCH-FLV-CHILLI': 'assets/chilli-garlic.webp',
+      'TCH-FLV-BIHARI': 'assets/bihari-chat.webp',
+      'TCH-FLV-CHEESE': 'assets/cheese-herbs.webp',
+      'TCH-GIFT-ALL8': 'assets/festive-box.webp',
+      'TCH-GIFT-4PACK': 'assets/festive-box.webp',
+      'TCH-BLK-5KG': 'assets/bulk-makhana.webp',
+      'TCH-BLK-10KG': 'assets/bulk-makhana.webp',
+      'TCH-BLK-5S-5KG': 'assets/bulk-makhana.webp',
+      'TCH-BLK-5S-10KG': 'assets/bulk-makhana.webp',
+      'TCH-BLK-6S-5KG': 'assets/bulk-makhana.webp',
+      'TCH-BLK-6S-10KG': 'assets/bulk-makhana.webp',
+      'TCH-BLK-7S-5KG': 'assets/bulk-makhana.webp',
+      'TCH-BLK-7S-10KG': 'assets/bulk-makhana.webp',
     };
 
     if (imageMap[sku]) {
       return imageMap[sku];
     }
     if (sku.startsWith('TCH-BLK')) {
-      return 'assets/bulk-makhana.png';
+      return 'assets/bulk-makhana.webp';
     }
     if (sku.startsWith('TCH-GIFT')) {
-      return 'assets/festive-box.png';
+      return 'assets/festive-box.webp';
     }
 
-    return 'assets/raw-makhana-100g.png';
+    return 'assets/raw-makhana-100g.webp';
   }
 
   get variantLabel(): string {
@@ -393,7 +425,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   private upsertProductJsonLd(data: Record<string, unknown>): void {
-    if (!isPlatformBrowser(this.platformId)) {
+    if (!this.document?.head) {
       return;
     }
 
@@ -416,7 +448,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   private removeProductStructuredData(): void {
-    if (!isPlatformBrowser(this.platformId)) {
+    if (!this.document?.head) {
       return;
     }
 
@@ -431,7 +463,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   private updateCanonicalLink(url: string): void {
-    if (!isPlatformBrowser(this.platformId)) {
+    if (!this.document?.head) {
       return;
     }
 
@@ -450,7 +482,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   private getCanonicalUrl(): string {
-    const base = this.document.baseURI;
+    const base = this.document?.baseURI || 'https://thecrunchyheart.com';
 
     try {
       const baseUrl = new URL(base);
@@ -460,15 +492,16 @@ export class ProductDetailComponent implements OnInit {
 
       return new URL(path, baseUrl.origin).toString();
     } catch {
-      return `/product/${encodeURIComponent(this.product?.slug ?? '')}`;
+      return `https://thecrunchyheart.com/product/${encodeURIComponent(this.product?.slug ?? '')}`;
     }
   }
 
   private getAbsoluteImageUrl(): string {
     const imagePath = this.selectedImage;
+    const base = this.document?.baseURI || 'https://thecrunchyheart.com';
 
     try {
-      return new URL(imagePath, this.document.baseURI).toString();
+      return new URL(imagePath, base).toString();
     } catch {
       return imagePath;
     }

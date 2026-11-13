@@ -1,0 +1,155 @@
+<a routerLink="/admin/products" class="back-link">← All products</a>
+
+<div *ngIf="isLoading" class="loading-state"><div class="spinner"></div><p>Loading product…</p></div>
+
+<div *ngIf="loadError" class="alert-danger" role="alert">
+  <span>{{ loadError }}</span>
+  <button class="btn" (click)="load()">Retry</button>
+</div>
+
+<ng-container *ngIf="!isLoading && product">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ product.name }}</h1>
+      <p class="page-subtitle">
+        {{ product.category || 'Uncategorised' }}<ng-container *ngIf="product.subcategory"> · {{ product.subcategory }}</ng-container>
+        · <code>{{ product.slug }}</code>
+      </p>
+    </div>
+    <a class="btn" [href]="'/product/' + product.slug" target="_blank" rel="noopener">View on storefront ↗</a>
+  </div>
+
+  <!-- PRODUCT DETAILS -->
+  <section class="card edit-card" aria-labelledby="details-heading">
+    <h2 id="details-heading" class="section-title">Details &amp; image</h2>
+
+    <div class="edit-grid">
+      <div class="edit-image">
+        <div class="image-frame">
+          <img *ngIf="form.imageUrl && !imageBroken" [src]="form.imageUrl" [alt]="form.name" (error)="onImageError()" />
+          <div class="image-empty" *ngIf="!form.imageUrl || imageBroken">
+            <strong>{{ imageBroken ? 'Image not found' : 'No image' }}</strong>
+            <span>{{ imageBroken ? 'Check the path or URL' : 'Add an image path below' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="edit-fields">
+        <label class="field">
+          <span>Name</span>
+          <input type="text" [(ngModel)]="form.name" maxlength="200" />
+        </label>
+
+        <label class="field">
+          <span>Short description <small>shown on product cards</small></span>
+          <input type="text" [(ngModel)]="form.shortDescription" maxlength="500" />
+        </label>
+
+        <label class="field">
+          <span>Description</span>
+          <textarea rows="4" [(ngModel)]="form.description" maxlength="5000"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Image <small>path in the storefront assets folder, or a full https:// link</small></span>
+          <input type="text" [(ngModel)]="form.imageUrl" (ngModelChange)="onImageInput()"
+                 placeholder="assets/products/premium-almond.webp" />
+        </label>
+
+        <div class="toggles">
+          <label class="check"><input type="checkbox" [(ngModel)]="form.isActive" /> Visible on the storefront</label>
+          <label class="check"><input type="checkbox" [(ngModel)]="form.isFeatured" /> Featured</label>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-primary" (click)="saveProduct()" [disabled]="savingProduct || !productDirty">
+            {{ savingProduct ? 'Saving…' : 'Save details' }}
+          </button>
+          <span class="muted" *ngIf="productDirty && !savingProduct">Unsaved changes</span>
+        </div>
+
+        <div class="alert-ok" *ngIf="productMessage" role="status">{{ productMessage }}</div>
+        <div class="alert-danger" *ngIf="productError" role="alert">{{ productError }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PER-KG PRICING -->
+  <section class="card edit-card" *ngIf="hasWeightPacks" aria-labelledby="rate-heading">
+    <h2 id="rate-heading" class="section-title">Rate per kg</h2>
+    <p class="muted rate-help">
+      Set one rate and every pack size is re-priced from it (rate × weight, rounded to the nearest rupee).
+      You can still fine-tune a single pack below.
+    </p>
+
+    <div class="rate-row">
+      <label class="field rate-field">
+        <span>Rate per kg (₹)</span>
+        <input type="number" min="0" step="1" inputmode="decimal" [(ngModel)]="ratePerKg" />
+      </label>
+      <button class="btn btn-primary" (click)="applyRate()" [disabled]="savingRate || !rateChanges">
+        {{ savingRate ? 'Applying…' : 'Apply to all pack sizes' }}
+      </button>
+    </div>
+
+    <ul class="rate-preview" *ngIf="ratePreview.length">
+      <li *ngFor="let p of ratePreview" [class.is-changed]="p.price !== p.current">
+        <span>{{ p.name }}</span>
+        <strong>₹{{ p.price | number:'1.0-0' }}</strong>
+        <small *ngIf="p.price !== p.current">was ₹{{ p.current | number:'1.0-0' }}</small>
+      </li>
+    </ul>
+
+    <div class="alert-ok" *ngIf="rateMessage" role="status">{{ rateMessage }}</div>
+    <div class="alert-danger" *ngIf="rateError" role="alert">{{ rateError }}</div>
+  </section>
+
+  <!-- PACK SIZES -->
+  <section class="card table-card edit-card" aria-labelledby="packs-heading">
+    <h2 id="packs-heading" class="section-title packs-title">Pack sizes, prices &amp; stock</h2>
+
+    <table class="data-table packs-table">
+      <thead>
+        <tr>
+          <th>Pack</th>
+          <th>Price (₹)</th>
+          <th>MRP (₹)</th>
+          <th>Stock</th>
+          <th>Reorder at</th>
+          <th>Badge</th>
+          <th>Visible</th>
+          <th><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of rows; trackBy: trackRow" [class.is-dirty]="rowDirty(r)" [class.is-hidden]="!r.isActive">
+          <td data-label="Pack">
+            <strong>{{ r.name }}</strong>
+            <code>{{ r.sku }}</code>
+            <small *ngIf="rowPerKg(r) !== null">₹{{ rowPerKg(r) | number:'1.0-0' }}/kg</small>
+          </td>
+          <td data-label="Price (₹)"><input class="num" type="number" min="0" step="1" [(ngModel)]="r.sellingPrice" [attr.aria-label]="'Price for ' + r.name" /></td>
+          <td data-label="MRP (₹)"><input class="num" type="number" min="0" step="1" [(ngModel)]="r.mrp" [attr.aria-label]="'MRP for ' + r.name" /></td>
+          <td data-label="Stock">
+            <input class="num" type="number" min="0" step="1" [(ngModel)]="r.onHand" [attr.aria-label]="'Stock for ' + r.name" />
+            <small>{{ r.reserved }} reserved · {{ rowAvailable(r) }} available</small>
+          </td>
+          <td data-label="Reorder at"><input class="num" type="number" min="0" step="1" [(ngModel)]="r.reorderLevel" [attr.aria-label]="'Reorder level for ' + r.name" /></td>
+          <td data-label="Badge"><input class="badge-input" type="text" maxlength="100" [(ngModel)]="r.badge" [attr.aria-label]="'Badge for ' + r.name" /></td>
+          <td data-label="Visible"><input type="checkbox" [(ngModel)]="r.isActive" [attr.aria-label]="'Visible: ' + r.name" /></td>
+          <td class="row-actions">
+            <button class="btn btn-primary" (click)="saveRow(r)" [disabled]="r.saving || !rowDirty(r)">{{ r.saving ? 'Saving…' : 'Save' }}</button>
+            <button class="btn" *ngIf="rowDirty(r) && !r.saving" (click)="resetRow(r)">Undo</button>
+            <span class="row-ok" *ngIf="r.message && !rowDirty(r)">✓ {{ r.message }}</span>
+            <span class="row-error" *ngIf="r.error" role="alert">{{ r.error }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="muted packs-note">
+      Prices include GST. Set MRP to 0 to hide the strike-through price. Stock cannot be set below the units reserved for open orders.
+    </p>
+  </section>
+</ng-container>

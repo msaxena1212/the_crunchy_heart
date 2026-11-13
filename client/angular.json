@@ -15,8 +15,14 @@
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "assets": ["src/assets"],
-            "styles": ["src/styles.css"]
+            "assets": [
+              "src/assets",
+              "src/favicon.svg",
+              "src/robots.txt",
+              "src/sitemap.xml",
+              "src/llms.txt"
+            ],
+            "styles": ["src/styles.css", "src/styles/polish.css", "src/styles/festive-bulk.css"]
           },
           "configurations": {
             "production": {
