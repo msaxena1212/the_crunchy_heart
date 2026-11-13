@@ -11,3 +11,5 @@ dist/
 server/reports/
 reports/
 .claude/
+
+*.pem
