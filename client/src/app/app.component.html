@@ -15,8 +15,8 @@
       <h1>Crunch<br><em>Happy.</em></h1>
 
       <p class="hero-description">
-        Premium fox nuts, thoughtfully packed for everyday cravings,
-        mindful snacking and everything in between.
+        Authentic Mithila makhana, grade-sorted dry fruits, and pure spices —
+        thoughtfully packed for everyday cravings, mindful cooking, and festive gifting.
       </p>
 
       <div class="hero-actions">
@@ -24,15 +24,14 @@
           class="primary-button"
           type="button"
           (click)="scrollTo('raw-makhana')">
-          Shop Raw Makhana
+          Shop Makhana
         </button>
 
-        <button
+        <a
           class="secondary-button"
-          type="button"
-          (click)="scrollTo('flavoured-makhana')">
-          Explore Flavours
-        </button>
+          routerLink="/shop">
+          Explore All Pantry
+        </a>
       </div>
 
       <div class="hero-trust">
@@ -109,12 +108,12 @@
     <div class="section-heading">
       <div>
         <span class="eyebrow">Shop by category</span>
-        <h2>Our pantry, <em>growing.</em></h2>
+        <h2>Your complete pantry, <em>pure &amp; wholesome.</em></h2>
       </div>
 
       <p>
-        We start with the finest makhana from Mithila. Dry fruits and spices
-        are on their way, packed with the same care.
+        From GI-tagged Mithila Makhana to hand-sorted dry fruits and pure aromatic spices —
+        everything you need for clean snacking and healthy living.
       </p>
     </div>
 
@@ -150,7 +149,7 @@
             <span class="category-card-icon" aria-hidden="true">{{ category.icon }}</span>
             <strong>{{ category.name }}</strong>
             <small>{{ category.blurb }}</small>
-            <span class="category-card-cta">Shop {{ category.count }} products <span aria-hidden="true">→</span></span>
+            <span class="category-card-cta">Explore {{ category.name }} <span aria-hidden="true">→</span></span>
           </span>
         </a>
 
@@ -840,8 +839,9 @@
       </p>
 
       <p>
-        That's why we're building a makhana brand that keeps
-        things simple, honest and delicious.
+        That's why we're building a wholesome pantry brand that keeps
+        things simple, honest and delicious — from our signature Mithila Makhana
+        to premium dry fruits and pure spices.
       </p>
 
       <div class="story-signature">

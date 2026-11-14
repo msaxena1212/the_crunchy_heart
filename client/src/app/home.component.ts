@@ -350,7 +350,7 @@ export class HomeComponent
      WHATSAPP & SUPPORT
      ========================================================= */
 
-  readonly whatsappUrl = 'https://wa.me/919999999999?text=' + encodeURIComponent('Hi The Crunchy Heart! I would like to inquire about your premium makhana / bulk & festive gifting options.');
+  readonly whatsappUrl = 'https://wa.me/918800537383?text=' + encodeURIComponent('Hi, I want to know about your products');
 
   /* =========================================================
      FAQ ACCORDION
@@ -788,18 +788,18 @@ export class HomeComponent
         icon: '🥜',
         target: '',
         route: '/category/dry-fruits',
-        available: dry > 0,
+        available: true,
         image: 'assets/categories/dry-fruits.webp',
         count: dry
       },
       {
         key: 'spices',
         name: 'Spices',
-        blurb: 'Whole and ground spices, freshly packed.',
+        blurb: 'Whole and ground spices, freshly packed from source.',
         icon: '🌶️',
         target: '',
         route: '/category/spices',
-        available: spices > 0,
+        available: true,
         image: 'assets/categories/spices.webp',
         count: spices
       }

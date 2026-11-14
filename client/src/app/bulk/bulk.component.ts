@@ -288,28 +288,11 @@ export class BulkComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get whatsAppQuoteUrl(): string {
-    const qualityLabel =
-      this.selectedQuality === 'handpicked'
-        ? 'Handpicked (double-sorted, zero black spots)'
-        : 'Normal (standard machine-graded)';
-
-    const message =
-      `Hello The Crunchy Heart B2B Desk!\n\n` +
-      `I would like to request an official wholesale/bulk quote for:\n` +
-      `• Nut Size: ${this.guide.name} (${this.guide.diameter})\n` +
-      `• Quality: ${qualityLabel}\n` +
-      `• Order Quantity: ${this.quantityKg} kg (MOQ: ${this.moqKg} kg)\n` +
-      `• Indicated Price: ₹${this.ratePerKg}/kg\n` +
-      `• Estimated Order Value: ₹${this.estimatedTotal.toLocaleString('en-IN')}\n\n` +
-      `Please share a GST proforma invoice, lab COA report, dispatch lead time and freight to my delivery pincode.`;
-
-    return `https://wa.me/${BULK_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${BULK_WHATSAPP_NUMBER}?text=` + encodeURIComponent('Hi, I want to know about your products');
   }
 
   get generalEnquiryUrl(): string {
-    const message =
-      'Hello The Crunchy Heart B2B Desk! I would like to discuss a bulk / wholesale makhana requirement.';
-    return `https://wa.me/${BULK_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${BULK_WHATSAPP_NUMBER}?text=` + encodeURIComponent('Hi, I want to know about your products');
   }
 
   /* ---------- Actions ---------- */

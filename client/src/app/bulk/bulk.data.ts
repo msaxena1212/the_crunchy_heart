@@ -25,7 +25,7 @@ export interface SutaGuide {
 }
 
 export const BULK_MOQ_KG = 100;
-export const BULK_WHATSAPP_NUMBER = '919999999999';
+export const BULK_WHATSAPP_NUMBER = '918800537383';
 
 export const SUTA_GUIDES: SutaGuide[] = [
   {
