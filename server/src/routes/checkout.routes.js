@@ -3,7 +3,9 @@ import {
 } from 'express';
 
 import {
-    previewCheckout
+    previewCheckout,
+    createHoldController,
+    releaseHoldController
 } from '../controllers/checkout.controller.js';
 
 const router =
@@ -12,6 +14,16 @@ const router =
 router.post(
     '/preview',
     previewCheckout
+);
+
+router.post(
+    '/hold',
+    createHoldController
+);
+
+router.post(
+    '/hold/release',
+    releaseHoldController
 );
 
 export default router;

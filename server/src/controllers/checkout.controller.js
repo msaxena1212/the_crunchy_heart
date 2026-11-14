@@ -15,6 +15,55 @@ import {
     isInterStateSupply,
 } from '../utils/gst.js';
 
+import {
+    createInventoryHold,
+    releaseInventoryHold
+} from '../services/inventory-hold.service.js';
+
+export async function createHoldController(req, res, next) {
+    try {
+        const { sessionId, items } = req.body;
+        if (!sessionId || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'sessionId and at least one item are required for hold.'
+            });
+        }
+
+        const hold = await createInventoryHold({ sessionId, items });
+        return res.json({
+            success: true,
+            hold
+        });
+    } catch (error) {
+        if (error.code === 'INSUFFICIENT_STOCK') {
+            return res.status(409).json({
+                success: false,
+                code: error.code,
+                message: error.message,
+                availableQuantity: error.availableQuantity
+            });
+        }
+        next(error);
+    }
+}
+
+export async function releaseHoldController(req, res, next) {
+    try {
+        const { sessionId } = req.body;
+        if (!sessionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'sessionId is required.'
+            });
+        }
+        await releaseInventoryHold(sessionId);
+        return res.json({ success: true, message: 'Hold released.' });
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function previewCheckout(req, res, next) {
     try {
         const { items, shippingAddress, state } = req.body;

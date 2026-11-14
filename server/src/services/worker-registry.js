@@ -21,6 +21,7 @@ export const WORKER_FLAGS = Object.freeze({
     reconciliation_sweep: 'RECONCILIATION_WORKER_ENABLED',
     refund_sweep: 'REFUND_WORKER_ENABLED',
     operational_alerts: 'OPS_ALERTS_ENABLED',
+    inventory_hold_expiry: 'INVENTORY_HOLD_WORKER_ENABLED',
 });
 
 export const DEFAULT_WORKER_INTERVAL_MS = 60 * 1000;

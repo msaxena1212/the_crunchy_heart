@@ -5,6 +5,7 @@ import checkoutRoutes from './routes/checkout.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import customerAuthRoutes from './routes/customer-auth.routes.js';
 import { cashfreeWebhook } from './controllers/payment.controller.js';
 import { query } from './db/pool.js';
 import { env } from './config/env.js';
@@ -159,6 +160,7 @@ app.use('/api/checkout', checkoutRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/auth/customer', customerAuthRoutes);
 
 /*
 |--------------------------------------------------------------------------

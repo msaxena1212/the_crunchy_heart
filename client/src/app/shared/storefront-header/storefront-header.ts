@@ -21,6 +21,15 @@ export class StorefrontHeader {
     return this.cartService.count;
   }
 
+  openCartDrawer(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.closeMenus();
+    this.cartService.openDrawer();
+  }
+
   goHome(): void {
     this.closeMenus();
     void this.router.navigate(['/']);

@@ -18,6 +18,14 @@ export const routes: Routes = [
     },
 
     {
+        path: 'shop',
+        loadComponent: () =>
+            import('./category/category.component')
+                .then(m => m.CategoryComponent),
+        data: { slug: 'all' }
+    },
+
+    {
         path: 'category/:slug',
         loadComponent: () =>
             import('./category/category.component')

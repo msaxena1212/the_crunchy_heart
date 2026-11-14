@@ -11,6 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { StorefrontHeader } from './shared/storefront-header/storefront-header';
 import { StorefrontFooter } from './shared/storefront-footer/storefront-footer';
+import { MiniCartDrawerComponent } from './shared/mini-cart-drawer/mini-cart-drawer.component';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ import { StorefrontFooter } from './shared/storefront-footer/storefront-footer';
     RouterOutlet,
     StorefrontHeader,
     StorefrontFooter,
+    MiniCartDrawerComponent,
   ],
   template: `
     <tch-storefront-header
@@ -27,6 +29,10 @@ import { StorefrontFooter } from './shared/storefront-footer/storefront-footer';
     </tch-storefront-header>
 
     <router-outlet></router-outlet>
+
+    <tch-mini-cart-drawer
+      *ngIf="showStorefrontShell">
+    </tch-mini-cart-drawer>
 
     <tch-storefront-footer
       *ngIf="showStorefrontShell">

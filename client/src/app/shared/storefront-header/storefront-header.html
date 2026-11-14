@@ -36,10 +36,10 @@
 
         <div class="nav-dropdown-panel" role="menu">
           <p class="nav-dropdown-label">Makhana</p>
-          <button type="button" role="menuitem" (click)="navigateToSection('raw-makhana')">
+          <button type="button" role="menuitem" (click)="goToCategory('raw-makhana')">
             <span>Raw Makhana</span><small>100g – 1kg packs</small>
           </button>
-          <button type="button" role="menuitem" (click)="navigateToSection('flavoured-makhana')">
+          <button type="button" role="menuitem" (click)="goToCategory('flavoured-makhana')">
             <span>Flavoured Makhana</span><small>8 slow-roasted flavours</small>
           </button>
 
@@ -49,6 +49,9 @@
           </button>
           <button type="button" role="menuitem" (click)="goToCategory('spices')">
             <span>Spices</span><small>Whole, ground &amp; blends</small>
+          </button>
+          <button type="button" role="menuitem" (click)="goToCategory('festive-gifting')">
+            <span>Festive Gifting</span><small>Curated gift hampers</small>
           </button>
         </div>
       </div>
@@ -60,7 +63,7 @@
     </nav>
 
     <div class="nav-actions">
-      <a routerLink="/cart" class="nav-cart" aria-label="Shopping cart">
+      <button type="button" class="nav-cart" (click)="openCartDrawer($event)" aria-label="Shopping cart">
         <svg viewBox="0 0 24 24" width="23" height="23" fill="none"
              stroke="currentColor" stroke-width="1.8"
              stroke-linecap="round" stroke-linejoin="round"
@@ -70,7 +73,7 @@
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
         </svg>
         <span class="cart-count" *ngIf="cartCount > 0">{{ cartCount }}</span>
-      </a>
+      </button>
 
       <button
         class="mobile-menu-toggle"
@@ -94,10 +97,11 @@
     <button type="button" (click)="goHome()">Home <span>→</span></button>
 
     <p class="mobile-nav-label">Shop by category</p>
-    <button type="button" (click)="navigateToSection('raw-makhana')">Raw Makhana <span>→</span></button>
-    <button type="button" (click)="navigateToSection('flavoured-makhana')">Flavoured Makhana <span>→</span></button>
+    <button type="button" (click)="goToCategory('raw-makhana')">Raw Makhana <span>→</span></button>
+    <button type="button" (click)="goToCategory('flavoured-makhana')">Flavoured Makhana <span>→</span></button>
     <button type="button" (click)="goToCategory('dry-fruits')">Dry Fruits <span>→</span></button>
     <button type="button" (click)="goToCategory('spices')">Spices <span>→</span></button>
+    <button type="button" (click)="goToCategory('festive-gifting')">Festive Gifting <span>→</span></button>
 
     <p class="mobile-nav-label">Explore</p>
     <button type="button" (click)="navigateToSection('festive-gifting')">Gifting &amp; Hampers <span>→</span></button>

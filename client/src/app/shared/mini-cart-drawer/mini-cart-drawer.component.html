@@ -1,0 +1,112 @@
+<!-- BACKDROP -->
+<div
+  class="cart-drawer-backdrop"
+  [class.is-open]="isOpen"
+  (click)="close()"
+  aria-hidden="true">
+</div>
+
+<!-- SLIDE-OVER DRAWER -->
+<aside
+  class="cart-drawer"
+  [class.is-open]="isOpen"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Shopping Cart Drawer">
+
+  <!-- HEADER -->
+  <header class="drawer-header">
+    <div class="drawer-title">
+      <h2>Your Cart</h2>
+      <span class="drawer-count">({{ count }} {{ count === 1 ? 'item' : 'items' }})</span>
+    </div>
+    <button
+      type="button"
+      class="drawer-close"
+      (click)="close()"
+      aria-label="Close cart">
+      ✕
+    </button>
+  </header>
+
+  <!-- FREE SHIPPING BAR (₹499 THRESHOLD) -->
+  <div class="shipping-bar-container">
+    <div class="shipping-bar-text">
+      <span *ngIf="amountNeededForFreeShipping > 0">
+        Add <strong>₹{{ amountNeededForFreeShipping }}</strong> more for <strong>FREE Delivery!</strong> 🚚
+      </span>
+      <span *ngIf="amountNeededForFreeShipping === 0" class="shipping-unlocked">
+        🎉 <strong>Hooray! Free Delivery Unlocked!</strong>
+      </span>
+    </div>
+    <div class="shipping-progress-track">
+      <div
+        class="shipping-progress-fill"
+        [style.width.%]="freeShippingProgress"
+        [class.is-complete]="freeShippingProgress >= 100">
+      </div>
+    </div>
+  </div>
+
+  <!-- ITEMS BODY -->
+  <div class="drawer-body">
+    <!-- EMPTY STATE -->
+    <div *ngIf="items.length === 0" class="drawer-empty">
+      <span class="empty-icon">♡</span>
+      <h3>Your crunch cart is empty</h3>
+      <p>Explore our export-grade raw and slow-roasted flavoured makhana.</p>
+      <a routerLink="/shop" (click)="close()" class="shop-now-btn">Start Shopping</a>
+    </div>
+
+    <!-- CART LIST -->
+    <ul *ngIf="items.length > 0" class="drawer-items-list">
+      <li *ngFor="let item of items" class="drawer-item">
+        <div class="item-img-wrap">
+          <img [src]="item.image || 'assets/hero-image.webp'" [alt]="item.productName" />
+        </div>
+        <div class="item-details">
+          <div class="item-top">
+            <h4 class="item-name">{{ item.productName }}</h4>
+            <button
+              type="button"
+              class="item-remove"
+              (click)="remove(item.variantId)"
+              aria-label="Remove item">
+              🗑
+            </button>
+          </div>
+          <span class="item-variant">{{ item.variantName }}</span>
+          <div class="item-bottom">
+            <div class="item-qty-control">
+              <button type="button" (click)="decrease(item.variantId)" aria-label="Decrease quantity">−</button>
+              <span>{{ item.quantity }}</span>
+              <button type="button" (click)="increase(item.variantId)" aria-label="Increase quantity">+</button>
+            </div>
+            <div class="item-price">
+              <strong>₹{{ item.unitPrice * item.quantity }}</strong>
+              <small *ngIf="item.mrp > item.unitPrice">₹{{ item.mrp * item.quantity }}</small>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- FOOTER / CHECKOUT ACTIONS -->
+  <footer *ngIf="items.length > 0" class="drawer-footer">
+    <div class="drawer-subtotal">
+      <span>Subtotal</span>
+      <strong>₹{{ subtotal }}</strong>
+    </div>
+    <p class="drawer-tax-note">Taxes &amp; shipping calculated at checkout</p>
+
+    <div class="drawer-actions">
+      <a routerLink="/checkout" (click)="close()" class="checkout-btn">
+        Proceed to Checkout <span>→</span>
+      </a>
+      <a routerLink="/cart" (click)="close()" class="view-cart-btn">
+        View Full Cart
+      </a>
+    </div>
+  </footer>
+</aside>

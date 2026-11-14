@@ -3,6 +3,7 @@ import { runReconciliationSweep } from './payment-reconciliation-retry.service.j
 import { runRefundSweep } from './refund.service.js';
 import { raiseRefundAlerts, deliverOperationalAlerts } from './ops-alert.service.js';
 import { createEmailAlertSender, readEmailConfig } from './ops-alert-email.service.js';
+import { expireOverdueHolds } from './inventory-hold.service.js';
 
 export const DEFAULT_ALERT_INTERVAL_MS = 60 * 1000;
 export const MIN_ALERT_INTERVAL_MS = 5 * 1000;
@@ -68,6 +69,17 @@ export function startConfiguredWorkers({ env = process.env, intervalMs } = {}) {
             },
         });
         started.push('operational_alerts');
+    }
+
+    if (workerEnabled('inventory_hold_expiry', env)) {
+        startWorker({
+            name: 'inventory_hold_expiry',
+            intervalMs: 60 * 1000, // Sweep every 60 seconds
+            run: async () => {
+                return await expireOverdueHolds();
+            }
+        });
+        started.push('inventory_hold_expiry');
     }
 
     return started;

@@ -28,6 +28,10 @@ import {
     verifyGuestAccessToken,
 } from '../utils/order-token.js';
 
+import {
+    convertInventoryHold,
+} from './inventory-hold.service.js';
+
 
 /*
 |--------------------------------------------------------------------------
@@ -1274,7 +1278,16 @@ export async function createOrder({
                     );
 
 
-                createdItems.push(
+                // Reserve inventory for the order
+            await reserveInventory(
+                client,
+                item.variantId,
+                item.quantity,
+                order.id,
+                `Order creation reservation for order ${order.order_number}`
+            );
+
+            createdItems.push(
                     mapOrderItemRow(
                         itemResult.rows[0]
                     )

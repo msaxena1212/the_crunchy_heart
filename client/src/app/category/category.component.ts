@@ -20,6 +20,38 @@ interface CategoryInfo {
 
 /** Display copy for known categories. Anything else falls back to the name from the API. */
 const CATEGORY_INFO: Record<string, CategoryInfo> = {
+  'all': {
+    name: 'All Products',
+    tagline: 'Complete Mithila Makhana, Dry Fruits & Spices Store',
+    blurb: 'Explore our entire handcrafted range of Satvik, export-grade raw makhana, 8 slow-roasted gourmet flavours, dry fruits, and aromatic spices.',
+    banner: null,
+    icon: '🌾',
+    perKg: false
+  },
+  'raw-makhana': {
+    name: 'Raw Mithila Makhana',
+    tagline: 'Export-grade 6+ Suta popped lotus seeds',
+    blurb: 'Sourced directly from the pristine wetlands of Darbhanga, Bihar. 100% natural, unroasted, non-GMO, gluten-free, and rich in natural antioxidants.',
+    banner: 'assets/bulk-makhana.webp',
+    icon: '🌾',
+    perKg: false
+  },
+  'flavoured-makhana': {
+    name: 'Gourmet Flavoured Makhana',
+    tagline: 'Slow-roasted in pure olive oil • Never fried',
+    blurb: '8 irresistible slow-roasted flavours crafted with zero palm oil, zero trans fat, and 100% Satvik real herbs and spices. Perfect healthy anytime snacking.',
+    banner: 'assets/hero-image.webp',
+    icon: '✨',
+    perKg: false
+  },
+  'festive-gifting': {
+    name: 'Festive & Celebration Hampers',
+    tagline: 'Thoughtfully crafted gift boxes for celebrations',
+    blurb: 'Curated 3x3 festive combo builder boxes, luxury celebration hampers, and bespoke gift sets made with pure heart and premium crunch.',
+    banner: 'assets/festive-box.webp',
+    icon: '🎁',
+    perKg: false
+  },
   'dry-fruits': {
     name: 'Dry Fruits',
     tagline: 'Premium nuts and dried fruits',
@@ -77,7 +109,7 @@ export class CategoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
-      this.slug = params.get('slug') ?? '';
+      this.slug = params.get('slug') ?? (this.route.snapshot.data['slug'] || 'all');
       this.activeFamily = 'all';
       this.search = '';
       this.sort = 'featured';
@@ -98,8 +130,13 @@ export class CategoryComponent implements OnInit {
       perKg: false
     };
 
+    const options: { category?: string } = {};
+    if (this.slug && this.slug !== 'all') {
+      options.category = this.slug;
+    }
+
     this.productService
-      .getProducts({ category: this.slug })
+      .getProducts(options)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: rows => {

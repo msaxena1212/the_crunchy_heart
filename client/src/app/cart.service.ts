@@ -84,6 +84,25 @@ export class CartService {
   readonly cart$ =
     this.cartSubject.asObservable();
 
+  private readonly drawerOpenSubject = new BehaviorSubject<boolean>(false);
+  readonly drawerOpen$ = this.drawerOpenSubject.asObservable();
+
+  openDrawer(): void {
+    this.drawerOpenSubject.next(true);
+  }
+
+  closeDrawer(): void {
+    this.drawerOpenSubject.next(false);
+  }
+
+  toggleDrawer(): void {
+    this.drawerOpenSubject.next(!this.drawerOpenSubject.value);
+  }
+
+  get isDrawerOpen(): boolean {
+    return this.drawerOpenSubject.value;
+  }
+
 
   /* =======================================================
      GETTERS
@@ -358,6 +377,7 @@ export class CartService {
       updatedItems
     );
 
+    this.openDrawer();
   }
 
 
@@ -400,6 +420,7 @@ export class CartService {
       updatedItems
     );
 
+    this.openDrawer();
   }
 
 
@@ -449,6 +470,7 @@ export class CartService {
       updatedItems
     );
 
+    this.openDrawer();
   }
 
 
@@ -472,6 +494,7 @@ export class CartService {
       updatedItems
     );
 
+    this.openDrawer();
   }
 
 
