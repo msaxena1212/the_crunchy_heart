@@ -2,7 +2,9 @@ import {
     sendCustomerOtp,
     verifyCustomerOtp,
     getSessionCustomer,
-    logoutCustomer
+    logoutCustomer,
+    getCustomerOrders,
+    updateCustomerProfile
 } from '../services/customer-auth.service.js';
 
 export async function requestOtpController(req, res, next) {
@@ -57,6 +59,48 @@ export async function getMeController(req, res, next) {
         return res.json({ success: true, customer });
     } catch (error) {
         next(error);
+    }
+}
+
+export async function getOrdersController(req, res, next) {
+    try {
+        const authHeader = req.headers.authorization || '';
+        const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const customer = await getSessionCustomer(token);
+        if (!customer) {
+            return res.status(401).json({ success: false, message: 'Session expired or invalid.' });
+        }
+
+        const orders = await getCustomerOrders(customer.id, customer.phone);
+        return res.json({ success: true, orders });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function updateProfileController(req, res, next) {
+    try {
+        const authHeader = req.headers.authorization || '';
+        const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const customer = await getSessionCustomer(token);
+        if (!customer) {
+            return res.status(401).json({ success: false, message: 'Session expired or invalid.' });
+        }
+
+        const updated = await updateCustomerProfile(customer.id, req.body || {});
+        return res.json({ success: true, customer: updated });
+    } catch (error) {
+        return res.status(error.statusCode || 400).json({ success: false, message: error.message });
     }
 }
 

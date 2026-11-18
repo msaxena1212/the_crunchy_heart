@@ -1,9 +1,43 @@
 import { query } from '../db/pool.js';
 import { withTransaction } from '../db/transaction.js';
-import { reserveInventory, releaseInventoryReservation } from './inventory.service.js';
+import {
+    reserveInventory,
+    reserveOrderInventory,
+    releaseInventoryReservation,
+    releaseOrderInventoryReservations,
+} from './inventory.service.js';
 
+/*
+|--------------------------------------------------------------------------
+| 15-Minute Checkout Inventory Hold & Auto-Expiry Service
+|--------------------------------------------------------------------------
+| Supports both session-based holds (pre-order checkout flow) and order-based
+| holds (pending payment window).
+|--------------------------------------------------------------------------
+*/
+
+export const DEFAULT_HOLD_MINUTES = 15;
 export const HOLD_DURATION_MINUTES = 15;
 export const HOLD_DURATION_MS = HOLD_DURATION_MINUTES * 60 * 1000;
+export const INVENTORY_HOLD_SWEEP_LOCK_KEY = 849201931;
+
+export async function ensureHoldSchema() {
+    await query(`
+        ALTER TABLE orders
+        ADD COLUMN IF NOT EXISTS hold_expires_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS hold_released_at TIMESTAMPTZ;
+
+        CREATE INDEX IF NOT EXISTS idx_orders_hold_expiry
+        ON orders(status, payment_status, hold_expires_at)
+        WHERE hold_expires_at IS NOT NULL AND hold_released_at IS NULL;
+    `).catch(() => {});
+}
+
+/*
+|--------------------------------------------------------------------------
+| Session-Based Inventory Holds (Used by checkout.controller.js)
+|--------------------------------------------------------------------------
+*/
 
 /**
  * Creates or updates an active 15-minute inventory hold for a checkout session.
@@ -110,9 +144,7 @@ export async function convertInventoryHold(sessionId, orderId) {
 }
 
 /**
- * Auto-expiry sweep worker function:
- * Finds all active holds whose expires_at is past, releases reserved inventory,
- * and marks them 'EXPIRED'.
+ * Auto-expiry sweep for session-based holds.
  */
 export async function expireOverdueHolds() {
     let expiredCount = 0;
@@ -149,4 +181,142 @@ export async function expireOverdueHolds() {
     });
 
     return { expiredCount };
+}
+
+/*
+|--------------------------------------------------------------------------
+| Order-Based Inventory Holds (Used by order checkout & auto-expiry worker)
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Create or refresh a 15-minute checkout inventory hold on an existing order.
+ */
+export async function createCheckoutHold({ orderId, holdMinutes = DEFAULT_HOLD_MINUTES }) {
+    await ensureHoldSchema();
+
+    return withTransaction(async (client) => {
+        const orderRes = await client.query(
+            `SELECT id, order_number, status, payment_status, payment_method, hold_expires_at, hold_released_at
+             FROM orders WHERE id = $1 FOR UPDATE`,
+            [orderId]
+        );
+
+        if (!orderRes.rows.length) {
+            throw Object.assign(new Error(`Order ${orderId} not found.`), { statusCode: 404, code: 'ORDER_NOT_FOUND' });
+        }
+
+        const order = orderRes.rows[0];
+
+        if (order.status !== 'pending' || order.payment_status === 'paid') {
+            throw Object.assign(new Error(`Cannot place inventory hold on order in status '${order.status}'.`), {
+                statusCode: 400,
+                code: 'INVALID_ORDER_STATUS',
+            });
+        }
+
+        // Fetch order items to reserve
+        const itemsRes = await client.query(
+            `SELECT variant_id, quantity FROM order_items WHERE order_id = $1`,
+            [orderId]
+        );
+
+        const items = itemsRes.rows.map(r => ({ variantId: r.variant_id, quantity: r.quantity }));
+
+        // Atomically place reservations
+        await reserveOrderInventory(client, {
+            orderId,
+            items,
+            notes: `15-minute checkout hold for order ${order.order_number}`,
+        });
+
+        const expiresAt = new Date(Date.now() + holdMinutes * 60 * 1000);
+
+        await client.query(
+            `UPDATE orders
+             SET hold_expires_at = $2,
+                 hold_released_at = NULL,
+                 updated_at = NOW()
+             WHERE id = $1`,
+            [orderId, expiresAt]
+        );
+
+        return {
+            orderId,
+            orderNumber: order.order_number,
+            holdExpiresAt: expiresAt,
+            holdMinutes,
+        };
+    });
+}
+
+/**
+ * Release an expired inventory hold for a single order.
+ */
+export async function releaseExpiredOrderHold(client, orderId) {
+    const released = await releaseOrderInventoryReservations(client, {
+        orderId,
+        notes: `Auto-expiry: 15-minute checkout inventory hold expired`,
+    });
+
+    await client.query(
+        `UPDATE orders
+         SET hold_released_at = NOW(),
+             status = CASE WHEN status = 'pending' AND payment_status = 'pending' THEN 'cancelled' ELSE status END,
+             notes = COALESCE(notes, '') || ' [inventory hold expired after 15m]',
+             updated_at = NOW()
+         WHERE id = $1`,
+        [orderId]
+    );
+
+    return released;
+}
+
+/**
+ * Sweep function executed periodically by the background worker.
+ * Identifies all pending orders whose 15-minute hold has expired and releases reservations.
+ */
+export async function runInventoryHoldExpirySweep({ limit = 50 } = {}) {
+    await ensureHoldSchema();
+
+    return withTransaction(async (client) => {
+        // Advisory lock to ensure single-instance execution
+        const lockRes = await client.query(`SELECT pg_try_advisory_xact_lock($1) AS acquired`, [INVENTORY_HOLD_SWEEP_LOCK_KEY]);
+        if (!lockRes.rows[0].acquired) {
+            return { skipped: true, expiredCount: 0 };
+        }
+
+        const expiredOrdersRes = await client.query(
+            `SELECT id, order_number, hold_expires_at
+             FROM orders
+             WHERE status = 'pending'
+               AND payment_status = 'pending'
+               AND hold_expires_at IS NOT NULL
+               AND hold_expires_at <= NOW()
+               AND hold_released_at IS NULL
+             ORDER BY hold_expires_at ASC
+             LIMIT $1
+             FOR UPDATE SKIP LOCKED`,
+            [limit]
+        );
+
+        const expiredOrders = expiredOrdersRes.rows;
+        const results = [];
+
+        for (const order of expiredOrders) {
+            try {
+                await releaseExpiredOrderHold(client, order.id);
+                results.push({ orderId: order.id, orderNumber: order.order_number, status: 'expired_and_released' });
+            } catch (err) {
+                console.error(`[HIGH] Failed to release expired hold for order ${order.order_number}:`, err.message);
+                results.push({ orderId: order.id, orderNumber: order.order_number, error: err.message });
+            }
+        }
+
+        return {
+            skipped: false,
+            expiredCount: results.length,
+            results,
+        };
+    });
 }

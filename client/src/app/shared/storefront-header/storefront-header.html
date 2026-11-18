@@ -35,24 +35,51 @@
         </button>
 
         <div class="nav-dropdown-panel" role="menu">
-          <p class="nav-dropdown-label">Makhana</p>
-          <button type="button" role="menuitem" (click)="goToCategory('raw-makhana')">
-            <span>Raw Makhana</span><small>100g – 1kg packs</small>
-          </button>
-          <button type="button" role="menuitem" (click)="goToCategory('flavoured-makhana')">
-            <span>Flavoured Makhana</span><small>8 slow-roasted flavours</small>
-          </button>
+          <div class="nav-dropdown-col">
+            <p class="nav-dropdown-label">Makhana (Flagship)</p>
+            <button type="button" role="menuitem" (click)="goToCategory('raw-makhana')">
+              <span>Raw Mithila Makhana</span><small>100g – 1kg jumbo grades</small>
+            </button>
+            <button type="button" role="menuitem" (click)="goToCategory('flavoured-makhana')">
+              <span>Flavoured Makhana</span><small>8 slow-roasted flavours</small>
+            </button>
 
-          <p class="nav-dropdown-label">More categories</p>
-          <button type="button" role="menuitem" (click)="goToCategory('dry-fruits')">
-            <span>Dry Fruits</span><small>Almonds, cashews, walnuts &amp; more</small>
-          </button>
-          <button type="button" role="menuitem" (click)="goToCategory('spices')">
-            <span>Spices</span><small>Whole, ground &amp; blends</small>
-          </button>
-          <button type="button" role="menuitem" (click)="goToCategory('festive-gifting')">
-            <span>Festive Gifting</span><small>Curated gift hampers</small>
-          </button>
+            <p class="nav-dropdown-label">Nuts, Seeds &amp; Superfoods</p>
+            <button type="button" role="menuitem" (click)="goToCategory('dry-fruits')">
+              <span>Dry Fruits &amp; Nuts</span><small>Almonds, cashews, walnuts, raisins &amp; figs</small>
+            </button>
+            <button type="button" role="menuitem" (click)="goToCategory('seeds-superfoods')">
+              <span>Seeds &amp; Superfoods</span><small>Chia, pumpkin, sunflower, flax &amp; sabja</small>
+            </button>
+          </div>
+
+          <div class="nav-dropdown-col">
+            <p class="nav-dropdown-label">Spices &amp; Seasonings</p>
+            <button type="button" role="menuitem" (click)="goToCategory('whole-spices')">
+              <span>Whole Spices</span><small>Sun-dried single-origin aromatics</small>
+            </button>
+            <button type="button" role="menuitem" (click)="goToCategory('ground-spices')">
+              <span>Ground Spices</span><small>Pure stone-ground haldi, mirch &amp; dhania</small>
+            </button>
+            <button type="button" role="menuitem" (click)="goToCategory('blended-masalas')">
+              <span>Blended Masalas</span><small>Artisanal culinary spice blends</small>
+            </button>
+
+            <p class="nav-dropdown-label">Heritage Pantry &amp; Gifting</p>
+            <button type="button" role="menuitem" (click)="goToCategory('grains-millets')">
+              <span>Grains &amp; Millets</span><small>Unpolished traditional Indian millets</small>
+            </button>
+            <button type="button" role="menuitem" (click)="goToCategory('festive-gifting')">
+              <span>Gifting &amp; Hampers</span><small>Curated celebration gift hampers</small>
+            </button>
+          </div>
+
+          <div class="nav-dropdown-footer">
+            <button type="button" role="menuitem" class="nav-dropdown-all-btn" (click)="goToCategory('all')">
+              <span>Shop All Products</span>
+              <small>Explore the complete 10-category pantry catalogue →</small>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -63,6 +90,22 @@
     </nav>
 
     <div class="nav-actions">
+      <!-- ACCOUNT / SIGN IN BUTTON -->
+      <button
+        type="button"
+        class="nav-account"
+        (click)="openAccountOrLogin()"
+        [attr.aria-label]="isLoggedIn ? 'My Account' : 'Sign In'">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+             stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span class="account-label">{{ isLoggedIn ? (customer?.name ? customer!.name.split(' ')[0] : 'Account') : 'Sign In' }}</span>
+      </button>
+
       <button type="button" class="nav-cart" (click)="openCartDrawer($event)" aria-label="Shopping cart">
         <svg viewBox="0 0 24 24" width="23" height="23" fill="none"
              stroke="currentColor" stroke-width="1.8"
@@ -94,14 +137,25 @@
     [class.is-open]="mobileMenuOpen"
     [attr.aria-hidden]="!mobileMenuOpen"
     [attr.inert]="mobileMenuOpen ? null : ''">
+    <!-- ACCOUNT BUTTON IN MOBILE MENU -->
+    <button type="button" class="mobile-account-btn" (click)="openAccountOrLogin()">
+      <span>👤 {{ isLoggedIn ? 'My Account (' + (customer?.name || 'User') + ')' : 'Sign In / Register' }}</span>
+      <span>→</span>
+    </button>
+
     <button type="button" (click)="goHome()">Home <span>→</span></button>
 
     <p class="mobile-nav-label">Shop by category</p>
-    <button type="button" (click)="goToCategory('raw-makhana')">Raw Makhana <span>→</span></button>
+    <button type="button" (click)="goToCategory('all')">All Products <span>→</span></button>
+    <button type="button" (click)="goToCategory('raw-makhana')">Raw Mithila Makhana <span>→</span></button>
     <button type="button" (click)="goToCategory('flavoured-makhana')">Flavoured Makhana <span>→</span></button>
-    <button type="button" (click)="goToCategory('dry-fruits')">Dry Fruits <span>→</span></button>
-    <button type="button" (click)="goToCategory('spices')">Spices <span>→</span></button>
-    <button type="button" (click)="goToCategory('festive-gifting')">Festive Gifting <span>→</span></button>
+    <button type="button" (click)="goToCategory('dry-fruits')">Dry Fruits &amp; Nuts <span>→</span></button>
+    <button type="button" (click)="goToCategory('seeds-superfoods')">Seeds &amp; Superfoods <span>→</span></button>
+    <button type="button" (click)="goToCategory('whole-spices')">Whole Spices <span>→</span></button>
+    <button type="button" (click)="goToCategory('ground-spices')">Ground Spices <span>→</span></button>
+    <button type="button" (click)="goToCategory('blended-masalas')">Blended Masalas <span>→</span></button>
+    <button type="button" (click)="goToCategory('grains-millets')">Grains &amp; Millets <span>→</span></button>
+    <button type="button" (click)="goToCategory('festive-gifting')">Gifting &amp; Hampers <span>→</span></button>
 
     <p class="mobile-nav-label">Explore</p>
     <button type="button" (click)="navigateToSection('festive-gifting')">Gifting &amp; Hampers <span>→</span></button>

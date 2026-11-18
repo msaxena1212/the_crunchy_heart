@@ -6,7 +6,7 @@
         <div class="cart-header">
 
             <div>
-                <a routerLink="/" class="back-link">
+                <a routerLink="/shop" class="back-link">
                     ← Continue Shopping
                 </a>
 
@@ -51,13 +51,12 @@
             </h2>
 
             <p>
-                Explore our premium makhana and find something
-                delicious for your next snack break.
+                Explore our premium makhana, royal dry fruits, and pure spices for your pantry.
             </p>
 
             <div class="empty-cart-actions" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                <a routerLink="/" class="primary-button">
-                    Explore Makhana
+                <a routerLink="/shop" class="primary-button">
+                    Explore Products
                 </a>
 
                 <button *ngIf="hasRecoverySnapshot" type="button" class="secondary-button" (click)="restorePreviousCart()" style="padding: 14px 24px; border: 1px solid #dcd1c2; border-radius: 8px; background: #ffffff; color: #1e392a; font-weight: 600; cursor: pointer;">

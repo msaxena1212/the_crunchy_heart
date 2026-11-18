@@ -1,24 +1,43 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CartService } from '../../cart.service';
+import { CustomerAuthService, CustomerUser } from '../customer-auth.service';
 
 @Component({
   selector: 'tch-storefront-header',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './storefront-header.html',
   styleUrl: './storefront-header.css',
 })
 export class StorefrontHeader {
   private readonly router = inject(Router);
   private readonly cartService = inject(CartService);
+  private readonly customerAuthService = inject(CustomerAuthService);
 
   mobileMenuOpen = false;
   shopMenuOpen = false;
 
   get cartCount(): number {
     return this.cartService.count;
+  }
+
+  get isLoggedIn(): boolean {
+    return this.customerAuthService.isLoggedIn;
+  }
+
+  get customer(): CustomerUser | null {
+    return this.customerAuthService.currentCustomer;
+  }
+
+  openAccountOrLogin(): void {
+    this.closeMenus();
+    if (this.isLoggedIn) {
+      void this.router.navigate(['/account']);
+    } else {
+      this.customerAuthService.openLoginModal('/account');
+    }
   }
 
   openCartDrawer(event?: Event): void {
@@ -37,7 +56,11 @@ export class StorefrontHeader {
 
   goToCategory(slug: string): void {
     this.closeMenus();
-    void this.router.navigate(['/category', slug]);
+    if (slug === 'all') {
+      void this.router.navigate(['/shop']);
+    } else {
+      void this.router.navigate(['/category', slug]);
+    }
   }
 
   goToBulk(): void {

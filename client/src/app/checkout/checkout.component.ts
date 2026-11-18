@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router, RouterLink } from '@angular/router';
 import { CartService, CartItem } from '../cart.service';
 import { CheckoutService, CheckoutPreviewResponse, CreateOrderRequest } from '../checkout.service';
+import { CustomerAuthService } from '../shared/customer-auth.service';
 
 @Component({
   selector: 'tch-checkout',
@@ -17,6 +18,7 @@ export class CheckoutComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly cartService = inject(CartService);
   private readonly checkoutService = inject(CheckoutService);
+  private readonly customerAuthService = inject(CustomerAuthService);
 
   cartItems: CartItem[] = [];
   preview: CheckoutPreviewResponse | null = null;
@@ -94,6 +96,21 @@ export class CheckoutComponent implements OnInit {
   ngOnInit(): void {
     this.idempotencyKey = this.checkoutService.generateIdempotencyKey();
     this.cartItems = this.cartService.items;
+
+    // Prefill customer information if logged in
+    const cust = this.customerAuthService.currentCustomer;
+    if (cust) {
+      if (cust.name) {
+        this.checkoutForm.patchValue({ name: cust.name });
+      }
+      if (cust.phone) {
+        const cleanPhone = cust.phone.replace(/\D/g, '').slice(-10);
+        this.checkoutForm.patchValue({ phone: cleanPhone });
+      }
+      if (cust.email) {
+        this.checkoutForm.patchValue({ email: cust.email });
+      }
+    }
 
     if (!this.cartItems.length) {
       this.isLoadingPreview = false;

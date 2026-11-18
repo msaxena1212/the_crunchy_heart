@@ -369,3 +369,20 @@
 .view-cart-btn:hover {
   background: #f5eee7;
 }
+
+.continue-drawer-btn {
+  background: transparent;
+  color: #1e392a;
+  border: none;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.2s ease;
+}
+
+.continue-drawer-btn:hover {
+  color: #a17c35;
+  text-decoration: underline;
+}

@@ -12,6 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StorefrontHeader } from './shared/storefront-header/storefront-header';
 import { StorefrontFooter } from './shared/storefront-footer/storefront-footer';
 import { MiniCartDrawerComponent } from './shared/mini-cart-drawer/mini-cart-drawer.component';
+import { CustomerLoginModalComponent } from './shared/customer-login-modal/customer-login-modal.component';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,7 @@ import { MiniCartDrawerComponent } from './shared/mini-cart-drawer/mini-cart-dra
     StorefrontHeader,
     StorefrontFooter,
     MiniCartDrawerComponent,
+    CustomerLoginModalComponent,
   ],
   template: `
     <tch-storefront-header
@@ -33,6 +35,8 @@ import { MiniCartDrawerComponent } from './shared/mini-cart-drawer/mini-cart-dra
     <tch-mini-cart-drawer
       *ngIf="showStorefrontShell">
     </tch-mini-cart-drawer>
+
+    <tch-customer-login-modal></tch-customer-login-modal>
 
     <tch-storefront-footer
       *ngIf="showStorefrontShell">

@@ -54,7 +54,7 @@
     <div *ngIf="items.length === 0" class="drawer-empty">
       <span class="empty-icon">♡</span>
       <h3>Your crunch cart is empty</h3>
-      <p>Explore our export-grade raw and slow-roasted flavoured makhana.</p>
+      <p>Explore our premium makhana, royal dry fruits, and hand-selected spices.</p>
       <a routerLink="/shop" (click)="close()" class="shop-now-btn">Start Shopping</a>
     </div>
 
@@ -107,6 +107,9 @@
       <a routerLink="/cart" (click)="close()" class="view-cart-btn">
         View Full Cart
       </a>
+      <button type="button" (click)="close()" class="continue-drawer-btn">
+        ← Continue Shopping
+      </button>
     </div>
   </footer>
 </aside>

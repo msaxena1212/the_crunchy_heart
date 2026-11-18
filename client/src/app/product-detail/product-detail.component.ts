@@ -255,13 +255,15 @@ export class ProductDetailComponent implements OnInit {
     });
 
     this.addedToCart = true;
+    this.cartService.openDrawer();
   }
 
   buyNow(): void {
     this.addToCart();
 
     if (this.addedToCart) {
-      void this.router.navigate(['/cart']);
+      this.cartService.closeDrawer();
+      void this.router.navigate(['/checkout']);
     }
   }
 

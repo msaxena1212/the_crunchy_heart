@@ -3,20 +3,26 @@
 
     <!-- HEADER / NAVIGATION -->
     <header class="checkout-header">
-      <a routerLink="/cart" class="back-link">
-        ← Return to Cart
-      </a>
+      <div class="checkout-nav-links" style="display: flex; gap: 14px; align-items: center; margin-bottom: 8px;">
+        <a routerLink="/cart" class="back-link">
+          ← Return to Cart
+        </a>
+        <span style="color: #c0b9ac;">|</span>
+        <a routerLink="/shop" class="back-link">
+          Continue Shopping
+        </a>
+      </div>
       <p class="eyebrow">The Crunchy Heart</p>
       <h1>Customer Checkout</h1>
-      <p class="checkout-subtitle">Complete your details to enjoy premium roasted makhana.</p>
+      <p class="checkout-subtitle">Complete your details to enjoy pure and premium pantry staples.</p>
     </header>
 
     <!-- EMPTY CART STATE -->
     <div *ngIf="!cartItems.length && !isSubmitting" class="empty-state-card">
       <div class="empty-icon">♡</div>
       <h2>Your cart is empty</h2>
-      <p>Please add makhana to your cart before proceeding to checkout.</p>
-      <a routerLink="/" class="primary-button">Explore Makhana</a>
+      <p>Please add products to your cart before proceeding to checkout.</p>
+      <a routerLink="/shop" class="primary-button">Explore Products</a>
     </div>
 
     <!-- MAIN CHECKOUT LAYOUT -->

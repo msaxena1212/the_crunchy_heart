@@ -13,3 +13,5 @@ reports/
 .claude/
 
 *.pem
+__pycache__/
+*.pyc
