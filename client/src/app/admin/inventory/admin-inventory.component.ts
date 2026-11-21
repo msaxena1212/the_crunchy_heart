@@ -17,11 +17,20 @@ export class AdminInventoryComponent implements OnInit {
 
   variants: AdminInventoryVariant[] = [];
   lowStockOnly = false;
+  search = '';
   isLoading = true;
   errorMessage = '';
 
   ngOnInit(): void {
     this.load();
+  }
+
+  /** Variants matching the search box (SKU or product / pack name). */
+  get filtered(): AdminInventoryVariant[] {
+    const term = this.search.trim().toLowerCase();
+    if (!term) return this.variants;
+    return this.variants.filter(v =>
+      `${v.sku} ${v.productName} ${v.variantName}`.toLowerCase().includes(term));
   }
 
   load(): void {

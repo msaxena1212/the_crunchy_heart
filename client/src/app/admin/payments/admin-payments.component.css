@@ -27,12 +27,9 @@
 .user-email { color: #5a5248; font-size: 0.9rem; }
 .logout-button { background: none; border: 1px solid #cfc7bb; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
 
-.dashboard-main { padding: 24px; }
-.content-container { max-width: 1200px; margin: 0 auto; }
+.dashboard-main { padding: 0; }
+.content-container { max-width: none; margin: 0; }
 
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-.page-title { margin: 0 0 6px; font-size: 1.5rem; }
-.page-subtitle { margin: 0; color: #5a5248; max-width: 680px; line-height: 1.5; }
 
 .header-stats { display: flex; gap: 8px; flex-wrap: wrap; }
 .stat-pill { padding: 4px 10px; border-radius: 999px; background: #f5f3ef; font-size: 0.9rem; }

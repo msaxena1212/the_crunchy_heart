@@ -1,12 +1,15 @@
 <div class="page-header">
   <div>
     <h1 class="page-title">Inventory</h1>
-    <p class="page-subtitle">Stock on hand, reserved for open orders, and what is available to sell. Stock adjustments are not in this build yet.</p>
+    <p class="page-subtitle">Stock on hand, reserved for open orders, and what is available to sell. To change stock, open the product under Products and edit its pack sizes.</p>
   </div>
 </div>
 
 <div class="filter-row">
+  <label for="inventory-search">Search</label>
+  <input id="inventory-search" [(ngModel)]="search" placeholder="SKU or product name" />
   <label><input type="checkbox" [(ngModel)]="lowStockOnly" (change)="load()" /> Low stock only</label>
+  <span class="muted" *ngIf="!isLoading">{{ filtered.length }} of {{ variants.length }} pack sizes</span>
 </div>
 
 <div *ngIf="errorMessage" class="alert-danger" role="alert">
@@ -21,7 +24,12 @@
   <p>{{ lowStockOnly ? 'Nothing is at or below its reorder level.' : 'No stock is recorded yet.' }}</p>
 </div>
 
-<div *ngIf="!isLoading && variants.length" class="card table-card">
+<div *ngIf="!isLoading && variants.length && filtered.length === 0" class="card empty-state">
+  <h3>No matches</h3>
+  <p>No pack size matches "{{ search }}".</p>
+</div>
+
+<div *ngIf="!isLoading && filtered.length" class="card table-card">
   <table class="data-table">
     <thead>
       <tr>
@@ -35,7 +43,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let v of variants">
+      <tr *ngFor="let v of filtered">
         <td><code>{{ v.sku }}</code></td>
         <td>{{ v.productName }} <span class="muted">· {{ v.variantName }}</span></td>
         <td>{{ v.onHand }}</td>
