@@ -140,7 +140,7 @@ main > section.category-section > * {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(11, 60, 41, 0.05) 25%, rgba(11, 60, 41, 0.88) 100%);
+  background: linear-gradient(180deg, rgba(11, 60, 41, 0.18) 0%, rgba(11, 60, 41, 0.62) 45%, rgba(11, 60, 41, 0.94) 100%);
 }
 
 .category-card-body {
@@ -172,6 +172,7 @@ main > section.category-section > * {
 }
 
 .category-card-body small {
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
   max-width: 30ch;
   font-size: 14px;
   line-height: 1.5;

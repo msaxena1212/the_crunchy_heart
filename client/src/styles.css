@@ -559,6 +559,11 @@ h4 {
 .primary-button,
 .secondary-button {
 
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+
     min-height: 48px;
 
     padding: 0 23px;

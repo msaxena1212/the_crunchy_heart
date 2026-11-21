@@ -469,8 +469,24 @@ a:focus-visible {
     margin-top: 8px;
   }
 
+  .nav-shell {
+    flex-wrap: nowrap;
+  }
+
   .nav-actions {
     gap: 8px;
+  }
+
+  /* Icon-only sign-in on phones so brand and actions share one row */
+  .nav-account .account-label {
+    display: none;
+  }
+
+  .nav-account {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
   }
 
   .mobile-menu-toggle {
