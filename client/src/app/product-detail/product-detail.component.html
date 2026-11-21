@@ -261,6 +261,7 @@
                     <li><span aria-hidden="true">🚚</span> Free shipping above ₹499</li>
                     <li><span aria-hidden="true">📦</span> Dispatched within 24 hours</li>
                     <li><span aria-hidden="true">🔒</span> Secure online payments</li>
+                    <li *ngIf="fssai()"><span aria-hidden="true">✓</span> FSSAI Lic. No. {{ fssai() }}</li>
                 </ul>
 
                 <!-- Out of Stock CTA -->

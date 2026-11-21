@@ -1,3 +1,4 @@
+import { StoreInfoService } from '../shared/store-info.service';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -19,6 +20,10 @@ export class OrderConfirmationComponent implements OnInit {
 
   orderNumber: string = '';
   guestToken: string | null = null;
+  readonly fssai = inject(StoreInfoService).fssaiLicenseNumber;
+  isCancelling = false;
+  showCancelConfirm = false;
+  cancelErrorMessage = '';
 
   orderDetails: OrderDetailsResponse | null = null;
   paymentStatus: PaymentStatusResponse | null = null;
@@ -103,6 +108,35 @@ export class OrderConfirmationComponent implements OnInit {
     });
   }
 
+  isCancelled(): boolean {
+    return this.orderDetails?.order.status === 'cancelled';
+  }
+
+  /** A COD order can be cancelled by the customer until it is dispatched. */
+  canCancelOrder(): boolean {
+    const o = this.orderDetails?.order;
+    return !!o && o.paymentMethod === 'COD' && ['pending', 'confirmed', 'processing'].includes(o.status);
+  }
+
+  onCancelOrder(): void {
+    if (!this.orderNumber || !this.guestToken || this.isCancelling) return;
+    this.isCancelling = true;
+    this.cancelErrorMessage = '';
+    this.checkoutService.cancelCodOrder(this.orderNumber, this.guestToken).subscribe({
+      next: () => {
+        this.isCancelling = false;
+        this.showCancelConfirm = false;
+        this.loadOrderData();
+      },
+      error: (err) => {
+        this.isCancelling = false;
+        this.showCancelConfirm = false;
+        this.cancelErrorMessage = err.error?.message || 'We could not cancel this order. Please contact support on WhatsApp.';
+        this.loadOrderData();
+      }
+    });
+  }
+
   onRetryPayment(): void {
     if (!this.orderNumber || !this.guestToken || this.isRetrying) {
       return;
@@ -182,6 +216,10 @@ export class OrderConfirmationComponent implements OnInit {
   getStatusBadgeClass(): string {
     if (!this.orderDetails) return 'badge-neutral';
 
+    if (this.isCancelled()) {
+      return 'badge-danger';
+    }
+
     // 1. Exceptions and Ambiguous states get warning badges
     if (this.isStockShortage() || this.isDuplicatePaymentSettled() || this.isAmbiguousTimeout()) {
       return 'badge-warning';
@@ -206,6 +244,10 @@ export class OrderConfirmationComponent implements OnInit {
   getStatusDisplayTitle(): string {
     if (!this.orderDetails) return 'Order Status';
     const order = this.orderDetails.order;
+
+    if (this.isCancelled()) {
+      return 'Order Cancelled';
+    }
 
     // Precedence 1: Stock Shortage Exception
     if (this.isStockShortage()) {
@@ -243,6 +285,12 @@ export class OrderConfirmationComponent implements OnInit {
   getStatusMessage(): string {
     if (!this.orderDetails) return '';
     const order = this.orderDetails.order;
+
+    if (this.isCancelled()) {
+      return order.paymentMethod === 'COD'
+        ? 'This order has been cancelled. Nothing was charged. You can place a new order any time.'
+        : 'This order has been cancelled. If you were charged, the amount will be refunded.';
+    }
 
     // Precedence 1: Stock shortage message
     if (this.isStockShortage()) {

@@ -1,4 +1,5 @@
 
+import { StoreInfoService } from '../shared/store-info.service';
 import { DOCUMENT, CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
@@ -28,6 +29,7 @@ export class ProductDetailComponent implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
   private readonly titleService = inject(Title);
+  readonly fssai = inject(StoreInfoService).fssaiLicenseNumber;
   private readonly metaService = inject(Meta);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);

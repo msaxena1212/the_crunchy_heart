@@ -211,7 +211,7 @@ export async function logoutCustomer(token) {
 export async function getCustomerOrders(customerId, phone) {
     const cleanPhone = phone ? normalizePhone(phone) : null;
     const res = await query(
-        `SELECT o.id, o.order_number, o.status, o.payment_status,
+        `SELECT o.id, o.order_number, o.status, o.payment_status, o.payment_method,
                 o.subtotal, o.shipping_amount, o.discount_amount, o.total_amount,
                 o.shipping_address, o.created_at,
                 COALESCE(

@@ -10,6 +10,8 @@ import {
     getCoupons,
     getCustomers,
     getIntegrations,
+    getBusinessSettingsCtl,
+    putBusinessSettings,
     getSocialDrafts,
     postSocialDraft,
     putSocialDraft,
@@ -43,6 +45,8 @@ router.get('/catalogue/inventory', getInventory);
 router.get('/catalogue/coupons', getCoupons);
 router.get('/customers', getCustomers);
 router.get('/integrations', getIntegrations);
+router.get('/settings/business', getBusinessSettingsCtl);
+router.put('/settings/business', putBusinessSettings);
 
 router.get('/social/drafts', getSocialDrafts);
 router.post('/social/drafts', postSocialDraft);

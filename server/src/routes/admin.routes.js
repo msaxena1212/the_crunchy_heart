@@ -10,6 +10,7 @@ import {
     getOrdersAdmin,
     getOrderAdmin,
     dispatchOrderAdmin,
+    cancelOrderAdmin,
     getPendingRefundsAdmin,
 } from '../controllers/admin.controller.js';
 
@@ -28,6 +29,7 @@ router.get('/auth/me', getMeAdmin);
 router.get('/orders', getOrdersAdmin);
 router.get('/orders/:orderNumber', getOrderAdmin);
 router.post('/orders/:orderNumber/dispatch', dispatchOrderAdmin);
+router.post('/orders/:orderNumber/cancel', cancelOrderAdmin);
 
 // Refund exception reviews (read-only)
 router.get('/refunds/pending', getPendingRefundsAdmin);

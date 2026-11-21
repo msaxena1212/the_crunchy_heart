@@ -3,6 +3,7 @@ import { Router } from 'express';
 import {
     createCheckoutOrder,
     retryOrderPayment,
+    cancelOrderByGuest,
     getOrderDetails,
     requestOrderRecoveryController,
     verifyOrderRecoveryController,
@@ -30,6 +31,11 @@ router.post(
 router.get(
     '/:orderNumber',
     getOrderDetails
+);
+
+router.post(
+    '/:orderNumber/cancel',
+    cancelOrderByGuest
 );
 
 router.post(

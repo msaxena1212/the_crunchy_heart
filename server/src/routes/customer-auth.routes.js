@@ -5,7 +5,8 @@ import {
     getMeController,
     getOrdersController,
     updateProfileController,
-    logoutController
+    logoutController,
+    cancelOrderController
 } from '../controllers/customer-auth.controller.js';
 
 const router = Router();
@@ -16,5 +17,6 @@ router.get('/me', getMeController);
 router.get('/orders', getOrdersController);
 router.put('/profile', updateProfileController);
 router.post('/logout', logoutController);
+router.post('/orders/:orderNumber/cancel', cancelOrderController);
 
 export default router;

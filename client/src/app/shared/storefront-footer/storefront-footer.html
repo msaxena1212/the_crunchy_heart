@@ -110,7 +110,7 @@
         href="https://wa.me/918800537383?text=Hi,%20I%20want%20to%20know%20about%20your%20products"
         target="_blank"
         rel="noopener noreferrer"
-        style="display:inline-flex;align-items:center;gap:6px;color:#128c7e;font-weight:600;margin-top:4px;">
+        style="display:inline-flex;align-items:center;gap:6px;color:#7fe3b4;font-weight:600;margin-top:4px;">
         WhatsApp Support (+91 88005 37383) ↗
       </a>
 
@@ -132,7 +132,6 @@
       <a routerLink="/policy/terms">Terms of Service</a>
       <a routerLink="/policy/shipping">Shipping &amp; Delivery</a>
       <a routerLink="/policy/refunds">Returns &amp; Refund Policy</a>
-      <a routerLink="/" fragment="faqs">FSSAI License: 10424000000001</a>
     </nav>
 
   </div>
@@ -154,16 +153,18 @@
       <span>100% Satvik · Zero Palm Oil</span>
     </div>
 
-    <div>
-      <span aria-hidden="true">♥</span>
-      <span>FSSAI Lic. 10424000000001</span>
-    </div>
+    @if (fssai()) {
+      <div>
+        <span aria-hidden="true">♥</span>
+        <span>FSSAI Lic. {{ fssai() }}</span>
+      </div>
+    }
   </div>
 
   <!-- COPYRIGHT AND BACK TO TOP -->
   <div class="footer-bottom">
     <p>
-      © {{ currentYear }} The Crunchy Heart. All rights reserved. · FSSAI Lic. No. 10424000000001
+      © {{ currentYear }} The Crunchy Heart. All rights reserved.@if (fssai()) { · FSSAI Lic. No. {{ fssai() }} }
     </p>
 
     <p class="footer-bottom-love">

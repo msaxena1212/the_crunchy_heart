@@ -1433,7 +1433,7 @@ ALTER TABLE products
   ADD COLUMN IF NOT EXISTS ingredients text,
   ADD COLUMN IF NOT EXISTS allergen_info text,
   ADD COLUMN IF NOT EXISTS storage_instructions text,
-  ADD COLUMN IF NOT EXISTS fssai_license_number varchar(32) DEFAULT '10424000000001',
+  ADD COLUMN IF NOT EXISTS fssai_license_number varchar(32),
   ADD COLUMN IF NOT EXISTS shelf_life_days integer DEFAULT 180,
   ADD COLUMN IF NOT EXISTS publication_status varchar(30) NOT NULL DEFAULT 'active';
 
@@ -1572,3 +1572,7 @@ ALTER TABLE orders
 CREATE INDEX IF NOT EXISTS idx_orders_hold_expiry
     ON orders(status, payment_status, hold_expires_at)
     WHERE hold_expires_at IS NOT NULL AND hold_released_at IS NULL;
+-- The FSSAI licence number is now managed in Admin > Settings. Remove the placeholder
+-- value that older seeds wrote on every product so it is never shown to customers.
+UPDATE products SET fssai_license_number = NULL WHERE fssai_license_number = '10424000000001';
+ALTER TABLE products ALTER COLUMN fssai_license_number DROP DEFAULT;

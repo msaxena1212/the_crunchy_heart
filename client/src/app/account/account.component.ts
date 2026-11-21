@@ -82,6 +82,8 @@ import { CustomerAuthService, CustomerOrder, CustomerUser } from '../shared/cust
             </div>
 
             <!-- ORDERS GRID / LIST -->
+            <p *ngIf="orderActionError" class="order-action-error" role="alert">{{ orderActionError }}</p>
+
             <div *ngIf="!isLoadingOrders && orders.length > 0" class="orders-list">
               <article *ngFor="let order of orders" class="order-card">
                 <div class="order-card-header">
@@ -121,6 +123,11 @@ import { CustomerAuthService, CustomerOrder, CustomerUser } from '../shared/cust
                     <span>Total Amount:</span>
                     <strong>₹{{ order.total_amount }}</strong>
                   </div>
+                  <button *ngIf="canCancel(order)" type="button" class="cancel-link"
+                          [disabled]="cancellingOrder === order.order_number"
+                          (click)="cancelOrder(order)">
+                    {{ cancellingOrder === order.order_number ? 'Cancelling...' : 'Cancel order' }}
+                  </button>
                   <a [routerLink]="['/orders', order.order_number]" class="track-link">
                     View Details & Tracking →
                   </a>
@@ -560,6 +567,20 @@ import { CustomerAuthService, CustomerOrder, CustomerUser } from '../shared/cust
       color: #1e392a;
     }
 
+    .order-action-error { color: #b42318; background: #fdecea; border-radius: 10px; padding: 10px 14px; }
+
+    .cancel-link {
+      background: none;
+      border: 1.5px solid #b42318;
+      color: #b42318;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .cancel-link:disabled { opacity: .6; cursor: not-allowed; }
+
     .track-link {
       font-size: 13.5px;
       font-weight: 600;
@@ -726,6 +747,27 @@ export class AccountComponent implements OnInit {
 
   openLogin(): void {
     this.customerAuthService.openLoginModal('/account');
+  }
+
+  cancellingOrder: string | null = null;
+  orderActionError = '';
+
+  canCancel(order: CustomerOrder): boolean {
+    return order.payment_method === 'COD' && ['pending', 'confirmed', 'processing'].includes((order.status || '').toLowerCase());
+  }
+
+  cancelOrder(order: CustomerOrder): void {
+    if (this.cancellingOrder) return;
+    if (!confirm(`Cancel order ${order.order_number}? This cannot be undone.`)) return;
+    this.cancellingOrder = order.order_number;
+    this.customerAuthService.cancelOrder(order.order_number).subscribe({
+      next: () => { this.cancellingOrder = null; this.loadOrders(); },
+      error: (err) => {
+        this.cancellingOrder = null;
+        this.orderActionError = err.error?.message || 'Could not cancel this order.';
+        this.loadOrders();
+      },
+    });
   }
 
   loadOrders(): void {

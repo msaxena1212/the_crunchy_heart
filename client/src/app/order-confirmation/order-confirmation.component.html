@@ -52,8 +52,9 @@
       <div class="status-banner" [ngClass]="getStatusBadgeClass()">
         <div class="banner-icon-wrap">
           <span *ngIf="isStockShortage() || isDuplicatePaymentSettled()">⚠</span>
-          <span *ngIf="!isStockShortage() && !isDuplicatePaymentSettled() && (orderDetails.order.status === 'confirmed' || orderDetails.order.paymentStatus === 'paid')">✓</span>
+          <span *ngIf="!isStockShortage() && !isDuplicatePaymentSettled() && !isCancelled() && (orderDetails.order.status === 'confirmed' || orderDetails.order.paymentStatus === 'paid')">✓</span>
           <span *ngIf="isAmbiguousTimeout() || (!isStockShortage() && orderDetails.order.status === 'pending')">⏳</span>
+          <span *ngIf="isCancelled()">✕</span>
           <span *ngIf="orderDetails.order.status === 'failed' || orderDetails.order.paymentStatus === 'failed'">✕</span>
         </div>
         <div class="banner-text">
@@ -61,6 +62,11 @@
           <h1>{{ getStatusDisplayTitle() }}</h1>
           <p class="status-narrative">{{ getStatusMessage() }}</p>
         </div>
+      </div>
+
+      <div *ngIf="cancelErrorMessage" class="alert-box alert-error" role="alert">
+        <span>⚠</span>
+        <div>{{ cancelErrorMessage }}</div>
       </div>
 
       <!-- RETRY ERROR ALERT -->
@@ -204,6 +210,22 @@
               </button>
             </div>
 
+            <!-- CANCEL COD ORDER (until dispatched) -->
+            <div *ngIf="canCancelOrder()" class="cancel-wrap">
+              <button *ngIf="!showCancelConfirm" type="button" class="secondary-btn cancel-order-btn" (click)="showCancelConfirm = true">
+                Cancel this order
+              </button>
+              <div *ngIf="showCancelConfirm" class="cancel-confirm" role="alertdialog" aria-live="polite">
+                <p>Cancel order <strong>{{ orderDetails.order.orderNumber }}</strong>? You can cancel until it is dispatched.</p>
+                <div class="cancel-confirm-actions">
+                  <button type="button" class="secondary-btn" [disabled]="isCancelling" (click)="showCancelConfirm = false">Keep order</button>
+                  <button type="button" class="primary-btn danger-btn" [disabled]="isCancelling" (click)="onCancelOrder()">
+                    {{ isCancelling ? 'Cancelling...' : 'Yes, cancel' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- RESTORE CART BUTTON (IF RECOVERY SNAPSHOT EXISTS) -->
             <div *ngIf="hasCartRecovery()" class="restore-cart-section">
               <button
@@ -232,6 +254,8 @@
             <a routerLink="/account" class="secondary-btn account-view-btn" style="margin-top: 6px; text-align: center; text-decoration: none;">
               👤 View My Orders in Account
             </a>
+
+            <p class="privacy-footnote" *ngIf="fssai()">FSSAI Lic. No. {{ fssai() }}</p>
 
             <p class="privacy-footnote">
               🔒 Session authorized via order-bound token.

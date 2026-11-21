@@ -33,6 +33,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     ],
   },
   { title: 'Customers', items: [{ label: 'Customers', path: '/admin/customers' }] },
+  { title: 'Store', items: [{ label: 'Settings', path: '/admin/settings' }] },
   {
     title: 'Marketing',
     items: [

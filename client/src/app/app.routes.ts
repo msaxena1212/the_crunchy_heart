@@ -155,6 +155,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./admin/analytics/admin-analytics.component').then(m => m.AdminAnalyticsComponent)
             },
             {
+                path: 'settings',
+                loadComponent: () => import('./admin/settings/admin-settings.component').then(m => m.AdminSettingsComponent)
+            },
+            {
                 path: 'social',
                 loadComponent: () => import('./admin/social/admin-social.component').then(m => m.AdminSocialComponent)
             },

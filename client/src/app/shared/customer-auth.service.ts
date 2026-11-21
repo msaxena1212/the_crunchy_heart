@@ -1,3 +1,4 @@
+import { getApiBaseUrl } from '../product.service';
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -25,6 +26,7 @@ export interface CustomerOrder {
   order_number: string;
   status: string;
   payment_status: string;
+  payment_method?: string;
   subtotal: number;
   shipping_amount: number;
   discount_amount: number;
@@ -75,7 +77,7 @@ export class CustomerAuthService {
   }
 
   requestOtp(phone: string, channel: 'sms' | 'whatsapp' = 'sms'): Observable<{ success: boolean; message?: string }> {
-    return this.http.post<{ success: boolean; message?: string }>('/api/auth/customer/otp/request', {
+    return this.http.post<{ success: boolean; message?: string }>(`${getApiBaseUrl()}/auth/customer/otp/request`, {
       phone,
       channel,
       purpose: 'LOGIN'
@@ -83,7 +85,7 @@ export class CustomerAuthService {
   }
 
   verifyOtp(phone: string, otp: string): Observable<{ success: boolean; customer: CustomerUser; token: string }> {
-    return this.http.post<{ success: boolean; customer: CustomerUser; token: string }>('/api/auth/customer/otp/verify', {
+    return this.http.post<{ success: boolean; customer: CustomerUser; token: string }>(`${getApiBaseUrl()}/auth/customer/otp/verify`, {
       phone,
       otp: String(otp).trim()
     }, { withCredentials: true }).pipe(
@@ -102,12 +104,13 @@ export class CustomerAuthService {
   fetchProfile(): Observable<CustomerUser | null> {
     const token = this.getToken();
     const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
-    return this.http.get<{ success: boolean; customer: CustomerUser }>('/api/auth/customer/me', { headers, withCredentials: true }).pipe(
+    return this.http.get<{ success: boolean; customer: CustomerUser }>(`${getApiBaseUrl()}/auth/customer/me`, { headers, withCredentials: true }).pipe(
       map(res => {
         if (res.success && res.customer) {
           this.customerSubject.next(res.customer);
           return res.customer;
         }
+        this.customerSubject.next(null);
         return null;
       }),
       catchError(() => {
@@ -121,7 +124,7 @@ export class CustomerAuthService {
   updateProfile(name: string, email: string): Observable<CustomerUser> {
     const token = this.getToken();
     const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
-    return this.http.put<{ success: boolean; customer: CustomerUser }>('/api/auth/customer/profile', { name, email }, { headers, withCredentials: true }).pipe(
+    return this.http.put<{ success: boolean; customer: CustomerUser }>(`${getApiBaseUrl()}/auth/customer/profile`, { name, email }, { headers, withCredentials: true }).pipe(
       map(res => {
         this.customerSubject.next(res.customer);
         return res.customer;
@@ -129,10 +132,17 @@ export class CustomerAuthService {
     );
   }
 
+  cancelOrder(orderNumber: string): Observable<{ success: boolean; message: string }> {
+    const token = this.getToken();
+    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
+    return this.http.post<{ success: boolean; message: string }>(
+      `${getApiBaseUrl()}/auth/customer/orders/${encodeURIComponent(orderNumber)}/cancel`, {}, { headers, withCredentials: true });
+  }
+
   getOrders(): Observable<CustomerOrder[]> {
     const token = this.getToken();
     const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
-    return this.http.get<{ success: boolean; orders: CustomerOrder[] }>('/api/auth/customer/orders', { headers, withCredentials: true }).pipe(
+    return this.http.get<{ success: boolean; orders: CustomerOrder[] }>(`${getApiBaseUrl()}/auth/customer/orders`, { headers, withCredentials: true }).pipe(
       map(res => res.orders || []),
       catchError(() => of([]))
     );
@@ -141,7 +151,7 @@ export class CustomerAuthService {
   logout(): void {
     const token = this.getToken();
     const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
-    this.http.post('/api/auth/customer/logout', {}, { headers, withCredentials: true }).subscribe();
+    this.http.post(`${getApiBaseUrl()}/auth/customer/logout`, {}, { headers, withCredentials: true }).subscribe();
     this.clearToken();
     this.customerSubject.next(null);
   }

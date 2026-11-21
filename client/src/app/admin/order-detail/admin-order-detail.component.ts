@@ -1,12 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminService, AdminOrderDetailResponse } from '../admin.service';
 
 @Component({
   selector: 'app-admin-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './admin-order-detail.component.html',
   styleUrls: ['./admin-order-detail.component.css']
 })
@@ -23,6 +24,9 @@ export class AdminOrderDetailComponent implements OnInit {
   actionMessage = '';
   actionError = '';
   showDispatchConfirm = false;
+  showCancelConfirm = false;
+  isCancelling = false;
+  cancelReason = '';
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -103,6 +107,43 @@ export class AdminOrderDetailComponent implements OnInit {
         } else {
           this.actionError = err.error?.error?.message || 'Failed to dispatch order. Stock deduction was safely rolled back.';
         }
+      }
+    });
+  }
+
+  /** A COD order can be cancelled until it is dispatched. */
+  get canCancel(): boolean {
+    const o = this.detail?.order;
+    return !!o && o.paymentMethod === 'COD' && ['pending', 'confirmed', 'processing'].includes((o.status || '').toLowerCase());
+  }
+
+  promptCancel(): void {
+    this.actionError = '';
+    this.actionMessage = '';
+    this.cancelReason = '';
+    this.showCancelConfirm = true;
+  }
+
+  dismissCancel(): void {
+    this.showCancelConfirm = false;
+  }
+
+  confirmCancel(): void {
+    if (this.isCancelling || !this.canCancel) return;
+    this.isCancelling = true;
+    this.adminService.cancelCodOrder(this.orderNumber, this.cancelReason.trim()).subscribe({
+      next: () => {
+        this.isCancelling = false;
+        this.showCancelConfirm = false;
+        this.loadOrderDetail(this.orderNumber);
+        this.actionMessage = `Order ${this.orderNumber} was cancelled and its stock released.`;
+      },
+      error: (err) => {
+        this.isCancelling = false;
+        this.showCancelConfirm = false;
+        const message = err.error?.message || err.error?.error?.message || 'Could not cancel the order.';
+        this.loadOrderDetail(this.orderNumber);
+        this.actionError = message;
       }
     });
   }

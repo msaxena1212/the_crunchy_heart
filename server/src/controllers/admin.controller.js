@@ -1,3 +1,4 @@
+import { cancelCodOrder } from '../services/order-cancellation.service.js';
 import { query } from '../db/pool.js';
 import {
     verifyPassword,
@@ -362,6 +363,23 @@ export async function getPendingRefundsAdmin(req, res, next) {
             success: true,
             ...result,
         });
+    } catch (error) {
+        next(error);
+    }
+}
+
+/**
+ * Cancel a COD order (admin) - allowed until the order is dispatched.
+ */
+export async function cancelOrderAdmin(req, res, next) {
+    try {
+        const { orderNumber } = req.params;
+        const result = await cancelCodOrder({
+            orderNumber,
+            actor: 'admin',
+            reason: req.body?.reason,
+        });
+        return res.json({ success: true, message: `Order ${orderNumber} has been cancelled.`, ...result });
     } catch (error) {
         next(error);
     }

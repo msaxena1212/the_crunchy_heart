@@ -1,3 +1,4 @@
+import { getBusinessSettings, updateBusinessSettings } from '../services/store-settings.service.js';
 import {
     dashboardSummary,
     listProducts,
@@ -39,6 +40,8 @@ export const putVariant = handler(req => updateAdminVariant({ actor: actorOf(req
 export const getInventory = handler(req => listInventory({ actor: actorOf(req), lowStockOnly: req.query?.lowStock === 'true', limit: req.query?.limit }));
 export const getCoupons = handler(req => listCoupons({ actor: actorOf(req), limit: req.query?.limit }));
 export const getCustomers = handler(req => listCustomers({ actor: actorOf(req), search: req.query?.search, limit: req.query?.limit }));
+export const getBusinessSettingsCtl = handler(() => getBusinessSettings());
+export const putBusinessSettings = handler(req => updateBusinessSettings({ fssaiLicenseNumber: req.body?.fssaiLicenseNumber }));
 export const getIntegrations = handler(req => integrationsStatus({ actor: actorOf(req) }));
 export const getSocialDrafts = handler(req => listSocialDrafts({ actor: actorOf(req), platform: req.query?.platform }));
 export const postSocialDraft = handler(req => createSocialDraft({ actor: actorOf(req), input: req.body || {} }));

@@ -9,6 +9,7 @@ import customerAuthRoutes from './routes/customer-auth.routes.js';
 import { cashfreeWebhook } from './controllers/payment.controller.js';
 import { securityHeadersMiddleware, createIpRateLimiter } from './middleware/security.js';
 import { query } from './db/pool.js';
+import { getPublicStoreInfo } from './services/store-settings.service.js';
 import { env } from './config/env.js';
 import { startConfiguredWorkers, stopAllWorkers } from './services/worker-bootstrap.js';
 import { createGracefulShutdown, parseDrainTimeoutMs } from './services/graceful-shutdown.js';
@@ -131,6 +132,15 @@ app.use((req, res, next) => {
 |--------------------------------------------------------------------------
 */
 
+app.get('/api/store-info', async (req, res, next) => {
+  try {
+    res.setHeader('Cache-Control', 'public, max-age=60');
+    res.json({ success: true, ...(await getPublicStoreInfo()) });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.get('/api/health', async (req, res) => {
   try {
     await query('SELECT 1');
@@ -184,7 +194,9 @@ app.use('/api/checkout', checkoutRateLimiter, checkoutRoutes);
 app.use('/api/orders', ordersRateLimiter, orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/auth/customer', customerAuthRateLimiter, customerAuthRoutes);
+// Only OTP send/verify is brute-forceable; session checks (/me), orders and cancel are not limited here.
+app.use('/api/auth/customer/otp', customerAuthRateLimiter);
+app.use('/api/auth/customer', customerAuthRoutes);
 
 /*
 |--------------------------------------------------------------------------

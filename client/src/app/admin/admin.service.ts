@@ -533,6 +533,24 @@ export class AdminService {
     );
   }
 
+  cancelCodOrder(orderNumber: string, reason?: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.api}/orders/${encodeURIComponent(orderNumber)}/cancel`,
+      { reason: reason || undefined },
+      { withCredentials: true, headers: this.getCsrfHeaders() }
+    );
+  }
+
+  getBusinessSettings(): Observable<{ success: boolean; fssaiLicenseNumber: string | null }> {
+    return this.http.get<{ success: boolean; fssaiLicenseNumber: string | null }>(
+      `${this.api}/settings/business`, { withCredentials: true });
+  }
+
+  saveBusinessSettings(fssaiLicenseNumber: string): Observable<{ success: boolean; fssaiLicenseNumber: string | null }> {
+    return this.http.put<{ success: boolean; fssaiLicenseNumber: string | null }>(
+      `${this.api}/settings/business`, { fssaiLicenseNumber }, { withCredentials: true, headers: this.getCsrfHeaders() });
+  }
+
   dispatchCodOrder(orderNumber: string): Observable<any> {
     const headers = this.getCsrfHeaders();
     return this.http.post<any>(

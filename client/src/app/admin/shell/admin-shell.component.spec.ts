@@ -29,7 +29,7 @@ describe('AdminShellComponent navigation', () => {
     ]) {
       expect(paths).toContain(expected);
     }
-    expect(ADMIN_NAV.map(g => g.title)).toEqual(['Overview', 'Sales', 'Catalogue', 'Customers', 'Marketing']);
+    expect(ADMIN_NAV.map(g => g.title)).toEqual(['Overview', 'Sales', 'Catalogue', 'Customers', 'Store', 'Marketing']);
   });
 
   it('renders the navigation in the sidebar, not in a top bar', () => {
@@ -39,7 +39,7 @@ describe('AdminShellComponent navigation', () => {
     const sidebar = el.querySelector('aside.sidebar');
     expect(sidebar).not.toBeNull();
     const links = Array.from(sidebar!.querySelectorAll('a.nav-link')).map(a => a.textContent?.trim());
-    expect(links).toEqual(expect.arrayContaining(['Dashboard', 'Orders', 'Payments', 'Refund reviews', 'Products', 'Social media']));
+    expect(links).toEqual(expect.arrayContaining(['Dashboard', 'Orders', 'Payments', 'Refund reviews', 'Products', 'Settings', 'Social media']));
     expect(el.querySelector('header.admin-navbar')).toBeNull();
   });
 

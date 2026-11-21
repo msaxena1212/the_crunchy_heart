@@ -395,3 +395,5 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+.footer-fssai { display: block; color: inherit; opacity: .85; font-size: .9rem; }

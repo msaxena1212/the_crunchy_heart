@@ -571,3 +571,10 @@
   margin: 8px 0 0 0;
   font-weight: 500;
 }
+
+.cancel-wrap { margin: 12px 0; }
+.cancel-order-btn { width: 100%; color: #b42318; border-color: #b42318; }
+.cancel-confirm { background: #fdecea; border: 1px solid #f5c2bd; border-radius: 12px; padding: 14px; font-size: .95rem; }
+.cancel-confirm p { margin: 0 0 12px; }
+.cancel-confirm-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.danger-btn { background: #b42318 !important; border-color: #b42318 !important; }

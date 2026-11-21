@@ -1,3 +1,4 @@
+import { cancelCodOrder } from '../services/order-cancellation.service.js';
 import {
     ATTEMPT_LEASE_MS,
     createOrder,
@@ -902,6 +903,34 @@ export async function verifyOrderRecoveryController(req, res, next) {
         return res.json({ success: true, order: result.order, guestAccessToken: result.guestAccessToken });
     } catch (error) {
         await holdMinimumDuration(startedAt);
+        next(error);
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Customer cancels a COD order (guest access token) until it is dispatched
+|--------------------------------------------------------------------------
+*/
+export async function cancelOrderByGuest(req, res, next) {
+    try {
+        const { orderNumber } = req.params;
+        const authHeader = req.headers.authorization;
+        const bearerToken =
+            typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
+                ? authHeader.slice(7).trim()
+                : null;
+        const token = req.headers['x-guest-access-token'] || bearerToken || null;
+
+        const result = await cancelCodOrder({
+            orderNumber,
+            actor: 'customer',
+            reason: req.body?.reason,
+            authorize: (order) =>
+                verifyGuestAccessToken({ token, orderNumber: order.order_number, order }).valid,
+        });
+        return res.json({ success: true, message: 'Your order has been cancelled.', ...result });
+    } catch (error) {
         next(error);
     }
 }

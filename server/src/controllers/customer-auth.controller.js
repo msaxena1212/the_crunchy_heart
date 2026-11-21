@@ -6,6 +6,8 @@ import {
     getCustomerOrders,
     updateCustomerProfile
 } from '../services/customer-auth.service.js';
+import { cancelCodOrder } from '../services/order-cancellation.service.js';
+import { normalizePhone } from '../services/customer-auth.service.js';
 import { parseCookies } from '../middleware/admin-auth.js';
 
 const CUSTOMER_COOKIE_NAME = 'tch_customer_session';
@@ -97,16 +99,17 @@ export async function verifyOtpController(req, res, next) {
 
 export async function getMeController(req, res, next) {
     try {
+        // Anonymous visitors are normal: answer 200 with no customer so the browser console stays clean.
         const token = extractCustomerToken(req);
 
         if (!token) {
-            return res.status(401).json({ success: false, message: 'Unauthorized' });
+            return res.json({ success: true, customer: null });
         }
 
         const customer = await getSessionCustomer(token);
         if (!customer) {
             clearCustomerSessionCookie(res);
-            return res.status(401).json({ success: false, message: 'Session expired or invalid.' });
+            return res.json({ success: true, customer: null });
         }
 
         return res.json({ success: true, customer });
@@ -165,6 +168,31 @@ export async function logoutController(req, res, next) {
         }
         clearCustomerSessionCookie(res);
         return res.json({ success: true, message: 'Logged out successfully.' });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function cancelOrderController(req, res, next) {
+    try {
+        const token = extractCustomerToken(req);
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        const customer = await getSessionCustomer(token);
+        if (!customer) {
+            clearCustomerSessionCookie(res);
+            return res.status(401).json({ success: false, message: 'Session expired or invalid.' });
+        }
+        const myPhone = customer.phone ? normalizePhone(customer.phone) : null;
+        const result = await cancelCodOrder({
+            orderNumber: req.params.orderNumber,
+            actor: 'customer',
+            reason: req.body?.reason,
+            authorize: (order) =>
+                order.customer_id === customer.id || (myPhone && order.phone === myPhone),
+        });
+        return res.json({ success: true, message: 'Your order has been cancelled.', ...result });
     } catch (error) {
         next(error);
     }

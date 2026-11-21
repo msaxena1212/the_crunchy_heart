@@ -444,7 +444,7 @@ export async function seedMasterCatalogue() {
                 ADD COLUMN IF NOT EXISTS ingredients text,
                 ADD COLUMN IF NOT EXISTS allergen_info text,
                 ADD COLUMN IF NOT EXISTS storage_instructions text,
-                ADD COLUMN IF NOT EXISTS fssai_license_number varchar(32) DEFAULT '10424000000001',
+                ADD COLUMN IF NOT EXISTS fssai_license_number varchar(32),
                 ADD COLUMN IF NOT EXISTS shelf_life_days integer DEFAULT 180,
                 ADD COLUMN IF NOT EXISTS publication_status varchar(30) NOT NULL DEFAULT 'active';
 

@@ -401,6 +401,11 @@ export class CheckoutService {
     return this.http.post<RecoveryVerifyResponse>(`${this.api}/orders/recovery/verify`, { email, code });
   }
 
+  cancelCodOrder(orderNumber: string, guestToken: string, reason?: string): Observable<any> {
+    const headers = new HttpHeaders({ 'x-guest-access-token': guestToken });
+    return this.http.post<any>(`${this.api}/orders/${encodeURIComponent(orderNumber)}/cancel`, { reason }, { headers });
+  }
+
   retryPayment(orderNumber: string, guestToken: string, idempotencyKey?: string): Observable<any> {
     let headers = new HttpHeaders({
       'x-guest-access-token': guestToken
