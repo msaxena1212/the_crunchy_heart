@@ -14,6 +14,8 @@ import {
     postSocialDraft,
     putSocialDraft,
     postPublishSocialDraft,
+    getExportCatalogueCsv,
+    postImportCatalogueCsv,
 } from '../controllers/admin-modules.controller.js';
 
 /*
@@ -30,6 +32,8 @@ router.use((req, res, next) => {
 });
 
 router.get('/dashboard', getDashboard);
+router.get('/catalogue/export', getExportCatalogueCsv);
+router.post('/catalogue/import', postImportCatalogueCsv);
 router.get('/catalogue/products', getProducts);
 router.get('/catalogue/products/:productId', getProduct);
 router.put('/catalogue/products/:productId', putProduct);

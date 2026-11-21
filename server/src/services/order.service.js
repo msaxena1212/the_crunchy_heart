@@ -1295,6 +1295,15 @@ export async function createOrder({
             }
 
 
+            // Online orders hold their stock for a limited window; the expiry sweep releases
+            // the reservation and cancels the order if payment never arrives.
+            if (normalizedPaymentMethod === 'ONLINE') {
+                await client.query(
+                    `UPDATE orders SET hold_expires_at = NOW() + INTERVAL '15 minutes', hold_released_at = NULL WHERE id = $1`,
+                    [order.id]
+                );
+            }
+
             /*
             |--------------------------------------------------------------------------
             | Payment provider

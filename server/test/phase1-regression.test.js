@@ -449,9 +449,10 @@ describe('Phase 1 Core Order, Payment & Inventory Correctness Suite', () => {
     // ----------------------------------------------------------------------
     test('7. Concurrent payments competing for the last unit produce exactly one stock settlement', async () => {
         // Exactly 1 unit in stock
-        const variant = await createFixtureVariant({ stock: 1, reserved: 0 });
+        // Two units reserved by two orders; one unit then disappears (e.g. damaged stock)
+        const variant = await createFixtureVariant({ stock: 2, reserved: 0 });
 
-        // Order A and Order B both placed online (zero reservation policy)
+        // Order A and Order B both placed online (each reserves its unit)
         const orderA = await createOrder({
             customer: sampleCustomer(),
             shippingAddress: sampleAddress(),
@@ -464,6 +465,8 @@ describe('Phase 1 Core Order, Payment & Inventory Correctness Suite', () => {
             items: [{ variantId: variant.id, quantity: 1 }],
             paymentMethod: 'ONLINE',
         });
+
+        await query('UPDATE inventory SET quantity_on_hand = 1, quantity_reserved = 0 WHERE variant_id = $1', [variant.id]);
 
         const cfOrderA = 'CF_CONC_A_' + Math.random().toString(36).substring(2, 8);
         const cfOrderB = 'CF_CONC_B_' + Math.random().toString(36).substring(2, 8);
@@ -532,7 +535,7 @@ describe('Phase 1 Core Order, Payment & Inventory Correctness Suite', () => {
         });
 
         // Manually exhaust stock before payment webhook arrives
-        await query('UPDATE inventory SET quantity_on_hand = 0 WHERE variant_id = $1', [variant.id]);
+        await query('UPDATE inventory SET quantity_on_hand = 0, quantity_reserved = 0 WHERE variant_id = $1', [variant.id]);
 
         const settlement = await markPaymentSuccess({
             providerOrderId: cfOrderId,
@@ -707,13 +710,13 @@ describe('Phase 1 Core Order, Payment & Inventory Correctness Suite', () => {
             paymentMethod: 'ONLINE',
         });
 
-        // Checkout must NOT increase quantity_reserved (zero-reservation policy)
+        // Checkout reserves the ordered units (1 existing + 2 new)
         const invAfterCheckout = await query(
             'SELECT quantity_on_hand, quantity_reserved FROM inventory WHERE variant_id = $1',
             [variant.id]
         );
         assert.equal(Number(invAfterCheckout.rows[0].quantity_on_hand), 5);
-        assert.equal(Number(invAfterCheckout.rows[0].quantity_reserved), 1); // UNCHANGED!
+        assert.equal(Number(invAfterCheckout.rows[0].quantity_reserved), 3);
 
         // 2. Online order paid successfully
         const cfOrderId = 'CF_RES_TEST_' + Math.random().toString(36).substring(2, 8);
@@ -728,13 +731,13 @@ describe('Phase 1 Core Order, Payment & Inventory Correctness Suite', () => {
             paymentCurrency: 'INR',
         });
 
-        // Stock deducted from 5 to 3. But the existing reservation MUST REMAIN 1!
+        // Stock deducted from 5 to 3; the order's 2 reserved units are consumed, the old 1 remains
         const invAfterPayment = await query(
             'SELECT quantity_on_hand, quantity_reserved FROM inventory WHERE variant_id = $1',
             [variant.id]
         );
         assert.equal(Number(invAfterPayment.rows[0].quantity_on_hand), 3);
-        assert.equal(Number(invAfterPayment.rows[0].quantity_reserved), 1); // STILL EXACTLY 1!
+        assert.equal(Number(invAfterPayment.rows[0].quantity_reserved), 1);
 
         // Available quantity is now 3 - 1 = 2.
         const invMap = await getInventoryForVariants([variant.id]);
@@ -755,6 +758,6 @@ describe('Phase 1 Core Order, Payment & Inventory Correctness Suite', () => {
             [variant.id]
         );
         assert.equal(Number(invAfterCod.rows[0].quantity_on_hand), 3);
-        assert.equal(Number(invAfterCod.rows[0].quantity_reserved), 1); // REMAINS 1!
+        assert.equal(Number(invAfterCod.rows[0].quantity_reserved), 2); // COD reserves its unit until dispatch
     });
 });

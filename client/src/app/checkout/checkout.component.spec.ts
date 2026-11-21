@@ -1,5 +1,7 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Subject, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CartService } from '../cart.service';
@@ -67,6 +69,8 @@ describe('CheckoutComponent idempotency keys', () => {
       imports: [CheckoutComponent],
       providers: [
         provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: CheckoutService, useValue: checkout },
         { provide: CartService, useValue: cart },
       ],

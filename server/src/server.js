@@ -7,6 +7,7 @@ import paymentRoutes from './routes/payment.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import customerAuthRoutes from './routes/customer-auth.routes.js';
 import { cashfreeWebhook } from './controllers/payment.controller.js';
+import { securityHeadersMiddleware, createIpRateLimiter } from './middleware/security.js';
 import { query } from './db/pool.js';
 import { env } from './config/env.js';
 import { startConfiguredWorkers, stopAllWorkers } from './services/worker-bootstrap.js';
@@ -40,11 +41,13 @@ const app = express();
 | ignores X-Forwarded-For). Strictly rejects blind true.
 */
 app.set('trust proxy', env.trustProxy);
+app.use(securityHeadersMiddleware);
 
 const allowedOrigins = Array.from(new Set([
   CLIENT_URL,
   'https://thecrunchyheart.com',
   'https://www.thecrunchyheart.com',
+  'https://staging.thecrunchyheart.com',
   'http://localhost:4200',
   'http://127.0.0.1:4200',
 ].filter(Boolean)));
@@ -152,15 +155,96 @@ app.get('/api/health', async (req, res) => {
 
 /*
 |--------------------------------------------------------------------------
-| Checkout, Orders and Payments
+| Checkout, Orders and Payments (with IP Rate Limiting)
 |--------------------------------------------------------------------------
 */
 
-app.use('/api/checkout', checkoutRoutes);
-app.use('/api/orders', orderRoutes);
+const checkoutRateLimiter = createIpRateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 40,
+  code: 'CHECKOUT_RATE_LIMIT',
+  message: 'Too many checkout requests. Please wait a moment and try again.',
+});
+
+const ordersRateLimiter = createIpRateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 30,
+  code: 'ORDER_RATE_LIMIT',
+  message: 'Too many order requests. Please wait a moment and try again.',
+});
+
+const customerAuthRateLimiter = createIpRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 30,
+  code: 'AUTH_RATE_LIMIT',
+  message: 'Too many authentication attempts from this IP. Please try again in 15 minutes.',
+});
+
+app.use('/api/checkout', checkoutRateLimiter, checkoutRoutes);
+app.use('/api/orders', ordersRateLimiter, orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/auth/customer', customerAuthRoutes);
+app.use('/api/auth/customer', customerAuthRateLimiter, customerAuthRoutes);
+
+/*
+|--------------------------------------------------------------------------
+| Dynamic Sitemap XML (SEO / Google Merchant & Search Console)
+|--------------------------------------------------------------------------
+*/
+
+async function buildDynamicSitemapXml(baseUrl) {
+  const cleanBase = (baseUrl || 'https://thecrunchyheart.com').replace(/\/+$/, '');
+  const nowIso = new Date().toISOString().split('T')[0];
+
+  const [catRes, prodRes] = await Promise.all([
+    query(`SELECT slug, updated_at FROM categories WHERE is_active = true ORDER BY sort_order ASC`),
+    query(`SELECT slug, updated_at FROM products WHERE is_active = true ORDER BY sort_order ASC, name ASC`),
+  ]);
+
+  const staticRoutes = [
+    { loc: `${cleanBase}/`, priority: '1.0', changefreq: 'daily' },
+    { loc: `${cleanBase}/shop`, priority: '0.9', changefreq: 'daily' },
+    { loc: `${cleanBase}/gifting`, priority: '0.8', changefreq: 'weekly' },
+    { loc: `${cleanBase}/bulk`, priority: '0.8', changefreq: 'weekly' },
+  ];
+
+  const urls = [];
+  for (const s of staticRoutes) {
+    urls.push(
+      `  <url>\n    <loc>${s.loc}</loc>\n    <lastmod>${nowIso}</lastmod>\n    <changefreq>${s.changefreq}</changefreq>\n    <priority>${s.priority}</priority>\n  </url>`
+    );
+  }
+
+  for (const c of catRes.rows) {
+    const lastmod = c.updated_at ? new Date(c.updated_at).toISOString().split('T')[0] : nowIso;
+    urls.push(
+      `  <url>\n    <loc>${cleanBase}/category/${encodeURIComponent(c.slug)}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`
+    );
+  }
+
+  for (const p of prodRes.rows) {
+    const lastmod = p.updated_at ? new Date(p.updated_at).toISOString().split('T')[0] : nowIso;
+    urls.push(
+      `  <url>\n    <loc>${cleanBase}/product/${encodeURIComponent(p.slug)}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`
+    );
+  }
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;
+}
+
+app.get(['/api/sitemap.xml', '/sitemap.xml'], async (req, res, next) => {
+  try {
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'thecrunchyheart.com';
+    const baseUrl = `${proto}://${host}`;
+    const xml = await buildDynamicSitemapXml(baseUrl);
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.send(xml);
+  } catch (error) {
+    next(error);
+  }
+});
 
 /*
 |--------------------------------------------------------------------------

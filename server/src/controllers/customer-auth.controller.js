@@ -6,6 +6,55 @@ import {
     getCustomerOrders,
     updateCustomerProfile
 } from '../services/customer-auth.service.js';
+import { parseCookies } from '../middleware/admin-auth.js';
+
+const CUSTOMER_COOKIE_NAME = 'tch_customer_session';
+const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
+
+function extractCustomerToken(req) {
+    const cookies = req.cookies || parseCookies(req.headers.cookie);
+    if (cookies && cookies[CUSTOMER_COOKIE_NAME]) {
+        return cookies[CUSTOMER_COOKIE_NAME];
+    }
+    const authHeader = req.headers.authorization || '';
+    if (authHeader.startsWith('Bearer ')) {
+        const bearer = authHeader.slice(7).trim();
+        if (bearer && bearer !== 'null' && bearer !== 'undefined') {
+            return bearer;
+        }
+    }
+    return null;
+}
+
+function setCustomerSessionCookie(res, token) {
+    const isSecure = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging' || (process.env.CLIENT_URL || '').startsWith('https://');
+    const parts = [
+        `${CUSTOMER_COOKIE_NAME}=${encodeURIComponent(token)}`,
+        'Path=/',
+        'HttpOnly',
+        'SameSite=Lax',
+        `Max-Age=${SESSION_MAX_AGE_SECONDS}`,
+    ];
+    if (isSecure) {
+        parts.push('Secure');
+    }
+    res.setHeader('Set-Cookie', parts.join('; '));
+}
+
+function clearCustomerSessionCookie(res) {
+    const isSecure = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging' || (process.env.CLIENT_URL || '').startsWith('https://');
+    const parts = [
+        `${CUSTOMER_COOKIE_NAME}=`,
+        'Path=/',
+        'HttpOnly',
+        'SameSite=Lax',
+        'Max-Age=0',
+    ];
+    if (isSecure) {
+        parts.push('Secure');
+    }
+    res.setHeader('Set-Cookie', parts.join('; '));
+}
 
 export async function requestOtpController(req, res, next) {
     try {
@@ -23,7 +72,7 @@ export async function requestOtpController(req, res, next) {
 export async function verifyOtpController(req, res, next) {
     try {
         const { phone, otp } = req.body;
-        const ipAddress = req.ip || req.connection.remoteAddress;
+        const ipAddress = req.ip || req.connection?.remoteAddress;
         const userAgent = req.headers['user-agent'] || '';
 
         const result = await verifyCustomerOtp({
@@ -32,6 +81,10 @@ export async function verifyOtpController(req, res, next) {
             ipAddress,
             userAgent
         });
+
+        if (result?.success && result?.token) {
+            setCustomerSessionCookie(res, result.token);
+        }
 
         return res.json(result);
     } catch (error) {
@@ -44,8 +97,7 @@ export async function verifyOtpController(req, res, next) {
 
 export async function getMeController(req, res, next) {
     try {
-        const authHeader = req.headers.authorization || '';
-        const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+        const token = extractCustomerToken(req);
 
         if (!token) {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -53,6 +105,7 @@ export async function getMeController(req, res, next) {
 
         const customer = await getSessionCustomer(token);
         if (!customer) {
+            clearCustomerSessionCookie(res);
             return res.status(401).json({ success: false, message: 'Session expired or invalid.' });
         }
 
@@ -64,8 +117,7 @@ export async function getMeController(req, res, next) {
 
 export async function getOrdersController(req, res, next) {
     try {
-        const authHeader = req.headers.authorization || '';
-        const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+        const token = extractCustomerToken(req);
 
         if (!token) {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -73,6 +125,7 @@ export async function getOrdersController(req, res, next) {
 
         const customer = await getSessionCustomer(token);
         if (!customer) {
+            clearCustomerSessionCookie(res);
             return res.status(401).json({ success: false, message: 'Session expired or invalid.' });
         }
 
@@ -85,8 +138,7 @@ export async function getOrdersController(req, res, next) {
 
 export async function updateProfileController(req, res, next) {
     try {
-        const authHeader = req.headers.authorization || '';
-        const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+        const token = extractCustomerToken(req);
 
         if (!token) {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -94,6 +146,7 @@ export async function updateProfileController(req, res, next) {
 
         const customer = await getSessionCustomer(token);
         if (!customer) {
+            clearCustomerSessionCookie(res);
             return res.status(401).json({ success: false, message: 'Session expired or invalid.' });
         }
 
@@ -106,11 +159,11 @@ export async function updateProfileController(req, res, next) {
 
 export async function logoutController(req, res, next) {
     try {
-        const authHeader = req.headers.authorization || '';
-        const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+        const token = extractCustomerToken(req);
         if (token) {
             await logoutCustomer(token);
         }
+        clearCustomerSessionCookie(res);
         return res.json({ success: true, message: 'Logged out successfully.' });
     } catch (error) {
         next(error);

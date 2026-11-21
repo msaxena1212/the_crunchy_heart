@@ -209,6 +209,7 @@ export interface AdminProduct {
   imageUrl: string | null;
   isActive: boolean;
   isFeatured: boolean;
+  publicationStatus?: string;
   variantCount: number;
   /** Lowest active pack price, or null when there is none. */
   fromPrice: number | null;
@@ -223,6 +224,7 @@ export interface AdminVariant {
   weightGrams: number | null;
   mrp: number;
   sellingPrice: number;
+  costPrice?: number;
   taxRate: number;
   badge: string | null;
   isActive: boolean;
@@ -232,6 +234,19 @@ export interface AdminVariant {
   reorderLevel: number;
   /** Price per kg implied by this pack, for weight-based packs. */
   pricePerKg: number | null;
+}
+
+export interface AdminSupplierBenchmark {
+  id: string;
+  variantId: string;
+  sku: string;
+  variantName: string;
+  quotedPrice: number;
+  unitBasis: string;
+  effectiveDate: string;
+  verificationStatus: string;
+  notes: string | null;
+  supplierName: string;
 }
 
 export interface AdminProductDetail {
@@ -247,6 +262,14 @@ export interface AdminProductDetail {
   imageUrl: string | null;
   isActive: boolean;
   isFeatured: boolean;
+  publicationStatus?: string;
+  variety?: string | null;
+  grade?: string | null;
+  origin?: string | null;
+  productForm?: string | null;
+  heatLevel?: string | null;
+  hsnCode?: string | null;
+  fssaiLicenseNumber?: string | null;
   updatedAt: string;
 }
 
@@ -254,6 +277,7 @@ export interface AdminProductDetailResponse {
   success: boolean;
   product: AdminProductDetail;
   variants: AdminVariant[];
+  supplierHistory?: AdminSupplierBenchmark[];
 }
 
 export interface AdminProductInput {
@@ -263,15 +287,33 @@ export interface AdminProductInput {
   isActive: boolean;
   isFeatured: boolean;
   imageUrl: string | null;
+  publicationStatus?: string;
+  variety?: string | null;
+  grade?: string | null;
+  origin?: string | null;
+  productForm?: string | null;
+  heatLevel?: string | null;
+  hsnCode?: string | null;
+  fssaiLicenseNumber?: string | null;
 }
 
 export interface AdminVariantInput {
   sellingPrice: number;
   mrp: number;
+  costPrice?: number;
   isActive: boolean;
   badge: string;
   quantityOnHand: number;
   reorderLevel: number;
+}
+
+export interface AdminCatalogueImportResult {
+  success: boolean;
+  dryRun: boolean;
+  validRowsCount?: number;
+  updatedCount?: number;
+  skippedCount?: number;
+  errors: Array<{ row: number; sku?: string; message: string }>;
 }
 
 export interface AdminProductsResponse { success: boolean; products: AdminProduct[]; }
@@ -553,6 +595,21 @@ export class AdminService {
     return this.http.put<AdminProductDetailResponse>(
       `${this.api}/catalogue/variants/${encodeURIComponent(variantId)}`,
       input,
+      { withCredentials: true, headers: this.getCsrfHeaders() }
+    );
+  }
+
+  exportCatalogueCsv(): Observable<string> {
+    return this.http.get(`${this.api}/catalogue/export`, {
+      withCredentials: true,
+      responseType: 'text',
+    });
+  }
+
+  importCatalogueCsv(csvText: string, dryRun = false): Observable<AdminCatalogueImportResult> {
+    return this.http.post<AdminCatalogueImportResult>(
+      `${this.api}/catalogue/import`,
+      { csvText, dryRun },
       { withCredentials: true, headers: this.getCsrfHeaders() }
     );
   }

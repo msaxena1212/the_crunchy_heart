@@ -1334,7 +1334,7 @@ describe('Phase 3.3: Minimum Secure Owner Operations Test Suite', () => {
                 INSERT INTO refunds (
                     order_id, payment_id, amount, reason, status, provider_refund_id, created_at, updated_at
                 )
-                VALUES ($1, $2, 199.42, 'Resolved refund', 'refunded', 'cf_ref_completed_123', NOW(), NOW())
+                VALUES ($1, $2, 199.42, 'Resolved refund', 'refunded', 'cf_ref_completed_' || gen_random_uuid(), NOW(), NOW())
                 `,
                 [order.id, paymentId]
             );

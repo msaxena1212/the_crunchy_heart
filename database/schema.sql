@@ -1387,3 +1387,188 @@ CREATE TABLE IF NOT EXISTS social_post_drafts (
 
 CREATE INDEX IF NOT EXISTS ix_social_post_drafts_platform_updated
     ON social_post_drafts (platform, updated_at DESC);
+
+
+-- ============================================================
+-- Catalogue expansion, customer auth/OTP and inventory holds
+-- (consolidated from migrations so a fresh install is complete)
+-- ============================================================
+-- ==============================================================================
+-- THE CRUNCHY HEART
+-- Migration 010: Catalogue Expansion Schema (Additive Domain Model Extensions)
+--
+-- Strictly additive and non-destructive.
+-- 1. Creates `subcategories` table if not already present.
+-- 2. Adds metadata columns to `products` (variety, grade, origin, form, heat level, FSSAI, publication status).
+-- 3. Adds SKU attributes to `product_variants` (hsn_code, barcode_gtin, batch_number, pack_type).
+-- 4. Creates isolated procurement tables: `suppliers` and `supplier_price_history`.
+-- ==============================================================================
+
+BEGIN;
+
+-- 1. Subcategories table
+CREATE TABLE IF NOT EXISTS subcategories (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  category_id uuid NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+  name varchar(150) NOT NULL,
+  slug varchar(180) NOT NULL,
+  description text,
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_subcategories_slug ON subcategories(slug);
+CREATE INDEX IF NOT EXISTS idx_subcategories_category ON subcategories(category_id, sort_order);
+
+-- 2. Additive columns to products
+ALTER TABLE products 
+  ADD COLUMN IF NOT EXISTS subcategory_id uuid REFERENCES subcategories(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS variety varchar(100),
+  ADD COLUMN IF NOT EXISTS grade varchar(100),
+  ADD COLUMN IF NOT EXISTS origin varchar(150),
+  ADD COLUMN IF NOT EXISTS product_form varchar(50) DEFAULT 'standard',
+  ADD COLUMN IF NOT EXISTS heat_level varchar(50),
+  ADD COLUMN IF NOT EXISTS ingredients text,
+  ADD COLUMN IF NOT EXISTS allergen_info text,
+  ADD COLUMN IF NOT EXISTS storage_instructions text,
+  ADD COLUMN IF NOT EXISTS fssai_license_number varchar(32) DEFAULT '10424000000001',
+  ADD COLUMN IF NOT EXISTS shelf_life_days integer DEFAULT 180,
+  ADD COLUMN IF NOT EXISTS publication_status varchar(30) NOT NULL DEFAULT 'active';
+
+CREATE INDEX IF NOT EXISTS idx_products_publication_status ON products(publication_status);
+CREATE INDEX IF NOT EXISTS idx_products_subcategory ON products(subcategory_id);
+
+-- 3. Additive columns to product_variants
+ALTER TABLE product_variants
+  ADD COLUMN IF NOT EXISTS hsn_code varchar(16) DEFAULT '19041090',
+  ADD COLUMN IF NOT EXISTS barcode_gtin varchar(32),
+  ADD COLUMN IF NOT EXISTS batch_number varchar(64),
+  ADD COLUMN IF NOT EXISTS pack_type varchar(50) DEFAULT 'pouch';
+
+CREATE INDEX IF NOT EXISTS idx_product_variants_weight ON product_variants(weight_grams);
+
+-- 4. Supplier procurement tracking tables (isolated internal cost ledger)
+CREATE TABLE IF NOT EXISTS suppliers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name varchar(200) NOT NULL,
+  contact_person varchar(150),
+  phone varchar(32),
+  email varchar(150),
+  city varchar(100),
+  state varchar(100),
+  gstin varchar(32),
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS supplier_price_history (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  variant_id uuid NOT NULL REFERENCES product_variants(id) ON DELETE CASCADE,
+  supplier_id uuid REFERENCES suppliers(id) ON DELETE SET NULL,
+  rate numeric(12, 2) NOT NULL,
+  unit varchar(32) NOT NULL DEFAULT 'kg',
+  is_pending_confirmation boolean NOT NULL DEFAULT true,
+  notes text,
+  effective_date date NOT NULL DEFAULT CURRENT_DATE,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_supplier_history_variant ON supplier_price_history(variant_id);
+
+COMMIT;
+
+-- Migration: Add customer OTP and session tables for Neon Auth & Mobile OTP
+-- Supports both Neon Auth Managed Better Auth identity and Mobile SMS/WhatsApp OTP login
+
+CREATE TABLE IF NOT EXISTS customer_otps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    phone VARCHAR(30) NOT NULL,
+    otp_hash VARCHAR(128) NOT NULL,
+    purpose VARCHAR(30) NOT NULL DEFAULT 'LOGIN', -- LOGIN, CHECKOUT, RECOVERY
+    attempts INTEGER NOT NULL DEFAULT 0,
+    max_attempts INTEGER NOT NULL DEFAULT 3,
+    channel VARCHAR(20) NOT NULL DEFAULT 'sms', -- sms, whatsapp
+    expires_at TIMESTAMPTZ NOT NULL,
+    consumed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_customer_otps_active
+    ON customer_otps(phone, expires_at)
+    WHERE consumed_at IS NULL;
+
+CREATE TABLE IF NOT EXISTS customer_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+    session_token VARCHAR(255) NOT NULL UNIQUE,
+    neon_auth_user_id VARCHAR(255),
+    auth_provider VARCHAR(50) NOT NULL DEFAULT 'phone_otp', -- phone_otp, neon_auth, whatsapp_otp
+    ip_address VARCHAR(50),
+    user_agent TEXT,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_customer_sessions_token
+    ON customer_sessions(session_token, expires_at);
+
+CREATE INDEX IF NOT EXISTS idx_customer_sessions_customer
+    ON customer_sessions(customer_id);
+
+-- Migration: Add inventory holds and expiration
+-- Allows reserving checkout cart inventory for 15 minutes with auto-expiry
+
+CREATE TABLE IF NOT EXISTS inventory_holds (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id VARCHAR(255) NOT NULL,
+    order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE', -- ACTIVE, EXPIRED, RELEASED, CONVERTED
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_holds_active_expiry
+    ON inventory_holds(status, expires_at)
+    WHERE status = 'ACTIVE';
+
+CREATE INDEX IF NOT EXISTS idx_inventory_holds_order
+    ON inventory_holds(order_id);
+
+CREATE TABLE IF NOT EXISTS inventory_hold_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    hold_id UUID NOT NULL REFERENCES inventory_holds(id) ON DELETE CASCADE,
+    variant_id UUID NOT NULL REFERENCES product_variants(id) ON DELETE RESTRICT,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(hold_id, variant_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_inventory_hold_items_hold
+    ON inventory_hold_items(hold_id);
+
+
+-- Mobile OTP challenges (also created lazily by otp.service.js)
+CREATE TABLE IF NOT EXISTS customer_otp_challenges (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    phone VARCHAR(30) NOT NULL,
+    channel VARCHAR(20) NOT NULL DEFAULT 'sms',
+    code_hash VARCHAR(64) NOT NULL,
+    attempts INT NOT NULL DEFAULT 0,
+    max_attempts INT NOT NULL DEFAULT 5,
+    expires_at TIMESTAMPTZ NOT NULL,
+    consumed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_customer_otp_phone_created ON customer_otp_challenges(phone, created_at DESC);
+-- Online orders hold stock for 15 minutes; the sweep releases unpaid ones.
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS hold_expires_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS hold_released_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_orders_hold_expiry
+    ON orders(status, payment_status, hold_expires_at)
+    WHERE hold_expires_at IS NOT NULL AND hold_released_at IS NULL;

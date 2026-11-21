@@ -24,7 +24,7 @@ const schemaPath = path.resolve(serverRoot, '..', 'database', 'schema.sql');
 const migrationDir = path.resolve(serverRoot, '..', 'database', 'migrations');
 
 // Words and system catalogs that look like table references in SQL-bearing text.
-const NON_TABLE_TOKENS = new Set([
+const NON_TABLE_TOKENS = new Set(['heritage', 'rajasthan', 'morning', 'haveri', 'high', 'smallholder', 'of', 'skip', 
     'the', 'last', 'this', 'cancelled', 'cli', 'order', 'cashfree', 'reconciliation', 'environment',
     'allowlisted', 'free', 're', 'ever', 'await', 'to', 'const', 'manual', 'terminal', 'select',
     'where', 'set', 'values', 'dual', 'lateral', 'unnest', 'information_schema', 'pg_indexes',

@@ -18,8 +18,23 @@ const ssl = sslCaPath
     ? { ca: fs.readFileSync(sslCaPath, 'utf8'), rejectUnauthorized: true }
     : undefined;
 
+/**
+ * Normalizes sslmode=require to uselibpqcompat=true&sslmode=require (or verify-full)
+ * to silence pg-connection-string v2 deprecation warnings on Node 22+ while maintaining TLS.
+ */
+function normalizeSslConnectionString(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== 'string') return rawUrl;
+    if (
+        rawUrl.includes('sslmode=require') &&
+        !rawUrl.includes('uselibpqcompat=')
+    ) {
+        return rawUrl.replace('sslmode=require', 'uselibpqcompat=true&sslmode=require');
+    }
+    return rawUrl;
+}
+
 export const pool = new pg.Pool({
-    connectionString: env.databaseUrl,
+    connectionString: normalizeSslConnectionString(env.databaseUrl),
     ...(ssl ? { ssl } : {}),
 });
 

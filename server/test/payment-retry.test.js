@@ -526,7 +526,7 @@ describe('Phase 2B: Safe Cashfree Payment Retry Suite', () => {
         });
 
         // Exhaust stock by another customer before retry
-        await query('UPDATE inventory SET quantity_on_hand = 1 WHERE variant_id = $1', [variant.id]);
+        await query('UPDATE inventory SET quantity_on_hand = 1, quantity_reserved = 0 WHERE variant_id = $1', [variant.id]);
 
         const guestToken = generateGuestAccessToken(orderRes.order);
         const initialCallCount = mockCashfreeCallCount;

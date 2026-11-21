@@ -57,6 +57,46 @@
                  placeholder="assets/products/premium-almond.webp" />
         </label>
 
+        <div class="edit-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-top: 0.5rem;">
+          <label class="field">
+            <span>Publication status</span>
+            <select [(ngModel)]="form.publicationStatus">
+              <option value="draft">Draft (Quarantined)</option>
+              <option value="ready">Ready for Review</option>
+              <option value="active">Active (Live)</option>
+              <option value="archived">Archived</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Variety / Botanical</span>
+            <input type="text" [(ngModel)]="form.variety" maxlength="120" placeholder="e.g. Mamra, Sannam S4" />
+          </label>
+          <label class="field">
+            <span>Grade / Size</span>
+            <input type="text" [(ngModel)]="form.grade" maxlength="80" placeholder="e.g. W180, 8mm+ Bold" />
+          </label>
+          <label class="field">
+            <span>Origin / Region</span>
+            <input type="text" [(ngModel)]="form.origin" maxlength="120" placeholder="e.g. Mithila (Bihar), Kashmir" />
+          </label>
+          <label class="field">
+            <span>Product Form</span>
+            <input type="text" [(ngModel)]="form.productForm" maxlength="60" placeholder="e.g. Whole, Ground, Roasted" />
+          </label>
+          <label class="field">
+            <span>Heat Level <small>(spices)</small></span>
+            <input type="text" [(ngModel)]="form.heatLevel" maxlength="40" placeholder="e.g. Mild, Medium, Hot" />
+          </label>
+          <label class="field">
+            <span>HSN Code</span>
+            <input type="text" [(ngModel)]="form.hsnCode" maxlength="20" placeholder="e.g. 080132, 090421" />
+          </label>
+          <label class="field">
+            <span>FSSAI License Number</span>
+            <input type="text" [(ngModel)]="form.fssaiLicenseNumber" maxlength="30" placeholder="14-digit FSSAI No." />
+          </label>
+        </div>
+
         <div class="toggles">
           <label class="check"><input type="checkbox" [(ngModel)]="form.isActive" /> Visible on the storefront</label>
           <label class="check"><input type="checkbox" [(ngModel)]="form.isFeatured" /> Featured</label>
@@ -115,6 +155,7 @@
           <th>Pack</th>
           <th>Price (₹)</th>
           <th>MRP (₹)</th>
+          <th>Cost (₹)</th>
           <th>Stock</th>
           <th>Reorder at</th>
           <th>Badge</th>
@@ -131,6 +172,7 @@
           </td>
           <td data-label="Price (₹)"><input class="num" type="number" min="0" step="1" [(ngModel)]="r.sellingPrice" [attr.aria-label]="'Price for ' + r.name" /></td>
           <td data-label="MRP (₹)"><input class="num" type="number" min="0" step="1" [(ngModel)]="r.mrp" [attr.aria-label]="'MRP for ' + r.name" /></td>
+          <td data-label="Cost (₹)"><input class="num" type="number" min="0" step="1" [(ngModel)]="r.costPrice" [attr.aria-label]="'Supplier cost for ' + r.name" /></td>
           <td data-label="Stock">
             <input class="num" type="number" min="0" step="1" [(ngModel)]="r.onHand" [attr.aria-label]="'Stock for ' + r.name" />
             <small>{{ r.reserved }} reserved · {{ rowAvailable(r) }} available</small>
@@ -149,7 +191,34 @@
     </table>
 
     <p class="muted packs-note">
-      Prices include GST. Set MRP to 0 to hide the strike-through price. Stock cannot be set below the units reserved for open orders.
+      Prices include GST. Cost (₹) is private to the admin console and never exposed on the storefront. Set MRP to 0 to hide the strike-through price.
     </p>
+  </section>
+
+  <!-- SUPPLIER PROCUREMENT COST BENCHMARKS -->
+  <section class="card table-card edit-card" *ngIf="supplierHistory.length" aria-labelledby="supplier-heading">
+    <h2 id="supplier-heading" class="section-title packs-title">Supplier Procurement Cost Benchmarks (Private)</h2>
+    <table class="data-table packs-table">
+      <thead>
+        <tr>
+          <th>Pack / SKU</th>
+          <th>Supplier</th>
+          <th>Quoted Cost (₹)</th>
+          <th>Unit Basis</th>
+          <th>Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of supplierHistory">
+          <td><strong>{{ s.variantName }}</strong> <code>{{ s.sku }}</code></td>
+          <td>{{ s.supplierName }}</td>
+          <td><strong>₹{{ s.quotedPrice | number:'1.0-2' }}</strong></td>
+          <td>{{ s.unitBasis }}</td>
+          <td><span class="badge">{{ s.verificationStatus }}</span></td>
+          <td>{{ s.notes || '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </ng-container>

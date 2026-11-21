@@ -6,6 +6,7 @@ import {
   AdminProductDetail,
   AdminProductDetailResponse,
   AdminService,
+  AdminSupplierBenchmark,
   AdminVariant
 } from '../admin.service';
 
@@ -19,6 +20,7 @@ interface VariantRow {
   taxRate: number;
   sellingPrice: number;
   mrp: number;
+  costPrice: number;
   isActive: boolean;
   badge: string;
   onHand: number;
@@ -44,9 +46,25 @@ export class AdminProductEditComponent implements OnInit {
   productId = '';
   product: AdminProductDetail | null = null;
   rows: VariantRow[] = [];
+  supplierHistory: AdminSupplierBenchmark[] = [];
 
   /** Product form (a copy, saved explicitly). */
-  form = { name: '', shortDescription: '', description: '', isActive: true, isFeatured: false, imageUrl: '' };
+  form = {
+    name: '',
+    shortDescription: '',
+    description: '',
+    isActive: true,
+    isFeatured: false,
+    imageUrl: '',
+    publicationStatus: 'active',
+    variety: '',
+    grade: '',
+    origin: '',
+    productForm: '',
+    heatLevel: '',
+    hsnCode: '',
+    fssaiLicenseNumber: ''
+  };
 
   isLoading = true;
   loadError = '';
@@ -83,13 +101,22 @@ export class AdminProductEditComponent implements OnInit {
 
   private apply(res: AdminProductDetailResponse): void {
     this.product = res.product;
+    this.supplierHistory = res.supplierHistory ?? [];
     this.form = {
       name: res.product.name,
       shortDescription: res.product.shortDescription ?? '',
       description: res.product.description ?? '',
       isActive: res.product.isActive,
       isFeatured: res.product.isFeatured,
-      imageUrl: res.product.imageUrl ?? ''
+      imageUrl: res.product.imageUrl ?? '',
+      publicationStatus: res.product.publicationStatus ?? (res.product.isActive ? 'active' : 'draft'),
+      variety: res.product.variety ?? '',
+      grade: res.product.grade ?? '',
+      origin: res.product.origin ?? '',
+      productForm: res.product.productForm ?? '',
+      heatLevel: res.product.heatLevel ?? '',
+      hsnCode: res.product.hsnCode ?? '',
+      fssaiLicenseNumber: res.product.fssaiLicenseNumber ?? ''
     };
     this.imageBroken = false;
     this.rows = res.variants.map(v => this.toRow(v));
@@ -109,6 +136,7 @@ export class AdminProductEditComponent implements OnInit {
       taxRate: v.taxRate,
       sellingPrice: v.sellingPrice,
       mrp: v.mrp,
+      costPrice: v.costPrice ?? 0,
       isActive: v.isActive,
       badge: v.badge ?? '',
       onHand: v.onHand,
@@ -123,7 +151,7 @@ export class AdminProductEditComponent implements OnInit {
   }
 
   private snapshot(r: VariantRow): string {
-    return JSON.stringify([r.sellingPrice, r.mrp, r.isActive, r.badge, r.onHand, r.reorderLevel]);
+    return JSON.stringify([r.sellingPrice, r.mrp, r.costPrice, r.isActive, r.badge, r.onHand, r.reorderLevel]);
   }
 
   private onLoadError(err: { status?: number; error?: { message?: string } }): void {
@@ -147,7 +175,15 @@ export class AdminProductEditComponent implements OnInit {
       this.form.description !== (this.product.description ?? '') ||
       this.form.isActive !== this.product.isActive ||
       this.form.isFeatured !== this.product.isFeatured ||
-      this.form.imageUrl !== (this.product.imageUrl ?? '')
+      this.form.imageUrl !== (this.product.imageUrl ?? '') ||
+      this.form.publicationStatus !== (this.product.publicationStatus ?? (this.product.isActive ? 'active' : 'draft')) ||
+      this.form.variety !== (this.product.variety ?? '') ||
+      this.form.grade !== (this.product.grade ?? '') ||
+      this.form.origin !== (this.product.origin ?? '') ||
+      this.form.productForm !== (this.product.productForm ?? '') ||
+      this.form.heatLevel !== (this.product.heatLevel ?? '') ||
+      this.form.hsnCode !== (this.product.hsnCode ?? '') ||
+      this.form.fssaiLicenseNumber !== (this.product.fssaiLicenseNumber ?? '')
     );
   }
 
@@ -168,7 +204,15 @@ export class AdminProductEditComponent implements OnInit {
         description: this.form.description,
         isActive: this.form.isActive,
         isFeatured: this.form.isFeatured,
-        imageUrl: this.form.imageUrl.trim() ? this.form.imageUrl.trim() : null
+        imageUrl: this.form.imageUrl.trim() ? this.form.imageUrl.trim() : null,
+        publicationStatus: this.form.publicationStatus,
+        variety: this.form.variety.trim() || null,
+        grade: this.form.grade.trim() || null,
+        origin: this.form.origin.trim() || null,
+        productForm: this.form.productForm.trim() || null,
+        heatLevel: this.form.heatLevel.trim() || null,
+        hsnCode: this.form.hsnCode.trim() || null,
+        fssaiLicenseNumber: this.form.fssaiLicenseNumber.trim() || null
       })
       .subscribe({
         next: res => {
@@ -273,6 +317,7 @@ export class AdminProductEditComponent implements OnInit {
       .updateAdminVariant(r.id, {
         sellingPrice: Number(r.sellingPrice),
         mrp: Number(r.mrp) || 0,
+        costPrice: Number(r.costPrice) || 0,
         isActive: r.isActive,
         badge: r.badge,
         quantityOnHand: Number(r.onHand),
@@ -296,9 +341,10 @@ export class AdminProductEditComponent implements OnInit {
   }
 
   resetRow(r: VariantRow): void {
-    const [price, mrp, active, badge, onHand, reorder] = JSON.parse(r.original);
+    const [price, mrp, cost, active, badge, onHand, reorder] = JSON.parse(r.original);
     r.sellingPrice = price;
     r.mrp = mrp;
+    r.costPrice = cost;
     r.isActive = active;
     r.badge = badge;
     r.onHand = onHand;

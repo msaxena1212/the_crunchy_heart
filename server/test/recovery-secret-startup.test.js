@@ -8,6 +8,8 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
+process.env.DATABASE_URL ||= 'postgresql://postgres:postgres@127.0.0.1:5432/crunchy_heart_test';
+process.env.NODE_ENV ||= 'test';
 const { validateSecrets, MINIMUM_SECRET_LENGTH } = await import('../src/config/env.js');
 
 const ORDER = 'startup_order_token_secret_minimum_32_chars_aaaa';

@@ -50,10 +50,7 @@ export class CustomerAuthService {
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
-      const token = this.getToken();
-      if (token) {
-        this.fetchProfile().subscribe();
-      }
+      this.fetchProfile().subscribe();
     }
   }
 
@@ -62,7 +59,7 @@ export class CustomerAuthService {
   }
 
   get isLoggedIn(): boolean {
-    return !!this.customerSubject.value && !!this.getToken();
+    return !!this.customerSubject.value;
   }
 
   get currentCustomer(): CustomerUser | null {
@@ -82,17 +79,19 @@ export class CustomerAuthService {
       phone,
       channel,
       purpose: 'LOGIN'
-    });
+    }, { withCredentials: true });
   }
 
   verifyOtp(phone: string, otp: string): Observable<{ success: boolean; customer: CustomerUser; token: string }> {
     return this.http.post<{ success: boolean; customer: CustomerUser; token: string }>('/api/auth/customer/otp/verify', {
       phone,
       otp: String(otp).trim()
-    }).pipe(
+    }, { withCredentials: true }).pipe(
       tap(res => {
-        if (res.success && res.token) {
-          this.saveToken(res.token);
+        if (res.success) {
+          if (res.token) {
+            this.saveToken(res.token);
+          }
           this.customerSubject.next(res.customer);
           this.closeLoginModal();
         }
@@ -102,13 +101,8 @@ export class CustomerAuthService {
 
   fetchProfile(): Observable<CustomerUser | null> {
     const token = this.getToken();
-    if (!token) {
-      this.customerSubject.next(null);
-      return of(null);
-    }
-
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get<{ success: boolean; customer: CustomerUser }>('/api/auth/customer/me', { headers }).pipe(
+    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
+    return this.http.get<{ success: boolean; customer: CustomerUser }>('/api/auth/customer/me', { headers, withCredentials: true }).pipe(
       map(res => {
         if (res.success && res.customer) {
           this.customerSubject.next(res.customer);
@@ -126,8 +120,8 @@ export class CustomerAuthService {
 
   updateProfile(name: string, email: string): Observable<CustomerUser> {
     const token = this.getToken();
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.put<{ success: boolean; customer: CustomerUser }>('/api/auth/customer/profile', { name, email }, { headers }).pipe(
+    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
+    return this.http.put<{ success: boolean; customer: CustomerUser }>('/api/auth/customer/profile', { name, email }, { headers, withCredentials: true }).pipe(
       map(res => {
         this.customerSubject.next(res.customer);
         return res.customer;
@@ -137,10 +131,8 @@ export class CustomerAuthService {
 
   getOrders(): Observable<CustomerOrder[]> {
     const token = this.getToken();
-    if (!token) return of([]);
-
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get<{ success: boolean; orders: CustomerOrder[] }>('/api/auth/customer/orders', { headers }).pipe(
+    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
+    return this.http.get<{ success: boolean; orders: CustomerOrder[] }>('/api/auth/customer/orders', { headers, withCredentials: true }).pipe(
       map(res => res.orders || []),
       catchError(() => of([]))
     );
@@ -148,30 +140,28 @@ export class CustomerAuthService {
 
   logout(): void {
     const token = this.getToken();
-    if (token) {
-      const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-      this.http.post('/api/auth/customer/logout', {}, { headers }).subscribe();
-    }
+    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
+    this.http.post('/api/auth/customer/logout', {}, { headers, withCredentials: true }).subscribe();
     this.clearToken();
     this.customerSubject.next(null);
   }
 
   private getToken(): string | null {
     if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem(this.tokenKey);
+      try { return localStorage.getItem(this.tokenKey); } catch { return null; }
     }
     return null;
   }
 
   private saveToken(token: string): void {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.tokenKey, token);
+      try { localStorage.setItem(this.tokenKey, token); } catch { /* storage unavailable */ }
     }
   }
 
   private clearToken(): void {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(this.tokenKey);
+      try { localStorage.removeItem(this.tokenKey); } catch { /* storage unavailable */ }
     }
   }
 }

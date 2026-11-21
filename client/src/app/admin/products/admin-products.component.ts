@@ -23,8 +23,84 @@ export class AdminProductsComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
 
+  /** CSV Import / Export state */
+  exportingCsv = false;
+  showImportModal = false;
+  csvText = '';
+  importingCsv = false;
+  importMessage = '';
+  importError = '';
+  importErrorsList: Array<{ row: number; sku?: string; message: string }> = [];
+
   ngOnInit(): void {
     this.load();
+  }
+
+  exportCsv(): void {
+    this.exportingCsv = true;
+    this.errorMessage = '';
+    this.adminService.exportCatalogueCsv().subscribe({
+      next: csv => {
+        this.exportingCsv = false;
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `the-crunchy-heart-catalogue-${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+      },
+      error: err => {
+        this.exportingCsv = false;
+        this.onError(err);
+      }
+    });
+  }
+
+  toggleImportModal(): void {
+    this.showImportModal = !this.showImportModal;
+    this.importMessage = '';
+    this.importError = '';
+    this.importErrorsList = [];
+  }
+
+  onCsvFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.csvText = String(reader.result || '');
+    };
+    reader.readAsText(file);
+  }
+
+  runCsvImport(dryRun: boolean): void {
+    if (!this.csvText.trim()) {
+      this.importError = 'Please select a CSV file or paste CSV content.';
+      return;
+    }
+    this.importingCsv = true;
+    this.importMessage = '';
+    this.importError = '';
+    this.importErrorsList = [];
+
+    this.adminService.importCatalogueCsv(this.csvText, dryRun).subscribe({
+      next: res => {
+        this.importingCsv = false;
+        this.importErrorsList = res.errors || [];
+        if (dryRun) {
+          this.importMessage = `Dry-run complete: ${res.validRowsCount ?? 0} valid row(s), ${this.importErrorsList.length} warning/error(s).`;
+        } else {
+          this.importMessage = `Import complete: ${res.updatedCount ?? 0} SKU(s) updated.`;
+          this.load();
+        }
+      },
+      error: err => {
+        this.importingCsv = false;
+        this.importError = err?.error?.message || 'CSV import failed.';
+      }
+    });
   }
 
   load(): void {

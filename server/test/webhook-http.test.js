@@ -380,10 +380,10 @@ describe('Phase 1.1: Cashfree Webhook HTTP Integration Suite', () => {
         assert.equal(Number(invCheck.rows[0].quantity_on_hand), 10); // Untouched
 
         const ledgerCheck = await query(
-            `SELECT * FROM inventory_transactions WHERE variant_id = $1`,
+            `SELECT * FROM inventory_transactions WHERE variant_id = $1 AND transaction_type NOT ILIKE '%reserv%'`,
             [variant.id]
         );
-        assert.equal(ledgerCheck.rows.length, 0);
+        assert.equal(ledgerCheck.rows.length, 0); // only the order-time reservation may exist, no deduction
     });
 
     // ----------------------------------------------------------------------

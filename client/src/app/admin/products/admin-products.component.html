@@ -2,10 +2,42 @@
   <div>
     <h1 class="page-title">Products</h1>
     <p class="page-subtitle">
-      Edit prices, stock, images and visibility for every product. Changes go live on the storefront immediately.
+      Edit prices, stock, images, food compliance fields and visibility for every product. Changes go live on the storefront immediately.
     </p>
   </div>
+  <div style="display: flex; gap: 0.5rem; align-items: center;">
+    <button type="button" class="btn" (click)="exportCsv()" [disabled]="exportingCsv">
+      {{ exportingCsv ? 'Exporting…' : '⬇ Export CSV' }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="toggleImportModal()">
+      ⬆ Bulk CSV Import
+    </button>
+  </div>
 </div>
+
+<section class="card" *ngIf="showImportModal" style="margin-bottom: 1.25rem; padding: 1.25rem;">
+  <h2 class="section-title" style="margin-top: 0;">Bulk Catalogue CSV Import (Price, MRP, Cost &amp; Stock)</h2>
+  <p class="muted" style="margin-bottom: 0.75rem;">
+    Upload a CSV file containing <code>sku</code> and any of <code>selling_price</code>, <code>mrp</code>, <code>cost_price</code>, <code>stock_on_hand</code>, <code>publication_status</code>, or <code>hsn_code</code>. Tip: click <strong>Export CSV</strong> first to get the current spreadsheet.
+  </p>
+  <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap;">
+    <input type="file" accept=".csv,text/csv" (change)="onCsvFileSelected($event)" />
+    <button type="button" class="btn" (click)="runCsvImport(true)" [disabled]="importingCsv || !csvText.trim()">
+      {{ importingCsv ? 'Checking…' : '1. Dry-Run Validate' }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="runCsvImport(false)" [disabled]="importingCsv || !csvText.trim()">
+      {{ importingCsv ? 'Applying…' : '2. Apply CSV Updates' }}
+    </button>
+    <button type="button" class="btn" (click)="toggleImportModal()">Close</button>
+  </div>
+  <textarea rows="4" [(ngModel)]="csvText" placeholder="sku,selling_price,mrp,cost_price,stock_on_hand&#10;TCH-DF-MAMRA-250G,950,1150,550,25" style="width: 100%; font-family: monospace; font-size: 0.85rem; padding: 0.5rem;"></textarea>
+
+  <div class="alert-ok" *ngIf="importMessage" role="status" style="margin-top: 0.75rem;">{{ importMessage }}</div>
+  <div class="alert-danger" *ngIf="importError" role="alert" style="margin-top: 0.75rem;">{{ importError }}</div>
+  <ul *ngIf="importErrorsList.length" style="margin-top: 0.5rem; color: #b91c1c; font-size: 0.88rem;">
+    <li *ngFor="let e of importErrorsList">Row {{ e.row }} <code *ngIf="e.sku">({{ e.sku }})</code>: {{ e.message }}</li>
+  </ul>
+</section>
 
 <div class="tabs" role="tablist" aria-label="Category" *ngIf="categories.length > 1">
   <button type="button" role="tab" class="tab" [class.active]="category === ''" [attr.aria-selected]="category === ''" (click)="pickCategory('')">All</button>
@@ -64,7 +96,7 @@
         <td>{{ p.variantCount }}</td>
         <td>{{ p.availableUnits }}</td>
         <td>
-          <span class="badge" [class.badge-ok]="p.isActive" [class.badge-off]="!p.isActive">{{ p.isActive ? 'Active' : 'Hidden' }}</span>
+          <span class="badge" [class.badge-ok]="p.isActive" [class.badge-off]="!p.isActive">{{ p.publicationStatus ? (p.publicationStatus | uppercase) : (p.isActive ? 'ACTIVE' : 'HIDDEN') }}</span>
           <span class="badge badge-ok" *ngIf="p.isFeatured">Featured</span>
         </td>
         <td class="edit-cell"><a [routerLink]="['/admin/products', p.id]" class="btn" (click)="$event.stopPropagation()">Edit</a></td>

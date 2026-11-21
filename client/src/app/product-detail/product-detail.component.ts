@@ -411,16 +411,42 @@ export class ProductDetailComponent implements OnInit {
     if (variant) {
       data['sku'] = variant.sku;
 
-      data['offers'] = {
+      const allVariants = product.variants?.length ? product.variants : [variant];
+      const prices = allVariants
+        .map(v => Number(v.sellingPrice))
+        .filter(p => Number.isFinite(p) && p > 0);
+      const minPrice = prices.length ? Math.min(...prices) : Number(variant.sellingPrice);
+      const maxPrice = prices.length ? Math.max(...prices) : Number(variant.sellingPrice);
+
+      const offersList = allVariants.map(v => ({
         '@type': 'Offer',
+        sku: v.sku,
+        name: `${product.name} - ${v.name}`,
         url: productUrl,
         priceCurrency: 'INR',
-        price: Number(variant.sellingPrice).toFixed(2),
-        availability: available
-          ? 'https://schema.org/InStock'
-          : 'https://schema.org/OutOfStock',
+        price: Number(v.sellingPrice).toFixed(2),
+        availability:
+          (v.inventory?.availableQuantity ?? 0) > 0
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
         itemCondition: 'https://schema.org/NewCondition',
-      };
+      }));
+
+      data['offers'] =
+        allVariants.length > 1
+          ? {
+              '@type': 'AggregateOffer',
+              url: productUrl,
+              priceCurrency: 'INR',
+              lowPrice: minPrice.toFixed(2),
+              highPrice: maxPrice.toFixed(2),
+              offerCount: allVariants.length,
+              availability: available
+                ? 'https://schema.org/InStock'
+                : 'https://schema.org/OutOfStock',
+              offers: offersList,
+            }
+          : offersList[0];
     }
 
     this.upsertProductJsonLd(data);

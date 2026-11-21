@@ -33,6 +33,13 @@ export const routes: Routes = [
     },
 
     {
+        path: 'policy/:type',
+        loadComponent: () =>
+            import('./policy/policy.component')
+                .then(m => m.PolicyComponent)
+    },
+
+    {
         path: 'bulk',
         loadComponent: () =>
             import('./bulk/bulk.component')
