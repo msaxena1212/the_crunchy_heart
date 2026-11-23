@@ -1,3 +1,4 @@
+import { evaluateCoupon, normalizeCouponCode, recordRedemption } from './coupon.service.js';
 import crypto from 'node:crypto';
 import { query } from '../db/pool.js';
 import { withTransaction } from '../db/transaction.js';
@@ -316,8 +317,11 @@ export function buildOrderRequestFingerprint({
     items,
     paymentMethod,
     notes,
+    couponCode = null,
 }) {
     const canonical = canonicalize({
+        // Only present when a coupon is used, so fingerprints of coupon-free orders are unchanged.
+        ...(couponCode ? { couponCode } : {}),
         paymentMethod,
         customer: {
             name: customer.name,
@@ -507,7 +511,9 @@ export async function createOrder({
     paymentMethod,
     notes,
     idempotencyKey,
+    couponCode,
 }) {
+    const normalizedCouponCode = normalizeCouponCode(couponCode);
     const normalizedPaymentMethod =
         normalizePaymentMethod(
             paymentMethod
@@ -569,6 +575,7 @@ export async function createOrder({
             items: normalizedItems,
             paymentMethod: normalizedPaymentMethod,
             notes,
+            couponCode: normalizedCouponCode,
         })
         : null;
 
@@ -994,7 +1001,7 @@ export async function createOrder({
                 const sku = item.sku || '';
                 if (sku.startsWith('TCH-FLV-') || sku.includes('FLV')) {
                     flavouredCount += item.quantity;
-                    flavouredSubtotal += item.grossAmount;
+                    flavouredSubtotal += item.totalPrice;
                 }
             }
 
@@ -1007,9 +1014,30 @@ export async function createOrder({
                 comboDiscountPercent = 5;
             }
 
-            const discountAmount = comboDiscountPercent > 0
+            const comboDiscountAmount = comboDiscountPercent > 0
                 ? roundMoney(flavouredSubtotal * (comboDiscountPercent / 100))
                 : 0;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Coupon (validated and locked inside this transaction)
+            |--------------------------------------------------------------------------
+            */
+
+            let appliedCoupon = null;
+            if (normalizedCouponCode) {
+                appliedCoupon = await evaluateCoupon(client, {
+                    code: normalizedCouponCode,
+                    subtotal,
+                    discountableAmount: roundMoney(subtotal - comboDiscountAmount),
+                    phone: normalizedCustomer.phone,
+                    lock: true,
+                });
+            }
+
+            const discountAmount = roundMoney(
+                comboDiscountAmount + (appliedCoupon ? appliedCoupon.discountAmount : 0)
+            );
 
 
             /*
@@ -1107,8 +1135,8 @@ export async function createOrder({
                         $12,
                         $13,
                         $14,
-                        NULL,
-                        NULL,
+                        $19,
+                        $20,
                         $15,
                         $16,
                         true,
@@ -1181,12 +1209,24 @@ export async function createOrder({
 
                         normalizedIdempotencyKey,
                         requestFingerprint,
+
+                        appliedCoupon ? appliedCoupon.coupon.id : null,
+                        appliedCoupon ? appliedCoupon.coupon.code : null,
                     ]
                 );
 
 
             const order =
                 orderResult.rows[0];
+
+            if (appliedCoupon) {
+                await recordRedemption(client, {
+                    couponId: appliedCoupon.coupon.id,
+                    orderId: order.id,
+                    phone: normalizedCustomer.phone,
+                    discountAmount: appliedCoupon.discountAmount,
+                });
+            }
 
 
             /*

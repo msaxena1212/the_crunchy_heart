@@ -1,3 +1,4 @@
+import { releaseCouponRedemption } from './coupon.service.js';
 import { query } from '../db/pool.js';
 import { withTransaction } from '../db/transaction.js';
 import {
@@ -258,6 +259,8 @@ export async function releaseExpiredOrderHold(client, orderId) {
         orderId,
         notes: `Auto-expiry: 15-minute checkout inventory hold expired`,
     });
+
+    await releaseCouponRedemption(client, orderId);
 
     await client.query(
         `UPDATE orders

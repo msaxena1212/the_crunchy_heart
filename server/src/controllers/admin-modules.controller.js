@@ -4,6 +4,8 @@ import {
     listProducts,
     listInventory,
     listCoupons,
+    createCoupon,
+    updateCoupon,
     listCustomers,
     integrationsStatus,
     listSocialDrafts,
@@ -38,6 +40,8 @@ export const putProduct = handler(req => updateAdminProduct({ actor: actorOf(req
 export const putProductRatePerKg = handler(req => setAdminProductRatePerKg({ actor: actorOf(req), productId: req.params.productId, ratePerKg: req.body?.ratePerKg }));
 export const putVariant = handler(req => updateAdminVariant({ actor: actorOf(req), variantId: req.params.variantId, input: req.body || {} }));
 export const getInventory = handler(req => listInventory({ actor: actorOf(req), lowStockOnly: req.query?.lowStock === 'true', limit: req.query?.limit }));
+export const postCoupon = handler(req => createCoupon({ actor: actorOf(req), input: req.body || {} }));
+export const putCoupon = handler(req => updateCoupon({ actor: actorOf(req), couponId: req.params.couponId, input: req.body || {} }));
 export const getCoupons = handler(req => listCoupons({ actor: actorOf(req), limit: req.query?.limit }));
 export const getCustomers = handler(req => listCustomers({ actor: actorOf(req), search: req.query?.search, limit: req.query?.limit }));
 export const getBusinessSettingsCtl = handler(() => getBusinessSettings());

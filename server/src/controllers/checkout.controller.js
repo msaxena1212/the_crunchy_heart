@@ -1,3 +1,4 @@
+import { normalizeCouponCode, previewCoupon } from '../services/coupon.service.js';
 import {
     getVariantsForCheckout,
     calculateItemPricing,
@@ -283,9 +284,28 @@ export async function previewCheckout(req, res, next) {
             comboDiscountPercent = 5;
         }
 
-        const discountAmount = comboDiscountPercent > 0
+        const comboDiscountAmount = comboDiscountPercent > 0
             ? Number((flavouredSubtotal * (comboDiscountPercent / 100)).toFixed(2))
             : 0;
+
+        // --------------------------------------------------
+        // Coupon (reported as data so the page can show why a code was refused)
+        // --------------------------------------------------
+
+        let couponResult = null;
+        const requestedCoupon = normalizeCouponCode(req.body?.couponCode);
+        if (requestedCoupon) {
+            const phone = String(req.body?.phone || '').replace(/\D/g, '').slice(-10) || null;
+            couponResult = await previewCoupon({
+                code: requestedCoupon,
+                subtotal,
+                discountableAmount: Number((subtotal - comboDiscountAmount).toFixed(2)),
+                phone,
+            });
+        }
+
+        const couponDiscountAmount = couponResult?.applied ? couponResult.discountAmount : 0;
+        const discountAmount = Number((comboDiscountAmount + couponDiscountAmount).toFixed(2));
 
         // --------------------------------------------------
         // Final total
@@ -345,7 +365,9 @@ export async function previewCheckout(req, res, next) {
 
             totalAmount,
 
-            coupon: null,
+            comboDiscountAmount,
+
+            coupon: couponResult,
         });
     } catch (error) {
         next(error);

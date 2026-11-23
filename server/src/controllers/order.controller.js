@@ -233,6 +233,7 @@ export async function createCheckoutOrder(
                 paymentMethod: normalizedPaymentMethod,
                 notes,
                 idempotencyKey: effectiveIdempotencyKey,
+                couponCode: req.body?.couponCode,
             });
         } catch (error) {
             // A key reused for a different request is answered exactly like an

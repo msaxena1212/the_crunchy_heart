@@ -8,6 +8,8 @@ import {
     putVariant,
     getInventory,
     getCoupons,
+    postCoupon,
+    putCoupon,
     getCustomers,
     getIntegrations,
     getBusinessSettingsCtl,
@@ -43,6 +45,8 @@ router.put('/catalogue/products/:productId/rate-per-kg', putProductRatePerKg);
 router.put('/catalogue/variants/:variantId', putVariant);
 router.get('/catalogue/inventory', getInventory);
 router.get('/catalogue/coupons', getCoupons);
+router.post('/catalogue/coupons', postCoupon);
+router.put('/catalogue/coupons/:couponId', putCoupon);
 router.get('/customers', getCustomers);
 router.get('/integrations', getIntegrations);
 router.get('/settings/business', getBusinessSettingsCtl);

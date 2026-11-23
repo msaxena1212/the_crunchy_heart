@@ -1,4 +1,6 @@
 import { query } from '../db/pool.js';
+import { withTransaction } from '../db/transaction.js';
+import { validateCouponInput } from './coupon.service.js';
 import { assertActiveAdmin } from './admin-refund.service.js';
 
 /*
@@ -203,7 +205,7 @@ export async function listCoupons({ actor, limit = 200 }) {
     const result = await query(
         `SELECT id, code, description, discount_type, discount_value, minimum_order_value,
                 maximum_discount, usage_limit, usage_count, per_customer_limit,
-                starts_at, expires_at, is_active, created_at
+                starts_at, expires_at, is_active, first_order_only, created_at
          FROM coupons
          ORDER BY created_at DESC
          LIMIT $1`,
@@ -225,8 +227,103 @@ export async function listCoupons({ actor, limit = 200 }) {
             startsAt: row.starts_at,
             expiresAt: row.expires_at,
             isActive: row.is_active,
+            firstOrderOnly: row.first_order_only,
         })),
     };
+}
+
+const COUPON_COLUMNS = {
+    code: 'code',
+    description: 'description',
+    discountType: 'discount_type',
+    discountValue: 'discount_value',
+    minimumOrderValue: 'minimum_order_value',
+    maximumDiscount: 'maximum_discount',
+    usageLimit: 'usage_limit',
+    perCustomerLimit: 'per_customer_limit',
+    startsAt: 'starts_at',
+    expiresAt: 'expires_at',
+    isActive: 'is_active',
+    firstOrderOnly: 'first_order_only',
+};
+
+function couponAudit(client, actor, action, couponId, details) {
+    return client.query(
+        `INSERT INTO admin_audit_logs (admin_user_id, action, entity_type, entity_id, details)
+         VALUES ($1, $2, 'coupon', $3, $4::jsonb)`,
+        [actor.id, action, String(couponId), JSON.stringify(details || {})]
+    );
+}
+
+function mapCouponWriteError(error) {
+    if (error.code === '23505') {
+        const conflict = new Error('A coupon with this code already exists.');
+        conflict.statusCode = 409;
+        conflict.code = 'COUPON_CODE_EXISTS';
+        return conflict;
+    }
+    return error;
+}
+
+export async function createCoupon({ actor, input }) {
+    await assertActiveAdmin(actor);
+    const data = validateCouponInput(input || {});
+    const entries = Object.entries(data);
+    const columns = entries.map(([key]) => COUPON_COLUMNS[key]);
+    const values = entries.map(([, value]) => value);
+
+    return withTransaction(async client => {
+        let created;
+        try {
+            created = await client.query(
+                `INSERT INTO coupons (${columns.join(', ')})
+                 VALUES (${values.map((_, i) => `$${i + 1}`).join(', ')})
+                 RETURNING id, code`,
+                values
+            );
+        } catch (error) {
+            throw mapCouponWriteError(error);
+        }
+        await couponAudit(client, actor, 'COUPON_CREATED', created.rows[0].id, { code: created.rows[0].code, ...data });
+        return { couponId: created.rows[0].id, code: created.rows[0].code };
+    });
+}
+
+export async function updateCoupon({ actor, couponId, input }) {
+    await assertActiveAdmin(actor);
+    if (!/^[0-9a-f-]{36}$/i.test(String(couponId || ''))) {
+        const error = new Error('A valid coupon id is required.');
+        error.statusCode = 400;
+        throw error;
+    }
+    const data = validateCouponInput(input || {}, { partial: true });
+    const entries = Object.entries(data);
+    if (!entries.length) {
+        const error = new Error('Nothing to update.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    return withTransaction(async client => {
+        const sets = entries.map(([key], i) => `${COUPON_COLUMNS[key]} = $${i + 1}`);
+        let updated;
+        try {
+            updated = await client.query(
+                `UPDATE coupons SET ${sets.join(', ')}, updated_at = NOW()
+                 WHERE id = $${entries.length + 1} RETURNING id, code`,
+                [...entries.map(([, value]) => value), couponId]
+            );
+        } catch (error) {
+            throw mapCouponWriteError(error);
+        }
+        if (!updated.rows.length) {
+            const error = new Error('Coupon not found.');
+            error.statusCode = 404;
+            throw error;
+        }
+        await couponAudit(client, actor, 'COUPON_UPDATED', couponId, data);
+        return { couponId, code: updated.rows[0].code };
+    });
 }
 
 export async function listCustomers({ actor, search = '', limit = 100 }) {

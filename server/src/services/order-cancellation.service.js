@@ -9,6 +9,7 @@
 
 import { withTransaction } from '../db/transaction.js';
 import { releaseOrderInventoryReservations } from './inventory.service.js';
+import { releaseCouponRedemption } from './coupon.service.js';
 
 const CANCELLABLE_STATUSES = new Set(['pending', 'confirmed', 'processing']);
 
@@ -63,6 +64,8 @@ export async function cancelCodOrder({ orderNumber, actor, reason = null, author
             orderId: order.id,
             notes: `COD order ${order.order_number} cancelled by ${actor}`,
         });
+
+        await releaseCouponRedemption(client, order.id);
 
         const note = `[CANCELLED by ${actor}${cleanReason ? `: ${cleanReason}` : ''}]`;
         const updated = await client.query(
