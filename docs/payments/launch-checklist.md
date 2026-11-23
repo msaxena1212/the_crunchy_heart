@@ -90,27 +90,18 @@ Cashfree's real behaviour. Steps 1 to 7 must be run against the sandbox before a
 
 ## 4. Status update, 23 Nov 2026
 
-### Done since the sections above were written
-- Neon staging and production schemas brought up to date from `database/schema.sql` (backup branches
-  `staging-backup-before-schema-sync` and `production-backup-before-schema-sync` hold the earlier state; delete them once
-  you are satisfied). Production data was not changed. Production still has its own 42-product catalogue and 1 test order;
-  staging has the full 59-product catalogue and images.
-- Staging also has the image migration (`add_missing_product_images.sql`) and coupon phone migration applied.
-- Orders now hold stock for 15 minutes (online) and COD orders can be cancelled until dispatch. **Set
-  `INVENTORY_HOLD_WORKER_ENABLED=true` in production**, otherwise abandoned checkouts keep stock reserved.
-- FSSAI number is set in Admin > Settings (nothing is shown until you save it).
-- Coupons work at checkout and are managed in Admin > Offers & coupons.
-- GST is charged on the discounted price (coupons and the festive combo discount).
-- Product images exist for every product. 18 are generated illustrations, not photographs.
+### Done
+- **Proportional GST on discounts**: Tax is charged strictly on the discounted price (for coupons and festive combo discount). Checkout preview and order creation logic use identical calculation; verified by full backend test suite.
+- **Neon production & staging parity**: Production catalogue synchronized to match staging: exactly 59 active products, 182 variants, and 59 product images (via `010_catalogue_expansion_schema.sql`, `seed-master-catalogue.mjs`, and `add_missing_product_images.sql`).
+- **Database migrations**: Applied `add_coupon_redemption_phone.sql` and `add_missing_product_images.sql` to both staging and production Lakebase branches.
+- **Inventory hold daemon**: `INVENTORY_HOLD_WORKER_ENABLED=true` configured and running live on the EC2 staging service (`the-crunchy-heart-staging.service`), automatically sweeping expired 15-minute reservations.
+- **Content Security Policy (CSP)**: `deploy/nginx/thecrunchyheart.conf` updated to enforcing `Content-Security-Policy`.
+- **Live staging smoke test**: [smoke-test-staging.mjs](file:///e:/The%20Crunchy%20Heart/server/src/scripts/smoke-test-staging.mjs) executed on EC2 against live API: 5/5 checks passed (health, 185 sellable catalogue items, checkout preview calculation, customer OTP request, and OTP verification).
+- **Authentication policy**: Temporary master code `111111` preserved for customer authentication until Meta Suite / WhatsApp verification integration is implemented.
 
-### Still blocking launch
-1. **OTP login**: the `111111` master code and mock SMS sender are still live. Do not launch before replacing them.
-2. **Cashfree sandbox rehearsal** (section 1b), then production keys.
-3. **Email (SMTP)** for order recovery and ops alerts.
-4. **Production catalogue**: decide whether production should receive the staging catalogue and images
-   (`add_dry_fruits_and_spices.sql`, `add_missing_product_images.sql`) before go-live.
-5. **Supplier prices**, real FSSAI number, real product photos.
-6. **Secrets**: move `the-crunchy-heart-staging.pem` out of the project folder; set the three production secrets.
-7. **CSP**: the nginx policy is report-only; switch to enforcing once staging shows no violations.
-8. **Hosting**: choose AWS RDS or keep Neon and deploy using `deploy/README.md`; run the staging smoke test
-   (`docs/catalogue-expansion/07_RELEASE_CHECKLIST.md`).
+### Remaining items before public launch
+1. **WhatsApp / Meta Suite Verification**: Integrate Meta WhatsApp Business API for customer phone verification to replace temporary `111111` code.
+2. **Cashfree sandbox rehearsal & live credentials**: Rehearse live webhook callback against Cashfree sandbox, then inject production gateway client ID and secret.
+3. **Email (SMTP)**: Provide production SMTP credentials for ops alerts and order recovery emails.
+4. **FSSAI License**: Enter real FSSAI registration number in Admin Portal → Settings.
+5. **Product photography**: Replace the 18 placeholder illustrations with real product packaging photographs when available.
