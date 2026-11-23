@@ -44,18 +44,19 @@ async function runSmokeTest() {
     if (!preview.totalAmount) throw new Error('Checkout preview calculation failed');
 
     // 4. OTP Request (Dev/Master code test)
-    console.log('\n[4/5] Testing OTP Request (/api/auth/otp/send)...');
-    const otpSendRes = await fetch(`${BASE_URL}/api/auth/otp/send`, {
+    console.log('\n[4/5] Testing OTP Request (/api/auth/customer/otp/request)...');
+    const otpSendRes = await fetch(`${BASE_URL}/api/auth/customer/otp/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: '9876543210' })
     });
     const otpSend = await otpSendRes.json();
     console.log('OTP Send response:', otpSend);
+    if (!otpSend.success) throw new Error('OTP send failed: ' + JSON.stringify(otpSend));
 
     // 5. OTP Verify with 111111 master code
-    console.log('\n[5/5] Testing OTP Verify with 111111 master code (/api/auth/otp/verify)...');
-    const otpVerifyRes = await fetch(`${BASE_URL}/api/auth/otp/verify`, {
+    console.log('\n[5/5] Testing OTP Verify with 111111 master code (/api/auth/customer/otp/verify)...');
+    const otpVerifyRes = await fetch(`${BASE_URL}/api/auth/customer/otp/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: '9876543210', otp: '111111' })
@@ -63,8 +64,10 @@ async function runSmokeTest() {
     const otpVerify = await otpVerifyRes.json();
     console.log('OTP Verify response:', {
         success: otpVerify.success,
-        hasToken: !!(otpVerify.token || otpVerify.accessToken || otpVerify.customer),
+        hasCustomer: !!otpVerify.customer,
+        hasToken: !!(otpVerify.token || otpVerify.accessToken),
     });
+    if (!otpVerify.success) throw new Error('OTP verify failed: ' + JSON.stringify(otpVerify));
 
     console.log(`\n======================================================`);
     console.log(`ALL 5 STAGING SMOKE CHECKS PASSED SUCCESSFULLY!`);
