@@ -578,3 +578,5 @@
 .cancel-confirm p { margin: 0 0 12px; }
 .cancel-confirm-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .danger-btn { background: #b42318 !important; border-color: #b42318 !important; }
+
+.discount-row span:last-child { color: #14563c; font-weight: 700; }

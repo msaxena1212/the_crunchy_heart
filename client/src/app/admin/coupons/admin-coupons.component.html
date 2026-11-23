@@ -2,11 +2,74 @@
   <div>
     <h1 class="page-title">Offers &amp; coupons</h1>
     <p class="page-subtitle">
-      Discount codes and their usage. Coupon codes cannot be entered at checkout yet, so offers are not
-      active and cannot be created here until checkout supports them.
+      Discount codes customers enter at checkout. A coupon takes money off the goods total (after any festive
+      combo discount), never off shipping, and the customer always pays at least ₹1.
     </p>
   </div>
+  <button type="button" class="btn btn-primary" (click)="startNew()" *ngIf="!showForm">+ New coupon</button>
 </div>
+
+<div class="alert-ok" *ngIf="message" role="status">{{ message }}</div>
+
+<section class="card" *ngIf="showForm" aria-label="Coupon form" style="margin-bottom: 1.25rem; padding: 1.25rem;">
+  <h2 class="section-title" style="margin-top: 0;">{{ editingId ? 'Edit coupon' : 'New coupon' }}</h2>
+
+  <form (ngSubmit)="save()" #couponForm="ngForm">
+    <div class="form-grid">
+      <label for="c-code">Code</label>
+      <input id="c-code" name="code" [(ngModel)]="form.code" required maxlength="30" autocomplete="off"
+             placeholder="e.g. DIWALI10" style="text-transform: uppercase;" [disabled]="!!editingId" />
+
+      <label for="c-desc">Description <span class="muted">shown to the customer</span></label>
+      <input id="c-desc" name="description" [(ngModel)]="form.description" maxlength="200"
+             placeholder="e.g. 10% off for Diwali" />
+
+      <label for="c-type">Discount type</label>
+      <select id="c-type" name="discountType" [(ngModel)]="form.discountType">
+        <option value="percentage">Percentage off</option>
+        <option value="fixed">Fixed amount off (₹)</option>
+      </select>
+
+      <label for="c-value">{{ form.discountType === 'percentage' ? 'Percent (1-100)' : 'Amount (₹)' }}</label>
+      <input id="c-value" name="discountValue" type="number" min="0" step="any" [(ngModel)]="form.discountValue" required />
+
+      <label for="c-min">Minimum order (₹)</label>
+      <input id="c-min" name="minimumOrderValue" type="number" min="0" step="any" [(ngModel)]="form.minimumOrderValue"
+             placeholder="0 = no minimum" />
+
+      <label for="c-max" *ngIf="form.discountType === 'percentage'">Maximum discount (₹)</label>
+      <input id="c-max" name="maximumDiscount" type="number" min="0" step="any" [(ngModel)]="form.maximumDiscount"
+             *ngIf="form.discountType === 'percentage'" placeholder="Empty = no cap" />
+
+      <label for="c-limit">Total uses</label>
+      <input id="c-limit" name="usageLimit" type="number" min="1" step="1" [(ngModel)]="form.usageLimit"
+             placeholder="Empty = unlimited" />
+
+      <label for="c-per">Uses per customer</label>
+      <input id="c-per" name="perCustomerLimit" type="number" min="1" step="1" [(ngModel)]="form.perCustomerLimit"
+             placeholder="Empty = unlimited" />
+
+      <label for="c-start">Starts on</label>
+      <input id="c-start" name="startsAt" type="date" [(ngModel)]="form.startsAt" />
+
+      <label for="c-end">Last valid day</label>
+      <input id="c-end" name="expiresAt" type="date" [(ngModel)]="form.expiresAt" />
+
+      <label>Options</label>
+      <div>
+        <label class="inline-check"><input type="checkbox" name="firstOrderOnly" [(ngModel)]="form.firstOrderOnly" /> First order only</label>
+        <label class="inline-check"><input type="checkbox" name="isActive" [(ngModel)]="form.isActive" /> Active</label>
+      </div>
+    </div>
+
+    <div class="alert-danger" role="alert" *ngIf="formError" style="margin-top: 0.75rem;"><span>{{ formError }}</span></div>
+
+    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+      <button type="submit" class="btn btn-primary" [disabled]="isSaving">{{ isSaving ? 'Saving…' : (editingId ? 'Save changes' : 'Create coupon') }}</button>
+      <button type="button" class="btn" (click)="cancelForm()" [disabled]="isSaving">Cancel</button>
+    </div>
+  </form>
+</section>
 
 <div *ngIf="errorMessage" class="alert-danger" role="alert">
   <span>{{ errorMessage }}</span>
@@ -15,9 +78,10 @@
 
 <div *ngIf="isLoading" class="loading-state"><div class="spinner"></div><p>Loading coupons…</p></div>
 
-<div *ngIf="!isLoading && coupons.length === 0" class="card empty-state">
+<div *ngIf="!isLoading && coupons.length === 0 && !showForm" class="card empty-state">
   <h3>No coupons yet</h3>
-  <p>When a coupon is created it will appear here with its usage.</p>
+  <p>Create your first coupon and customers can use it at checkout straight away.</p>
+  <button type="button" class="btn btn-primary" (click)="startNew()">+ New coupon</button>
 </div>
 
 <div *ngIf="!isLoading && coupons.length" class="card table-card">
@@ -30,6 +94,7 @@
         <th>Usage</th>
         <th>Valid</th>
         <th>Status</th>
+        <th><span class="sr-only">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -37,6 +102,7 @@
         <td>
           <code>{{ c.code }}</code>
           <div class="muted" *ngIf="c.description">{{ c.description }}</div>
+          <div class="muted" *ngIf="c.firstOrderOnly">First order only</div>
         </td>
         <td>
           {{ discountLabel(c) }}
@@ -55,6 +121,10 @@
         <td>
           <span class="badge badge-ok" *ngIf="c.isActive">Active</span>
           <span class="badge badge-off" *ngIf="!c.isActive">Inactive</span>
+        </td>
+        <td style="white-space: nowrap;">
+          <button type="button" class="btn" (click)="startEdit(c)">Edit</button>
+          <button type="button" class="btn" (click)="toggleActive(c)">{{ c.isActive ? 'Deactivate' : 'Activate' }}</button>
         </td>
       </tr>
     </tbody>

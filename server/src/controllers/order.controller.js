@@ -699,6 +699,7 @@ export async function getOrderDetails(req, res, next) {
                 payment_status,
                 payment_method,
                 notes,
+                coupon_code,
                 created_at,
                 updated_at
             FROM orders
@@ -805,6 +806,7 @@ export async function getOrderDetails(req, res, next) {
                 billingAddress: order.billing_address,
                 subtotal: Number(order.subtotal),
                 discountAmount: Number(order.discount_amount),
+                couponCode: order.coupon_code || null,
                 shippingAmount: Number(order.shipping_amount),
                 taxAmount: Number(order.tax_amount),
                 totalAmount: Number(order.total_amount),

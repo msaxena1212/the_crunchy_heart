@@ -347,6 +347,23 @@ export interface AdminCoupon {
   startsAt: string | null;
   expiresAt: string | null;
   isActive: boolean;
+  firstOrderOnly?: boolean;
+}
+
+/** Fields the coupon editor sends. Everything is optional on update. */
+export interface CouponInput {
+  code?: string;
+  description?: string | null;
+  discountType?: 'percentage' | 'fixed';
+  discountValue?: number | null;
+  minimumOrderValue?: number;
+  maximumDiscount?: number | null;
+  usageLimit?: number | null;
+  perCustomerLimit?: number | null;
+  startsAt?: string | null;
+  expiresAt?: string | null;
+  firstOrderOnly?: boolean;
+  isActive?: boolean;
 }
 
 export interface AdminCouponsResponse { success: boolean; coupons: AdminCoupon[]; }
@@ -636,6 +653,16 @@ export class AdminService {
     let httpParams = new HttpParams();
     if (params.lowStock) httpParams = httpParams.set('lowStock', 'true');
     return this.http.get<AdminInventoryResponse>(`${this.api}/catalogue/inventory`, { withCredentials: true, params: httpParams });
+  }
+
+  createCoupon(input: CouponInput): Observable<{ success: boolean; couponId: string; code: string }> {
+    return this.http.post<{ success: boolean; couponId: string; code: string }>(
+      `${this.api}/catalogue/coupons`, input, { withCredentials: true, headers: this.getCsrfHeaders() });
+  }
+
+  updateCoupon(couponId: string, input: CouponInput): Observable<{ success: boolean; couponId: string; code: string }> {
+    return this.http.put<{ success: boolean; couponId: string; code: string }>(
+      `${this.api}/catalogue/coupons/${encodeURIComponent(couponId)}`, input, { withCredentials: true, headers: this.getCsrfHeaders() });
   }
 
   getAdminCoupons(): Observable<AdminCouponsResponse> {

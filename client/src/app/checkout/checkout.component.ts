@@ -28,6 +28,12 @@ export class CheckoutComponent implements OnInit {
   errorMessage = '';
   validationErrors: string[] = [];
 
+  // Coupon entry. `appliedCoupon` is only set after the server has accepted the code.
+  couponInput = '';
+  appliedCoupon: string | null = null;
+  couponError = '';
+  isApplyingCoupon = false;
+
   // Idempotency key for the current order content. It changes only when the content
   // changes, so a retry of the same request reuses it, and a changed cart never
   // reuses the key of an earlier, different order.
@@ -80,6 +86,7 @@ export class CheckoutComponent implements OnInit {
       },
       paymentMethod: formVal.paymentMethod,
       notes: formVal.notes?.trim() || null,
+      coupon: this.appliedCoupon,
       items: this.cartItems
         .map(item => ({ variantId: item.variantId, quantity: item.quantity }))
         .sort((a, b) => String(a.variantId).localeCompare(String(b.variantId)))
@@ -129,16 +136,61 @@ export class CheckoutComponent implements OnInit {
       quantity: item.quantity
     }));
 
-    this.checkoutService.previewCheckout(previewItems).subscribe({
+    this.checkoutService.previewCheckout(previewItems, {
+      couponCode: this.appliedCoupon,
+      phone: this.checkoutForm?.value?.phone || null
+    }).subscribe({
       next: (res) => {
         this.preview = res;
         this.isLoadingPreview = false;
+        // A coupon that no longer applies (cart changed, phone already used it) is dropped with a reason.
+        if (this.appliedCoupon && !res.coupon?.applied) {
+          this.couponError = res.coupon?.error || 'This coupon can no longer be applied.';
+          this.appliedCoupon = null;
+          this.loadPreview();
+        }
       },
       error: (err) => {
         this.isLoadingPreview = false;
         this.errorMessage = err.error?.message || 'Unable to calculate server order preview. Please review your cart.';
       }
     });
+  }
+
+  applyCoupon(): void {
+    const code = this.couponInput.trim().toUpperCase();
+    if (!code || this.isApplyingCoupon || !this.cartItems.length) {
+      return;
+    }
+    this.isApplyingCoupon = true;
+    this.couponError = '';
+
+    const previewItems = this.cartItems.map(item => ({ variantId: item.variantId, quantity: item.quantity }));
+    this.checkoutService.previewCheckout(previewItems, {
+      couponCode: code,
+      phone: this.checkoutForm.value.phone || null
+    }).subscribe({
+      next: (res) => {
+        this.isApplyingCoupon = false;
+        if (res.coupon?.applied) {
+          this.appliedCoupon = res.coupon.code || code;
+          this.couponInput = '';
+          this.preview = res;
+        } else {
+          this.couponError = res.coupon?.error || 'This coupon code is not valid.';
+        }
+      },
+      error: (err) => {
+        this.isApplyingCoupon = false;
+        this.couponError = err.error?.message || 'Could not check the coupon. Please try again.';
+      }
+    });
+  }
+
+  removeCoupon(): void {
+    this.appliedCoupon = null;
+    this.couponError = '';
+    this.loadPreview();
   }
 
   onSubmit(): void {
@@ -195,6 +247,7 @@ export class CheckoutComponent implements OnInit {
       })),
       paymentMethod: formVal.paymentMethod,
       notes: formVal.notes ? formVal.notes.trim() : undefined,
+      couponCode: this.appliedCoupon || undefined,
       idempotencyKey: this.resolveIdempotencyKey(formVal)
     };
 
@@ -266,6 +319,16 @@ export class CheckoutComponent implements OnInit {
 
         if (err.status === 504 || err.status === 502) {
           this.errorMessage = 'The payment gateway is verifying your request (timeout). Please do not place a duplicate order. Check your order status.';
+          return;
+        }
+
+        // The server re-checks the coupon when the order is created. If it was refused, say why,
+        // drop it, and refresh the totals so the customer can decide again.
+        if (typeof err.error?.code === 'string' && err.error.code.startsWith('COUPON_')) {
+          this.couponError = err.error.message || 'This coupon can no longer be applied.';
+          this.appliedCoupon = null;
+          this.errorMessage = 'Your coupon could not be applied, so the total has changed. Please review it and place the order again.';
+          this.loadPreview();
           return;
         }
 

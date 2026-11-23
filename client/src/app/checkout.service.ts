@@ -36,7 +36,18 @@ export interface CheckoutPreviewResponse {
   taxRate: number;
   priceIncludesTax: boolean;
   totalAmount: number;
-  coupon: any;
+  comboDiscountAmount?: number;
+  coupon: CouponPreview | null;
+}
+
+/** Result of checking a coupon code against the cart. Refusals come back as data, not errors. */
+export interface CouponPreview {
+  applied: boolean;
+  code?: string;
+  description?: string | null;
+  discountAmount?: number;
+  error?: string;
+  errorCode?: string;
 }
 
 export interface OrderCustomer {
@@ -67,6 +78,7 @@ export interface CreateOrderRequest {
   }>;
   paymentMethod: 'ONLINE' | 'COD';
   notes?: string;
+  couponCode?: string;
   idempotencyKey: string;
 }
 
@@ -117,6 +129,7 @@ export interface OrderDetailsResponse {
     billingAddress?: OrderAddress;
     subtotal: number;
     discountAmount: number;
+    couponCode?: string | null;
     shippingAmount: number;
     taxAmount: number;
     totalAmount: number;
@@ -357,8 +370,15 @@ export class CheckoutService {
      API CALLS
      ======================================================= */
 
-  previewCheckout(items: Array<{ variantId: string; quantity: number }>): Observable<CheckoutPreviewResponse> {
-    return this.http.post<CheckoutPreviewResponse>(`${this.api}/checkout/preview`, { items });
+  previewCheckout(
+    items: Array<{ variantId: string; quantity: number }>,
+    options: { couponCode?: string | null; phone?: string | null } = {}
+  ): Observable<CheckoutPreviewResponse> {
+    return this.http.post<CheckoutPreviewResponse>(`${this.api}/checkout/preview`, {
+      items,
+      couponCode: options.couponCode || undefined,
+      phone: options.phone || undefined
+    });
   }
 
   createOrder(data: CreateOrderRequest, existingGuestToken?: string | null): Observable<CreateOrderResponse> {

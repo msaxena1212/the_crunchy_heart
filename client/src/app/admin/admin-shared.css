@@ -103,3 +103,5 @@ textarea, input.wide { width: 100%; box-sizing: border-box; }
   .stat-feature .stat-value { font-size: 1.9rem; }
   .data-table th, .data-table td { padding: 10px 10px; }
 }
+
+.inline-check { display: inline-flex; align-items: center; gap: 6px; margin-right: 18px; padding-top: 0; }

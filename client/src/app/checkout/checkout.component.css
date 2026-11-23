@@ -591,3 +591,25 @@ select.has-error {
   font-weight: 600;
   border-radius: 8px;
 }
+
+/* ---------- Coupon ---------- */
+.coupon-box { margin: 14px 0 4px; }
+.coupon-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.coupon-row { display: flex; gap: 8px; }
+.coupon-input {
+  flex: 1; min-width: 0; padding: 11px 12px; border: 1px solid #d9d3c6; border-radius: 10px;
+  font: inherit; text-transform: uppercase; letter-spacing: .05em; background: #fffdf8;
+}
+.coupon-input:focus { outline: 2px solid #14563c; outline-offset: 1px; }
+.coupon-apply {
+  padding: 0 18px; border: 0; border-radius: 10px; background: #14563c; color: #fff;
+  font-weight: 700; cursor: pointer;
+}
+.coupon-apply:disabled { opacity: .5; cursor: not-allowed; }
+.coupon-applied {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: #e8f5ee; border: 1px solid #b7dcc7; border-radius: 10px; padding: 10px 12px; font-size: 14px;
+}
+.coupon-remove { background: none; border: 0; color: #b42318; font-weight: 700; cursor: pointer; text-decoration: underline; }
+.coupon-error { margin: 8px 0 0; color: #b42318; font-size: 13px; }
+.discount-line span:last-child { color: #14563c; font-weight: 700; }

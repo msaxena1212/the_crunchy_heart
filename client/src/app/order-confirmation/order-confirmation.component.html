@@ -146,19 +146,23 @@
                 <span>Subtotal</span>
                 <span>₹{{ orderDetails.order.subtotal | number:'1.0-0' }}</span>
               </div>
+              <div class="price-row discount-row" *ngIf="orderDetails.order.discountAmount > 0">
+                <span>Discount<span *ngIf="orderDetails.order.couponCode"> ({{ orderDetails.order.couponCode }})</span></span>
+                <span>−₹{{ orderDetails.order.discountAmount | number:'1.0-2' }}</span>
+              </div>
               <div class="price-row">
                 <span>Shipping & Handling</span>
                 <span *ngIf="orderDetails.order.shippingAmount === 0" class="free-text">FREE</span>
                 <span *ngIf="orderDetails.order.shippingAmount > 0">₹{{ orderDetails.order.shippingAmount | number:'1.0-0' }}</span>
               </div>
               <div class="price-row muted-row">
-                <span>Taxes Included (18% GST)</span>
+                <span>GST included</span>
                 <span>₹{{ orderDetails.order.taxAmount | number:'1.2-2' }}</span>
               </div>
               <div class="price-divider"></div>
               <div class="price-row total-row">
                 <strong>Grand Total</strong>
-                <strong class="total-amount">₹{{ orderDetails.order.totalAmount | number:'1.0-0' }}</strong>
+                <strong class="total-amount">₹{{ orderDetails.order.totalAmount | number:'1.0-2' }}</strong>
               </div>
             </div>
           </div>

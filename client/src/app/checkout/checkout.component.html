@@ -249,7 +249,7 @@
               [disabled]="isSubmitting || isLoadingPreview">
               <span *ngIf="!isSubmitting">
                 {{ checkoutForm.get('paymentMethod')?.value === 'ONLINE' ? 'Proceed to Payment' : 'Confirm Order' }}
-                · ₹{{ preview?.totalAmount || '...' }}
+                · ₹{{ preview ? (preview.totalAmount | number:'1.0-2') : '...' }}
               </span>
               <span *ngIf="isSubmitting" class="button-loading">
                 <span class="spinner"></span> Securing your order...
@@ -288,11 +288,58 @@
 
             <div class="summary-divider"></div>
 
+            <!-- COUPON -->
+            <div class="coupon-box">
+              <div *ngIf="appliedCoupon" class="coupon-applied" role="status">
+                <span>
+                  <strong>{{ appliedCoupon }}</strong> applied
+                  <small *ngIf="preview.coupon?.description"> · {{ preview.coupon?.description }}</small>
+                </span>
+                <button type="button" class="coupon-remove" (click)="removeCoupon()">Remove</button>
+              </div>
+
+              <div *ngIf="!appliedCoupon" class="coupon-entry">
+                <label for="coupon-code" class="coupon-label">Have a coupon?</label>
+                <div class="coupon-row">
+                  <input
+                    id="coupon-code"
+                    type="text"
+                    class="coupon-input"
+                    autocomplete="off"
+                    autocapitalize="characters"
+                    maxlength="30"
+                    placeholder="Enter code"
+                    [(ngModel)]="couponInput"
+                    [ngModelOptions]="{ standalone: true }"
+                    (keydown.enter)="$event.preventDefault(); applyCoupon()" />
+                  <button
+                    type="button"
+                    class="coupon-apply"
+                    [disabled]="!couponInput.trim() || isApplyingCoupon"
+                    (click)="applyCoupon()">
+                    {{ isApplyingCoupon ? 'Checking...' : 'Apply' }}
+                  </button>
+                </div>
+              </div>
+
+              <p *ngIf="couponError" class="coupon-error" role="alert">{{ couponError }}</p>
+            </div>
+
             <!-- PRICING CALCULATIONS -->
             <div class="summary-lines">
               <div class="summary-line">
                 <span>Subtotal</span>
                 <span>₹{{ preview.subtotal | number:'1.0-0' }}</span>
+              </div>
+
+              <div class="summary-line discount-line" *ngIf="(preview.comboDiscountAmount || 0) > 0">
+                <span>Festive combo discount</span>
+                <span>−₹{{ preview.comboDiscountAmount | number:'1.0-2' }}</span>
+              </div>
+
+              <div class="summary-line discount-line" *ngIf="preview.coupon?.applied">
+                <span>Coupon {{ preview.coupon?.code }}</span>
+                <span>−₹{{ preview.coupon?.discountAmount | number:'1.0-2' }}</span>
               </div>
 
               <div class="summary-line">
@@ -306,7 +353,7 @@
               </div>
 
               <div class="summary-line tax-note">
-                <span>Includes 18% GST</span>
+                <span>GST included</span>
                 <span>₹{{ preview.taxAmount | number:'1.2-2' }}</span>
               </div>
             </div>
@@ -318,7 +365,7 @@
                 <strong>Total Amount</strong>
                 <span class="tax-inclusive-tag">All taxes included</span>
               </div>
-              <strong class="total-figure">₹{{ preview.totalAmount | number:'1.0-0' }}</strong>
+              <strong class="total-figure">₹{{ preview.totalAmount | number:'1.0-2' }}</strong>
             </div>
 
             <!-- DESKTOP SUBMIT BUTTON -->
