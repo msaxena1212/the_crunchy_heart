@@ -364,4 +364,20 @@ describe('Coupons', () => {
         await assert.rejects(() => updateCoupon({ actor: admin, couponId: created.couponId, input: {} }), e => e.statusCode === 400);
         await assert.rejects(() => updateCoupon({ actor: { id: null }, couponId: created.couponId, input: { isActive: true } }));
     });
+
+    test('16. GST is charged on the discounted price, and line tax adds up to the order tax', async () => {
+        const v = await fixtureVariant({ sellingPrice: 105, taxRate: 5, stock: 50 });
+        const plain = await order(v.id, 10);
+        const code = await makeCoupon({ type: 'fixed', value: 200 });
+        const disc = await order(v.id, 10, { code });
+        const read = async id => (await query('SELECT subtotal, discount_amount, tax_amount FROM orders WHERE id = $1', [id])).rows[0];
+        const a = await read(plain.order.id);
+        const b = await read(disc.order.id);
+        assert.equal(Number(a.tax_amount), 50);   // 1050 incl 5% GST
+        assert.equal(Number(b.discount_amount), 200);
+        assert.equal(Number(b.tax_amount), 40.48); // 850 incl 5% GST = 850 * 5/105
+        const items = await query('SELECT SUM(tax_amount) AS t, SUM(taxable_value) AS v FROM order_items WHERE order_id = $1', [disc.order.id]);
+        assert.ok(Math.abs(Number(items.rows[0].t) - 40.48) < 0.02);
+        assert.ok(Math.abs(Number(items.rows[0].v) + Number(items.rows[0].t) - 850) < 0.05);
+    });
 });

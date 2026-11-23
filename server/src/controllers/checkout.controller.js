@@ -1,3 +1,4 @@
+import { discountTaxFactor } from '../services/pricing.service.js';
 import { normalizeCouponCode, previewCoupon } from '../services/coupon.service.js';
 import {
     getVariantsForCheckout,
@@ -307,6 +308,13 @@ export async function previewCheckout(req, res, next) {
         const couponDiscountAmount = couponResult?.applied ? couponResult.discountAmount : 0;
         const discountAmount = Number((comboDiscountAmount + couponDiscountAmount).toFixed(2));
 
+        // GST applies to the discounted price, so scale taxable value and tax the same way as order creation.
+        const taxFactor = discountTaxFactor(subtotal, discountAmount);
+        if (taxFactor !== 1) {
+            taxableSubtotal = Number((taxableSubtotal * taxFactor).toFixed(2));
+            taxAmount = Number((taxAmount * taxFactor).toFixed(2));
+        }
+
         // --------------------------------------------------
         // Final total
         // --------------------------------------------------
@@ -329,9 +337,9 @@ export async function previewCheckout(req, res, next) {
                 totalIgst += item.gstBreakdown.igstAmount;
             }
         }
-        totalCgst = Number(totalCgst.toFixed(2));
-        totalSgst = Number(totalSgst.toFixed(2));
-        totalIgst = Number(totalIgst.toFixed(2));
+        totalCgst = Number((totalCgst * taxFactor).toFixed(2));
+        totalSgst = Number((totalSgst * taxFactor).toFixed(2));
+        totalIgst = Number((totalIgst * taxFactor).toFixed(2));
         const interState = isInterStateSupply(shippingState);
 
         return res.json({

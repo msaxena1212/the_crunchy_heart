@@ -153,3 +153,34 @@ export function calculateItemPricing(
         gstBreakdown,
     };
 }
+
+/**
+ * GST is charged on what the customer actually pays for the goods, so a discount lowers the tax.
+ * The discount is spread across items pro rata (the same share of every line), which keeps each
+ * line's taxable value and tax consistent with the invoice total.
+ *
+ * Returns the factor to apply to every taxable value and tax amount (1 when there is no discount).
+ */
+export function discountTaxFactor(subtotal, discountAmount) {
+    const gross = Number(subtotal) || 0;
+    const discount = Number(discountAmount) || 0;
+    if (gross <= 0 || discount <= 0) return 1;
+    return Math.max(gross - discount, 0) / gross;
+}
+
+/** Scale taxable value and tax of already-priced order lines in place. Returns the new totals. */
+export function applyDiscountToPricedItems(pricedItems, subtotal, discountAmount) {
+    const factor = discountTaxFactor(subtotal, discountAmount);
+    let taxableSubtotal = 0;
+    let taxAmount = 0;
+    for (const item of pricedItems) {
+        if (factor !== 1) {
+            item.taxableValue = roundMoney(item.taxableValue * factor);
+            item.taxAmount = roundMoney(item.taxAmount * factor);
+        }
+        taxableSubtotal += item.taxableValue;
+        taxAmount += item.taxAmount;
+    }
+    return { taxableSubtotal: roundMoney(taxableSubtotal), taxAmount: roundMoney(taxAmount), factor };
+}
+

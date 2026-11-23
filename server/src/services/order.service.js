@@ -7,6 +7,7 @@ import { loadOrderAttempts, summarizeAttempts } from './payment-creation.service
 import {
     getVariantsForCheckout,
     calculateItemPricing,
+    applyDiscountToPricedItems,
 } from './pricing.service.js';
 
 import {
@@ -1038,6 +1039,13 @@ export async function createOrder({
             const discountAmount = roundMoney(
                 comboDiscountAmount + (appliedCoupon ? appliedCoupon.discountAmount : 0)
             );
+
+            // GST applies to the discounted price, not the list price.
+            if (discountAmount > 0) {
+                const discounted = applyDiscountToPricedItems(pricedItems, subtotal, discountAmount);
+                taxableSubtotal = discounted.taxableSubtotal;
+                taxAmount = discounted.taxAmount;
+            }
 
 
             /*
