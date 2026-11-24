@@ -1,10 +1,12 @@
 import { StoreInfoService } from '../shared/store-info.service';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CheckoutService, OrderDetailsResponse, PaymentStatusResponse } from '../checkout.service';
 import { CartService } from '../cart.service';
+import { CustomerAuthService } from '../shared/customer-auth.service';
 
 @Component({
   selector: 'tch-order-confirmation',
@@ -16,7 +18,9 @@ import { CartService } from '../cart.service';
 export class OrderConfirmationComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly checkoutService = inject(CheckoutService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly cartService = inject(CartService);
+  readonly customerAuthService = inject(CustomerAuthService);
 
   orderNumber: string = '';
   guestToken: string | null = null;
@@ -41,15 +45,36 @@ export class OrderConfirmationComponent implements OnInit {
     const queryParam = this.route.snapshot.queryParamMap.get('order_id') ||
                        this.route.snapshot.queryParamMap.get('orderNumber');
 
-    this.orderNumber = (routeParam || queryParam || '').trim();
+    const rawOrder = (routeParam || queryParam || '').trim();
 
-    if (!this.orderNumber) {
+    if (!rawOrder) {
       this.isLoading = false;
       this.errorMessage = 'No order reference provided in request.';
       return;
     }
 
-    this.guestToken = this.checkoutService.getGuestToken(this.orderNumber);
+    // Strip Cashfree attempt suffix if present (e.g. TCH-20261124-0001-R1 -> TCH-20261124-0001)
+    const cleanOrder = rawOrder.replace(/-R\d+$/i, '');
+    this.orderNumber = cleanOrder;
+
+    // Check for guest token under clean order, raw order, or logged-in customer session token
+    this.guestToken = this.checkoutService.getGuestToken(cleanOrder) ||
+                      this.checkoutService.getGuestToken(rawOrder) ||
+                      this.customerAuthService.token;
+
+    // Reactively refresh if customer logs in via modal while viewing restricted notice
+    this.customerAuthService.currentCustomer$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(cust => {
+        if (cust && this.isTokenMissing) {
+          const freshToken = this.customerAuthService.token;
+          if (freshToken) {
+            this.guestToken = freshToken;
+            this.isTokenMissing = false;
+            this.loadOrderData();
+          }
+        }
+      });
 
     if (!this.guestToken) {
       this.isLoading = false;

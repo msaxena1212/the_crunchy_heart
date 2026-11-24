@@ -14,6 +14,8 @@ export class CartComponent {
 
     readonly cartService = inject(CartService);
 
+    readonly FREE_SHIPPING_THRESHOLD = 499;
+
     get items(): CartItem[] {
         return this.cartService.items;
     }
@@ -24,6 +26,22 @@ export class CartComponent {
 
     get itemCount(): number {
         return this.cartService.count;
+    }
+
+    get freeShippingProgress(): number {
+        return Math.min(100, Math.round((this.subtotal / this.FREE_SHIPPING_THRESHOLD) * 100));
+    }
+
+    get amountNeededForFreeShipping(): number {
+        return Math.max(0, this.FREE_SHIPPING_THRESHOLD - this.subtotal);
+    }
+
+    get totalSavings(): number {
+        return this.items.reduce((acc, item) => {
+            const mrp = Number(item.mrp || 0);
+            const unitPrice = Number(item.unitPrice || 0);
+            return acc + (mrp > unitPrice ? (mrp - unitPrice) * item.quantity : 0);
+        }, 0);
     }
 
     increase(item: CartItem): void {

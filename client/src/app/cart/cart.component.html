@@ -74,6 +74,25 @@
             <!-- ITEMS -->
             <div class="cart-items">
 
+                <!-- FREE SHIPPING BAR (₹499 THRESHOLD) -->
+                <div class="cart-shipping-bar-container">
+                    <div class="shipping-bar-text">
+                        <span *ngIf="amountNeededForFreeShipping > 0">
+                            Add <strong>₹{{ amountNeededForFreeShipping }}</strong> more for <strong>FREE Delivery!</strong> 🚚
+                        </span>
+                        <span *ngIf="amountNeededForFreeShipping === 0" class="shipping-unlocked">
+                            🎉 <strong>Hooray! Free Delivery Unlocked!</strong>
+                        </span>
+                    </div>
+                    <div class="shipping-progress-track">
+                        <div
+                            class="shipping-progress-fill"
+                            [style.width.%]="freeShippingProgress"
+                            [class.is-complete]="freeShippingProgress >= 100">
+                        </div>
+                    </div>
+                </div>
+
                 <article *ngFor="let item of items" class="cart-item">
 
 
@@ -122,9 +141,13 @@
                         <!-- PRICE -->
                         <div class="item-price">
 
-                            ₹{{ item.unitPrice | number:'1.0-0' }}
+                            <strong>₹{{ item.unitPrice | number:'1.0-0' }}</strong>
 
-                            <span>
+                            <span *ngIf="item.mrp > item.unitPrice" class="item-mrp-strike">
+                                ₹{{ item.mrp | number:'1.0-0' }}
+                            </span>
+
+                            <span class="price-each">
                                 each
                             </span>
 
@@ -170,10 +193,13 @@
                     <!-- TOTAL -->
                     <div class="item-total">
 
-                        ₹{{
-                        item.unitPrice * item.quantity
-                        | number:'1.0-0'
-                        }}
+                        <strong>
+                            ₹{{ item.unitPrice * item.quantity | number:'1.0-0' }}
+                        </strong>
+
+                        <div *ngIf="item.mrp > item.unitPrice" class="item-savings-tag">
+                            Save ₹{{ (item.mrp - item.unitPrice) * item.quantity | number:'1.0-0' }}
+                        </div>
 
                     </div>
 
@@ -221,15 +247,31 @@
 
                     </div>
 
-
-                    <div class="summary-row muted">
+                    <div *ngIf="totalSavings > 0" class="summary-row savings-row">
 
                         <span>
-                            Shipping
+                            You Save (MRP)
                         </span>
 
+                        <strong class="savings-amount">
+                            −₹{{ totalSavings | number:'1.0-0' }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-row">
+
                         <span>
-                            Calculated at checkout
+                            Delivery
+                        </span>
+
+                        <span *ngIf="amountNeededForFreeShipping === 0" class="free-shipping-tag">
+                            FREE
+                        </span>
+
+                        <span *ngIf="amountNeededForFreeShipping > 0" class="muted">
+                            ₹49 (FREE above ₹499)
                         </span>
 
                     </div>

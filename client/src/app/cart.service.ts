@@ -189,7 +189,8 @@ export class CartService {
      ======================================================= */
 
   addToCart(
-    request: AddToCartRequest
+    request: AddToCartRequest,
+    options?: { openDrawer?: boolean }
   ): void {
 
     if (
@@ -202,11 +203,13 @@ export class CartService {
 
     }
 
+    const openDrawer = options?.openDrawer !== false;
 
     this.addVariantToCart(
       request.product,
       request.variant,
-      request.quantity
+      request.quantity,
+      openDrawer
     );
 
   }
@@ -219,7 +222,8 @@ export class CartService {
   private addVariantToCart(
     product: Product,
     variant: ProductVariant,
-    requestedQuantity: number
+    requestedQuantity: number,
+    openDrawer: boolean = true
   ): void {
 
     const price =
@@ -377,7 +381,9 @@ export class CartService {
       updatedItems
     );
 
-    this.openDrawer();
+    if (openDrawer) {
+      this.openDrawer();
+    }
   }
 
 
@@ -386,7 +392,8 @@ export class CartService {
      ======================================================= */
 
   increaseQuantity(
-    variantId: string
+    variantId: string,
+    openDrawer: boolean = false
   ): void {
 
     const updatedItems =
@@ -420,7 +427,9 @@ export class CartService {
       updatedItems
     );
 
-    this.openDrawer();
+    if (openDrawer) {
+      this.openDrawer();
+    }
   }
 
 
@@ -429,7 +438,8 @@ export class CartService {
      ======================================================= */
 
   decreaseQuantity(
-    variantId: string
+    variantId: string,
+    openDrawer: boolean = false
   ): void {
 
     const updatedItems =
@@ -470,7 +480,9 @@ export class CartService {
       updatedItems
     );
 
-    this.openDrawer();
+    if (openDrawer) {
+      this.openDrawer();
+    }
   }
 
 
@@ -479,7 +491,8 @@ export class CartService {
      ======================================================= */
 
   removeItem(
-    variantId: string
+    variantId: string,
+    openDrawer: boolean = false
   ): void {
 
     const updatedItems =
@@ -494,7 +507,9 @@ export class CartService {
       updatedItems
     );
 
-    this.openDrawer();
+    if (openDrawer) {
+      this.openDrawer();
+    }
   }
 
 

@@ -46,7 +46,7 @@ export async function cancelCodOrder({ orderNumber, actor, reason = null, author
         }
         const order = res.rows[0];
 
-        if (authorize && !authorize(order)) {
+        if (authorize && !(await authorize(order))) {
             throw fail(403, 'NOT_ORDER_OWNER', 'You are not allowed to cancel this order.');
         }
         if (order.payment_method !== 'COD') {

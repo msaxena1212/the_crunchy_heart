@@ -1,5 +1,9 @@
 import { cancelCodOrder } from '../services/order-cancellation.service.js';
 import {
+    getSessionCustomer,
+    normalizePhone,
+} from '../services/customer-auth.service.js';
+import {
     ATTEMPT_LEASE_MS,
     createOrder,
     retryPaymentAttempt,
@@ -661,7 +665,7 @@ export async function retryOrderPayment(
 
 export async function getOrderDetails(req, res, next) {
     try {
-        const { orderNumber } = req.params;
+        let { orderNumber } = req.params;
 
         if (!orderNumber) {
             return res.status(400).json({
@@ -670,43 +674,48 @@ export async function getOrderDetails(req, res, next) {
             });
         }
 
+        orderNumber = String(orderNumber).trim();
+        const cleanOrderNumber = orderNumber.replace(/-R\d+$/i, '');
+
         const authHeader = req.headers.authorization;
         const bearerToken =
             typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
                 ? authHeader.slice(7).trim()
                 : null;
 
-        const guestAccessToken =
+        const token =
             req.headers['x-guest-access-token'] || bearerToken || null;
 
         const orderResult = await query(
             `
             SELECT
-                id,
-                order_number,
-                customer_name,
-                phone,
-                email,
-                shipping_address,
-                billing_address,
-                subtotal,
-                discount_amount,
-                shipping_amount,
-                tax_amount,
-                total_amount,
-                currency,
-                status,
-                payment_status,
-                payment_method,
-                notes,
-                coupon_code,
-                created_at,
-                updated_at
-            FROM orders
-            WHERE order_number = $1
+                o.id,
+                o.order_number,
+                o.customer_id,
+                o.customer_name,
+                o.phone,
+                o.email,
+                o.shipping_address,
+                o.billing_address,
+                o.subtotal,
+                o.discount_amount,
+                o.shipping_amount,
+                o.tax_amount,
+                o.total_amount,
+                o.currency,
+                o.status,
+                o.payment_status,
+                o.payment_method,
+                o.notes,
+                o.coupon_code,
+                o.created_at,
+                o.updated_at
+            FROM orders o
+            LEFT JOIN payments p ON p.order_id = o.id
+            WHERE o.order_number = $1 OR o.order_number = $2 OR p.provider_order_id = $1
             LIMIT 1
             `,
-            [orderNumber]
+            [orderNumber, cleanOrderNumber]
         );
 
         if (!orderResult.rows.length) {
@@ -718,17 +727,39 @@ export async function getOrderDetails(req, res, next) {
 
         const order = orderResult.rows[0];
 
-        // Authorize via guest token
-        const verification = verifyGuestAccessToken({
-            token: guestAccessToken,
-            orderNumber: order.order_number,
-            order,
-        });
+        // 1. Authorize via guest token
+        let isAuthorized = false;
+        if (token) {
+            const verification = verifyGuestAccessToken({
+                token,
+                orderNumber: order.order_number,
+                order,
+            });
+            if (verification.valid) {
+                isAuthorized = true;
+            }
+        }
 
-        if (!verification.valid) {
+        // 2. Authorize via customer session if guest token failed or was omitted
+        if (!isAuthorized && token) {
+            try {
+                const customer = await getSessionCustomer(token);
+                if (customer) {
+                    const phoneMatches = order.phone && normalizePhone(customer.phone) === normalizePhone(order.phone);
+                    const idMatches = order.customer_id && customer.id === order.customer_id;
+                    if (phoneMatches || idMatches) {
+                        isAuthorized = true;
+                    }
+                }
+            } catch {
+                // Ignore lookup error and proceed to authorization check
+            }
+        }
+
+        if (!isAuthorized) {
             return res.status(401).json({
                 success: false,
-                message: 'Valid guest access token is required to view order details.',
+                message: 'Valid guest access token or customer session is required to view order details.',
             });
         }
 
@@ -929,8 +960,25 @@ export async function cancelOrderByGuest(req, res, next) {
             orderNumber,
             actor: 'customer',
             reason: req.body?.reason,
-            authorize: (order) =>
-                verifyGuestAccessToken({ token, orderNumber: order.order_number, order }).valid,
+            authorize: async (order) => {
+                const guestVerification = verifyGuestAccessToken({ token, orderNumber: order.order_number, order });
+                if (guestVerification.valid) {
+                    return true;
+                }
+                if (token) {
+                    try {
+                        const customer = await getSessionCustomer(token);
+                        if (customer) {
+                            const phoneMatches = order.phone && normalizePhone(customer.phone) === normalizePhone(order.phone);
+                            const idMatches = order.customer_id && customer.id === order.customer_id;
+                            if (phoneMatches || idMatches) {
+                                return true;
+                            }
+                        }
+                    } catch {}
+                }
+                return false;
+            },
         });
         return res.json({ success: true, message: 'Your order has been cancelled.', ...result });
     } catch (error) {

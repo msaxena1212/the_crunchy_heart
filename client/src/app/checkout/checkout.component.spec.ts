@@ -26,6 +26,7 @@ function mockCheckoutService() {
 function mockCartService(items: any[]) {
   return {
     items,
+    cart$: of(items),
     clearCart: vi.fn(),
     saveCartSnapshot: vi.fn(),
   };

@@ -28,7 +28,8 @@
       </p>
 
       <div class="card-footer-actions">
-        <a routerLink="/" class="primary-btn">Return to Storefront</a>
+        <button *ngIf="!customerAuthService.isLoggedIn" type="button" class="primary-btn" (click)="customerAuthService.openLoginModal()">Sign In to View Order</button>
+        <a routerLink="/" class="secondary-btn">Return to Storefront</a>
         <a routerLink="/cart" class="secondary-btn">View Cart</a>
         <a routerLink="/recover-order" class="secondary-btn">Recover My Order</a>
       </div>

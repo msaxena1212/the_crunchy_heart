@@ -396,14 +396,16 @@ export class CheckoutService {
 
   getOrderDetails(orderNumber: string, guestToken: string): Observable<OrderDetailsResponse> {
     const headers = new HttpHeaders({
-      'x-guest-access-token': guestToken
+      'x-guest-access-token': guestToken,
+      'Authorization': `Bearer ${guestToken}`
     });
     return this.http.get<OrderDetailsResponse>(`${this.api}/orders/${encodeURIComponent(orderNumber)}`, { headers });
   }
 
   getPaymentStatus(orderId: string, guestToken: string): Observable<PaymentStatusResponse> {
     const headers = new HttpHeaders({
-      'x-guest-access-token': guestToken
+      'x-guest-access-token': guestToken,
+      'Authorization': `Bearer ${guestToken}`
     });
     return this.http.get<PaymentStatusResponse>(`${this.api}/payments/status/${encodeURIComponent(orderId)}`, { headers });
   }
@@ -422,13 +424,17 @@ export class CheckoutService {
   }
 
   cancelCodOrder(orderNumber: string, guestToken: string, reason?: string): Observable<any> {
-    const headers = new HttpHeaders({ 'x-guest-access-token': guestToken });
+    const headers = new HttpHeaders({
+      'x-guest-access-token': guestToken,
+      'Authorization': `Bearer ${guestToken}`
+    });
     return this.http.post<any>(`${this.api}/orders/${encodeURIComponent(orderNumber)}/cancel`, { reason }, { headers });
   }
 
   retryPayment(orderNumber: string, guestToken: string, idempotencyKey?: string): Observable<any> {
     let headers = new HttpHeaders({
-      'x-guest-access-token': guestToken
+      'x-guest-access-token': guestToken,
+      'Authorization': `Bearer ${guestToken}`
     });
     if (idempotencyKey) {
       headers = headers.set('Idempotency-Key', idempotencyKey);

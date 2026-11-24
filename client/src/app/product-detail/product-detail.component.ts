@@ -254,19 +254,24 @@ export class ProductDetailComponent implements OnInit {
       product: this.product,
       variant: this.selectedVariant,
       quantity: this.quantity,
-    });
+    }, { openDrawer: true });
 
     this.addedToCart = true;
-    this.cartService.openDrawer();
   }
 
   buyNow(): void {
-    this.addToCart();
-
-    if (this.addedToCart) {
-      this.cartService.closeDrawer();
-      void this.router.navigate(['/checkout']);
+    if (!this.product || !this.selectedVariant || !this.isAvailable) {
+      return;
     }
+
+    this.cartService.addToCart({
+      product: this.product,
+      variant: this.selectedVariant,
+      quantity: this.quantity,
+    }, { openDrawer: false });
+
+    this.addedToCart = true;
+    void this.router.navigate(['/checkout']);
   }
 
   private setBasicMetadata(): void {

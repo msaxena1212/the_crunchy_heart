@@ -17,6 +17,10 @@ import {
     isQueueableSettlementError,
 } from '../services/payment-reconciliation.service.js';
 import { verifyGuestAccessToken } from '../utils/order-token.js';
+import {
+    getSessionCustomer,
+    normalizePhone,
+} from '../services/customer-auth.service.js';
 
 
 /*
@@ -84,17 +88,36 @@ export async function getPaymentStatus(
 
         const order = orderResult.rows[0];
 
-        // 2. Authorize guest token
-        const verification = verifyGuestAccessToken({
-            token: guestAccessToken,
-            orderNumber: order.order_number,
-            order,
-        });
+        // 2. Authorize guest token or customer session
+        let isAuthorized = false;
+        if (guestAccessToken) {
+            const verification = verifyGuestAccessToken({
+                token: guestAccessToken,
+                orderNumber: order.order_number,
+                order,
+            });
+            if (verification.valid) {
+                isAuthorized = true;
+            } else {
+                try {
+                    const customer = await getSessionCustomer(guestAccessToken);
+                    if (customer) {
+                        const phoneMatches = order.phone && normalizePhone(customer.phone) === normalizePhone(order.phone);
+                        const idMatches = order.customer_id && customer.id === order.customer_id;
+                        if (phoneMatches || idMatches) {
+                            isAuthorized = true;
+                        }
+                    }
+                } catch {
+                    // Ignore session lookup failure
+                }
+            }
+        }
 
-        if (!verification.valid) {
+        if (!isAuthorized) {
             return res.status(401).json({
                 success: false,
-                message: 'Valid guest access token is required to view payment status.',
+                message: 'Valid guest access token or customer session is required to view payment status.',
             });
         }
 

@@ -1,4 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { of } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -19,6 +21,7 @@ export class CheckoutComponent implements OnInit {
   private readonly cartService = inject(CartService);
   private readonly checkoutService = inject(CheckoutService);
   private readonly customerAuthService = inject(CustomerAuthService);
+  private readonly destroyRef = inject(DestroyRef);
 
   cartItems: CartItem[] = [];
   preview: CheckoutPreviewResponse | null = null;
@@ -102,29 +105,44 @@ export class CheckoutComponent implements OnInit {
 
   ngOnInit(): void {
     this.idempotencyKey = this.checkoutService.generateIdempotencyKey();
-    this.cartItems = this.cartService.items;
 
-    // Prefill customer information if logged in
-    const cust = this.customerAuthService.currentCustomer;
-    if (cust) {
-      if (cust.name) {
+    // Subscribe reactively to cart changes (e.g. changes made in mini-cart drawer)
+    const cart$ = this.cartService.cart$ || of(this.cartService.items || []);
+    cart$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(items => {
+      const prevItems = this.cartItems;
+      this.cartItems = items || [];
+
+      if (!this.cartItems.length) {
+        this.preview = null;
+        this.isLoadingPreview = false;
+        return;
+      }
+
+      // Check if item contents changed from previous state before recalculating preview
+      const changed = !prevItems || prevItems.length !== this.cartItems.length ||
+        this.cartItems.some((it, idx) => !prevItems[idx] || prevItems[idx].variantId !== it.variantId || prevItems[idx].quantity !== it.quantity);
+
+      if (changed || !this.preview) {
+        this.loadPreview();
+      }
+    });
+
+    // Reactively prefill customer information when customer signs in
+    const customer$ = this.customerAuthService.currentCustomer$ || of(this.customerAuthService.currentCustomer);
+    customer$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(cust => {
+      if (!cust) return;
+      const currentVals = this.checkoutForm.value;
+      if (!currentVals.name && cust.name) {
         this.checkoutForm.patchValue({ name: cust.name });
       }
-      if (cust.phone) {
+      if (!currentVals.phone && cust.phone) {
         const cleanPhone = cust.phone.replace(/\D/g, '').slice(-10);
         this.checkoutForm.patchValue({ phone: cleanPhone });
       }
-      if (cust.email) {
+      if (!currentVals.email && cust.email) {
         this.checkoutForm.patchValue({ email: cust.email });
       }
-    }
-
-    if (!this.cartItems.length) {
-      this.isLoadingPreview = false;
-      return;
-    }
-
-    this.loadPreview();
+    });
   }
 
   loadPreview(): void {

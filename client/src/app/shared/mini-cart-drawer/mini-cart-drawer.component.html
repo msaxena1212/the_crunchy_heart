@@ -55,7 +55,17 @@
       <span class="empty-icon">♡</span>
       <h3>Your crunch cart is empty</h3>
       <p>Explore our premium makhana, royal dry fruits, and hand-selected spices.</p>
-      <a routerLink="/shop" (click)="close()" class="shop-now-btn">Start Shopping</a>
+      <div class="drawer-empty-actions" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 220px; margin: 0 auto;">
+        <a routerLink="/shop" (click)="close()" class="shop-now-btn">Start Shopping</a>
+        <button
+          *ngIf="hasRecoverySnapshot"
+          type="button"
+          (click)="restoreCart()"
+          class="drawer-restore-btn"
+          style="padding: 10px 16px; border: 1px solid #dcd1c2; border-radius: 8px; background: #ffffff; color: #1e392a; font-weight: 600; cursor: pointer; font-size: 0.88rem; transition: background 0.2s;">
+          Restore Previous Cart
+        </button>
+      </div>
     </div>
 
     <!-- CART LIST -->

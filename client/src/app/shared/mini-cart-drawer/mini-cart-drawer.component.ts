@@ -39,6 +39,14 @@ export class MiniCartDrawerComponent {
     return Math.max(0, this.FREE_SHIPPING_THRESHOLD - this.subtotal);
   }
 
+  get hasRecoverySnapshot(): boolean {
+    return this.cartService.hasCartSnapshot();
+  }
+
+  restoreCart(): void {
+    this.cartService.restoreCartSnapshot(this.items.length === 0 ? 'replace' : 'merge');
+  }
+
   close(): void {
     this.cartService.closeDrawer();
   }
