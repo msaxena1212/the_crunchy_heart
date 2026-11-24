@@ -391,3 +391,35 @@
   color: #a17c35;
   text-decoration: underline;
 }
+
+@media (max-width: 480px) {
+  .drawer-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .drawer-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .shipping-bar-container {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .drawer-body {
+    padding: 0.85rem 1.25rem;
+  }
+
+  .drawer-footer {
+    padding: 1rem 1.25rem;
+    padding-bottom: max(1rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+  }
+
+  .checkout-btn {
+    padding: 0.8rem;
+    font-size: 0.92rem;
+  }
+
+  .cart-drawer {
+    max-width: 100vw;
+  }
+}

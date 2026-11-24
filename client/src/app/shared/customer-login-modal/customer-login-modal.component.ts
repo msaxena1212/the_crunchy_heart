@@ -129,13 +129,17 @@ import { CustomerAuthService } from '../customer-auth.service';
       left: 0;
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
       background: rgba(18, 30, 22, 0.6);
       backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       z-index: 9999;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       animation: fadeIn 200ms ease;
     }
 
@@ -151,6 +155,8 @@ import { CustomerAuthService } from '../customer-auth.service';
       border-radius: 20px;
       width: 100%;
       max-width: 420px;
+      max-height: calc(100dvh - 32px);
+      overflow-y: auto;
       padding: 32px 28px;
       box-shadow: 0 24px 50px rgba(18, 30, 22, 0.22);
       animation: slideUp 240ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -376,6 +382,50 @@ import { CustomerAuthService } from '../customer-auth.service';
       font-size: 11px;
       color: #9a9285;
       line-height: 1.4;
+    }
+
+    @media (max-width: 480px) {
+      .modal-card {
+        padding: 24px 20px;
+        border-radius: 18px;
+      }
+
+      .modal-header h2 {
+        font-size: 21px;
+      }
+
+      .subtitle {
+        font-size: 13px;
+      }
+
+      .country-prefix {
+        padding: 10px 12px;
+        font-size: 13.5px;
+      }
+
+      .phone-input-wrap input {
+        padding: 10px 12px;
+        font-size: 14.5px;
+      }
+
+      .otp-input {
+        letter-spacing: 6px;
+        font-size: 18px;
+        padding: 10px 12px;
+      }
+
+      .submit-btn {
+        padding: 12px;
+        font-size: 14px;
+      }
+
+      .close-btn {
+        top: 12px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+      }
     }
   `]
 })
