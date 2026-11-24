@@ -310,6 +310,7 @@
 /* FOOTER */
 .drawer-footer {
   padding: 1.25rem 1.5rem;
+  padding-bottom: max(1.25rem, calc(1.25rem + env(safe-area-inset-bottom, 0px)));
   border-top: 1px solid #f1ece7;
   background: #fdfbf7;
 }

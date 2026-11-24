@@ -694,5 +694,19 @@
   .buy-now-button {
     flex-basis: calc(50% - 6px);
     padding: 0 12px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 400px) {
+  .variant-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-to-cart-button,
+  .buy-now-button {
+    flex-basis: 100%;
+    width: 100%;
   }
 }

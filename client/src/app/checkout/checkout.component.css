@@ -77,7 +77,27 @@
 
 @media (max-width: 880px) {
   .checkout-layout {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .checkout-summary-column {
+    order: -1;
+    width: 100%;
+  }
+
+  .summary-card {
+    position: static;
+    top: auto;
+    border-radius: 14px;
+    padding: 18px 16px;
+  }
+
+  .form-section-card {
+    padding: 20px 16px;
+    border-radius: 14px;
+    margin-bottom: 16px;
   }
 }
 
@@ -316,7 +336,7 @@ select.has-error {
   padding: 24px;
   box-shadow: 0 4px 16px rgba(70, 55, 38, 0.06);
   position: sticky;
-  top: 24px;
+  top: 130px;
 }
 
 .summary-card h2 {

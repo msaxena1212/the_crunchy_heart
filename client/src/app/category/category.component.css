@@ -599,18 +599,37 @@ select:focus-visible {
     display: none;
   }
 
+  .cat-sizes {
+    gap: 4px;
+  }
+
   .cat-size {
-    padding: 5px 10px;
-    font-size: 12px;
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .cat-price-row {
+    gap: 3px 6px;
+  }
+
+  .cat-rate {
+    padding: 2px 6px;
+    font-size: 10.5px;
   }
 
   .cat-price {
-    font-size: 19px;
+    font-size: 18px;
   }
 
   .cat-add {
-    min-height: 42px;
+    min-height: 40px;
     font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .cat-grid {
+    grid-template-columns: 1fr;
   }
 }
 

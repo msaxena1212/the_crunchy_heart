@@ -4086,7 +4086,8 @@ input:focus-visible {
     align-items: stretch;
   }
 
-  .hero-actions button {
+  .hero-actions button,
+  .hero-actions a {
     width: 100%;
   }
 
@@ -5564,6 +5565,21 @@ body {
 .hero-origin-badge small {
   font-size: 0.72rem;
   color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .hero-origin-badge {
+    top: 12px;
+    right: 12px;
+    padding: 7px 12px;
+    border-radius: 10px;
+  }
+  .hero-origin-badge span {
+    font-size: 0.74rem;
+  }
+  .hero-origin-badge small {
+    font-size: 0.65rem;
+  }
 }
 
 /* =========================================================
@@ -7401,7 +7417,8 @@ html, body {
     flex-direction: column;
     width: 100%;
   }
-  .hero-actions button {
+  .hero-actions button,
+  .hero-actions a {
     width: 100%;
     min-height: 48px;
   }
