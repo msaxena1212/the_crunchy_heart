@@ -7384,6 +7384,11 @@ html, body {
   overflow-x: clip;
 }
 
+body.modal-open {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
 @media (max-width: 1024px) {
   .bulk-grade-tabs-4 {
     grid-template-columns: repeat(2, 1fr);

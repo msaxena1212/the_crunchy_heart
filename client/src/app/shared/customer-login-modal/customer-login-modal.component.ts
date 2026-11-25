@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CustomerAuthService } from '../customer-auth.service';
+import { ScrollLockService } from '../scroll-lock.service';
 
 @Component({
   selector: 'tch-customer-login-modal',
@@ -432,6 +433,7 @@ import { CustomerAuthService } from '../customer-auth.service';
 export class CustomerLoginModalComponent implements OnInit, OnDestroy {
   private readonly customerAuthService = inject(CustomerAuthService);
   private readonly router = inject(Router);
+  private readonly scrollLockService = inject(ScrollLockService);
 
   isOpen = false;
   redirectUrl: string | undefined;
@@ -451,11 +453,14 @@ export class CustomerLoginModalComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.sub.add(
       this.customerAuthService.loginModal$.subscribe(state => {
+        const wasOpen = this.isOpen;
         this.isOpen = state.isOpen;
         this.redirectUrl = state.redirectUrl;
-        if (this.isOpen) {
+        if (this.isOpen && !wasOpen) {
+          this.scrollLockService.lock();
           this.resetForm();
-        } else {
+        } else if (!this.isOpen && wasOpen) {
+          this.scrollLockService.unlock();
           this.clearTimer();
         }
       })
@@ -463,6 +468,9 @@ export class CustomerLoginModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.isOpen) {
+      this.scrollLockService.unlock();
+    }
     this.sub.unsubscribe();
     this.clearTimer();
   }

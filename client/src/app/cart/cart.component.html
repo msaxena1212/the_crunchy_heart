@@ -325,6 +325,18 @@
 
         </div>
 
+        <!-- MOBILE STICKY CHECKOUT BAR -->
+        <div class="cart-mobile-sticky-bar" *ngIf="items.length > 0">
+            <div class="mobile-sticky-total">
+                <span class="sticky-label">Total</span>
+                <strong class="sticky-amount">₹{{ subtotal | number:'1.0-0' }}</strong>
+                <span *ngIf="amountNeededForFreeShipping === 0" class="sticky-free-ship">Free Delivery Unlocked!</span>
+            </div>
+            <a routerLink="/checkout" class="sticky-checkout-btn">
+                Proceed to Checkout →
+            </a>
+        </div>
+
     </div>
 
 </section>

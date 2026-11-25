@@ -165,3 +165,10 @@
     <button type="button" (click)="navigateToSection('faqs')">FAQs <span>→</span></button>
   </nav>
 </header>
+
+<div
+  class="mobile-nav-backdrop"
+  [class.is-open]="mobileMenuOpen"
+  (click)="closeMenus()"
+  aria-hidden="true">
+</div>

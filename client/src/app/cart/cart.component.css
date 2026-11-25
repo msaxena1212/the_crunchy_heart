@@ -426,7 +426,81 @@
    RESPONSIVE
    ========================================================= */
 
+.cart-mobile-sticky-bar {
+    display: none;
+}
+
 @media (max-width: 900px) {
+
+    .cart-page {
+        padding-bottom: 120px;
+    }
+
+    .cart-mobile-sticky-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 20px;
+        padding-bottom: max(12px, calc(12px + env(safe-area-inset-bottom, 0px)));
+        background: #ffffff;
+        border-top: 1px solid #eadfce;
+        box-shadow: 0 -4px 18px rgba(30, 57, 42, 0.12);
+    }
+
+    .mobile-sticky-total {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .sticky-label {
+        font-size: 10px;
+        color: #746e65;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .sticky-amount {
+        font-size: 20px;
+        color: #12563f;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    .sticky-free-ship {
+        font-size: 10.5px;
+        color: #2d7a46;
+        font-weight: 700;
+    }
+
+    .sticky-checkout-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 22px;
+        border-radius: 999px;
+        background: #12563f;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 13.5px;
+        text-decoration: none;
+        box-shadow: 0 3px 12px rgba(18, 86, 63, 0.28);
+        white-space: nowrap;
+        transition: transform 160ms ease, background 160ms ease;
+    }
+
+    .sticky-checkout-btn:hover {
+        background: #0d4230;
+        transform: translateY(-1px);
+    }
 
     .cart-layout {
         grid-template-columns: 1fr;

@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from '../../cart.service';
 import { CustomerAuthService, CustomerUser } from '../customer-auth.service';
+import { ScrollLockService } from '../scroll-lock.service';
 
 @Component({
   selector: 'tch-storefront-header',
@@ -11,10 +12,12 @@ import { CustomerAuthService, CustomerUser } from '../customer-auth.service';
   templateUrl: './storefront-header.html',
   styleUrl: './storefront-header.css',
 })
-export class StorefrontHeader {
+export class StorefrontHeader implements OnDestroy {
   private readonly router = inject(Router);
   private readonly cartService = inject(CartService);
   private readonly customerAuthService = inject(CustomerAuthService);
+  private readonly scrollLockService = inject(ScrollLockService);
+  private readonly elementRef = inject(ElementRef);
 
   mobileMenuOpen = false;
   shopMenuOpen = false;
@@ -85,8 +88,18 @@ export class StorefrontHeader {
   }
 
   toggleMobileMenu(): void {
-    this.mobileMenuOpen = !this.mobileMenuOpen;
+    this.setMobileMenuOpen(!this.mobileMenuOpen);
+  }
+
+  private setMobileMenuOpen(open: boolean): void {
+    if (this.mobileMenuOpen === open) return;
+    this.mobileMenuOpen = open;
     this.shopMenuOpen = false;
+    if (open) {
+      this.scrollLockService.lock();
+    } else {
+      this.scrollLockService.unlock();
+    }
   }
 
   toggleShopMenu(event: Event): void {
@@ -103,9 +116,15 @@ export class StorefrontHeader {
     this.shopMenuOpen = false;
   }
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    this.shopMenuOpen = false;
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    const clickedInside = this.elementRef.nativeElement.contains(target);
+    if (!clickedInside) {
+      this.closeMenus();
+    } else {
+      this.shopMenuOpen = false;
+    }
   }
 
   @HostListener('document:keydown.escape')
@@ -113,8 +132,17 @@ export class StorefrontHeader {
     this.closeMenus();
   }
 
-  private closeMenus(): void {
+  closeMenus(): void {
+    if (this.mobileMenuOpen) {
+      this.scrollLockService.unlock();
+    }
     this.mobileMenuOpen = false;
     this.shopMenuOpen = false;
+  }
+
+  ngOnDestroy(): void {
+    if (this.mobileMenuOpen) {
+      this.scrollLockService.unlock();
+    }
   }
 }

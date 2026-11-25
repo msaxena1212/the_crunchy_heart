@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { CartService, CartItem } from '../../cart.service';
+import { ScrollLockService } from '../scroll-lock.service';
 
 @Component({
   selector: 'tch-mini-cart-drawer',
@@ -10,10 +12,35 @@ import { CartService, CartItem } from '../../cart.service';
   templateUrl: './mini-cart-drawer.component.html',
   styleUrl: './mini-cart-drawer.component.css'
 })
-export class MiniCartDrawerComponent {
+export class MiniCartDrawerComponent implements OnInit, OnDestroy {
   readonly cartService = inject(CartService);
+  private readonly scrollLockService = inject(ScrollLockService);
+  private readonly sub = new Subscription();
+  private isLocked = false;
 
   readonly FREE_SHIPPING_THRESHOLD = 499;
+
+  ngOnInit(): void {
+    this.sub.add(
+      this.cartService.drawerOpen$.subscribe(open => {
+        if (open && !this.isLocked) {
+          this.scrollLockService.lock();
+          this.isLocked = true;
+        } else if (!open && this.isLocked) {
+          this.scrollLockService.unlock();
+          this.isLocked = false;
+        }
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    if (this.isLocked) {
+      this.scrollLockService.unlock();
+      this.isLocked = false;
+    }
+    this.sub.unsubscribe();
+  }
 
   get isOpen(): boolean {
     return this.cartService.isDrawerOpen;
