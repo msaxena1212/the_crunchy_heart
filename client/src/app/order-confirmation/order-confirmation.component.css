@@ -186,6 +186,11 @@
   opacity: 0.85;
 }
 
+/* Keep the reference number on one line so it never splits mid-code */
+.order-ref strong {
+  white-space: nowrap;
+}
+
 .banner-text h1 {
   font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
   font-size: 1.7rem;
@@ -416,6 +421,10 @@
 }
 
 .refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 10px 16px;
   background: transparent;
   color: #1e392a;
@@ -425,6 +434,15 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  flex-shrink: 0;
 }
 
 .refresh-btn:hover {
@@ -580,3 +598,85 @@
 .danger-btn { background: #b42318 !important; border-color: #b42318 !important; }
 
 .discount-row span:last-child { color: #14563c; font-weight: 700; }
+
+/* =========================================================
+   PHONE LAYOUT
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .confirmation-page {
+    padding: 24px 16px 60px;
+  }
+
+  .top-nav {
+    margin-bottom: 20px;
+    gap: 12px;
+  }
+
+  .brand-tag {
+    font-size: 1rem;
+  }
+
+  .status-banner {
+    gap: 14px;
+    padding: 20px 18px;
+    margin-bottom: 24px;
+  }
+
+  .banner-icon-wrap {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+  }
+
+  .banner-text h1 {
+    font-size: 1.4rem;
+    line-height: 1.25;
+  }
+
+  .info-card {
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+
+  .info-card h2 {
+    font-size: 1.1rem;
+  }
+
+  .exception-notice-card {
+    padding: 16px 18px;
+  }
+
+  /* Item rows: name on its own line, qty and price beneath it */
+  .item-row {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .item-info {
+    flex: 1 1 100%;
+  }
+
+  .item-qty {
+    flex: 1;
+  }
+
+  .item-price {
+    text-align: right;
+  }
+
+  .card-footer-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .state-card {
+    padding: 32px 20px;
+    margin: 24px auto;
+  }
+
+  .actions-card {
+    gap: 10px;
+  }
+}

@@ -237,7 +237,7 @@
                 type="button"
                 class="secondary-btn restore-cart-btn"
                 (click)="restoreCart()">
-                🛒 Restore Items to Cart
+                <span aria-hidden="true">🛒</span> Restore Items to Cart
               </button>
               <p *ngIf="cartRestoredMessage" class="restore-success-msg">
                 {{ cartRestoredMessage }}
@@ -249,15 +249,18 @@
               class="refresh-btn"
               [disabled]="isLoading"
               (click)="loadOrderData()">
-              ↻ Refresh Status
+              <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M21 12a9 9 0 1 1-2.64-6.36L21 8M21 3v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Refresh Status
             </button>
 
             <a routerLink="/shop" class="secondary-btn continue-btn">
               Continue Shopping
             </a>
 
-            <a routerLink="/account" class="secondary-btn account-view-btn" style="margin-top: 6px; text-align: center; text-decoration: none;">
-              👤 View My Orders in Account
+            <a routerLink="/account" class="secondary-btn account-view-btn">
+              <span aria-hidden="true">👤</span> View My Orders in Account
             </a>
 
             <p class="privacy-footnote" *ngIf="fssai()">FSSAI Lic. No. {{ fssai() }}</p>
